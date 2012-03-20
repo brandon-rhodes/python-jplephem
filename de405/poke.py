@@ -1,6 +1,10 @@
 # First experiment in poking at the DE405 data.
 
 import os
+from bisect import bisect
+from math import floor
+
+AU = 149597870.7
 
 body_names = (None, 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter',
               'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Moon', 'Sun',
@@ -32,24 +36,77 @@ class Ephemeris(object):
         datanames = [ n for n in filenames if n.startswith('asc') ]
         ranges = []  # each item is ((start, end), [...])
         for dataname in datanames:
+            if '2000' not in dataname:
+                continue
             with open(os.path.join(dirpath, dataname)) as f:
                 body = f.read()
             array = [ float(f) for f in body.replace('D', 'E').split() ]
             n = 0
-            while n < len(array):
-                count = int(array[n + 1])
-                jedrange = (array[n + 2], array[n + 3])
-                ranges.append((jedrange, array[n + 4:n + 4 + count]))
-                n += 4 + count
+            i = 0
+            while i < len(array):
+                n += 1
+                assert array[i] == n
+                entries = int(array[i + 1])
+                jedrange = (array[i + 2], array[i + 3])
+                ranges.append((jedrange, array[i + 4 : i + 4 + entries]))
+                i += 4 + entries
 
         ranges.sort()
-        print ranges[0][0]
-        print ranges[-2][0]
-        print ranges[-1][0]
+        self.ranges = ranges
+
+    def compute(self):
+        d = 2456007.0
+        i = bisect(self.ranges, ((d,),))
+        dates, coefficients = self.ranges[i - 1]
+        t2 = dates[1] - dates[0]
+        t1 = (d - dates[0]) / t2
+        print dates, t2, t1
+
+        EARTH = 3 - 1
+        print 'starts:', self.starts[EARTH], len(body_names)
+
+        ncf = self.coeffs[EARTH]
+        ncm = 3
+        na = self.cosets[EARTH]
+
+        dna = float(na)
+        dt1 = floor(t1)
+        temp = dna * t1
+        l = int(temp - dt1) # + 1 offset was because fortran arrays
+        print 'ell', l
+
+        tc = 2.0 * (temp % 1.0 + dt1) - 1.0
+        print 'tc', tc
+
+        # np = 2
+        # nv = 3
+        pc = [1.0, tc]
+        twot = tc + tc
+
+        for i in range(2, ncf):
+            pc.append(twot * pc[-1] - pc[-2])
+
+        answers = []
+        for i in range(ncm):
+            answers.append(sum(
+                    pc[j] * coefficients[self.starts[EARTH]
+                                         - 3
+                                         # BUF(J,I,L)
+                                         + j
+                                         + i * ncf
+                                         + l * ncf * ncm]
+                    for j in range(ncf)
+                    ))
+
+        print answers
+        print [a/AU for a in answers]
+
 #
 
 def main():
     ephemeris = Ephemeris('ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405')
+    ephemeris.compute()
+    return
     testpo = open('ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405/testpo.405')
     lines = iter(testpo)
     while next(lines).strip() != 'EOT':
