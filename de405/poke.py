@@ -14,9 +14,38 @@ class Ephemeris(object):
 
     def __init__(self, dirpath):
         self.dirpath = dirpath
-        for filename in os.listdir(dirpath):
-            pass
+        filenames = os.listdir(dirpath)
 
+        headername = [ n for n in filenames if n.startswith('header') ][0]
+        with open(os.path.join(dirpath, headername)) as f:
+            lines = iter(f)
+            while next(lines).strip() != 'GROUP   1050':
+                continue
+            assert next(lines).strip() == ''
+            self.starts = [ int(field) for field in next(lines).split() ]
+            self.coeffs = [ int(field) for field in next(lines).split() ]
+            self.cosets = [ int(field) for field in next(lines).split() ]
+            print self.starts
+
+        step = self.starts[-1] + self.coeffs[-1] * self.cosets[-1] * 3
+
+        datanames = [ n for n in filenames if n.startswith('asc') ]
+        ranges = []  # each item is ((start, end), [...])
+        for dataname in datanames:
+            with open(os.path.join(dirpath, dataname)) as f:
+                body = f.read()
+            array = [ float(f) for f in body.replace('D', 'E').split() ]
+            n = 0
+            while n < len(array):
+                count = int(array[n + 1])
+                jedrange = (array[n + 2], array[n + 3])
+                ranges.append((jedrange, array[n + 4:n + 4 + count]))
+                n += 4 + count
+
+        ranges.sort()
+        print ranges[0][0]
+        print ranges[-2][0]
+        print ranges[-1][0]
 #
 
 def main():
