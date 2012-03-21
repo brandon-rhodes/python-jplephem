@@ -2,9 +2,6 @@
 
 import numpy as np
 
-AU = 149597870.691  # TODO: read from file
-EMRAT = 0.813005600000000044E+02 # TODO: read from file
-
 body_names = (None, 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter',
               'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Moon', 'Sun',
               'Solar System Barycenter', 'Earth-Moon Barycenter',
@@ -15,9 +12,12 @@ coordinate_names = ('x', 'y', 'z', 'xdot', 'ydot', 'zdot')
 
 class Ephemeris(object):
 
+    def __init__(self):
+        # Load constants as instance attributes.
+        self.__dict__.update(dict(np.load('constants.npy')))  # Ruby
+
     def compute(self, planet, jed):
-        constants = dict(np.load('constants.npy'))
-        ja, jz, jd = constants['jalpha'], constants['jomega'], constants['jdelta']
+        ja, jz, jd = self.jalpha, self.jomega, self.jdelta
 
         series = np.load('series%02d.npy' % planet)
         step = (jz - ja) / series.shape[0]  # TODO: isn't this in header file?
@@ -80,8 +80,8 @@ def main():
 def compute(ephemeris, jed, target):
     c = ephemeris.compute
     if target == 3:
-        return c(3, jed) - c(10, jed) / (1.0 + EMRAT)
-    if target <= 2 or 4 <= target <= 9:
+        return c(3, jed) - c(10, jed) / (1.0 + ephemeris.EMRAT)
+    if target <= 9:
         return c(target, jed)
     raise ValueError('hmm %d' % target)
 
@@ -93,7 +93,7 @@ def pleph(ephemeris, jed, target, center):
 
     tpos = compute(ephemeris, jed, target)
     cpos = compute(ephemeris, jed, center)
-    return (tpos - cpos) / AU
+    return (tpos - cpos) / ephemeris.AU
 
 if __name__ == '__main__':
     main()
