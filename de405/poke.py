@@ -74,14 +74,22 @@ def main():
             print 'WARNING: difference =', delta
             break
 
+def compute(ephemeris, jed, target):
+    c = ephemeris.compute
+    if target == 3:
+        return c(3, jed) - c(10, jed) / (1.0 + EMRAT)
+    if target <= 2 or 4 <= target <= 9:
+        return c(target, jed)
+    raise ValueError('hmm %d' % target)
+
 def pleph(ephemeris, jed, target, center):
     # todo: nutations
     # todo: librations
-    tpos = ephemeris.compute(target, jed)
-    cpos = ephemeris.compute(center, jed)
-    if center == 3:
-        moonpos = ephemeris.compute(10, jed)
-        cpos -= moonpos / (1.0 + EMRAT)
+
+    # Map between test-file target integers and ephemeris series.
+
+    tpos = compute(ephemeris, jed, target)
+    cpos = compute(ephemeris, jed, center)
     return (tpos - cpos) / AU
 
 if __name__ == '__main__':
