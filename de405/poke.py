@@ -15,6 +15,8 @@ class Ephemeris(object):
     def __init__(self):
         # Load constants as instance attributes.
         self.__dict__.update(dict(np.load('constants.npy')))  # Ruby
+        self.earth_share = 1.0 / (1.0 + self.EMRAT)
+        self.moon_share = self.EMRAT / (1.0 + self.EMRAT)
         self.series = [None] * 14
 
     def load_series(self, n):
@@ -27,7 +29,7 @@ class Ephemeris(object):
         ja, jz, jd = self.jalpha, self.jomega, self.jdelta
 
         series = self.load_series(planet)
-        step = (jz - ja) / series.shape[0]  # TODO: isn't this in header file?
+        step = (jz - ja) / series.shape[0]
 
         l, jremain = divmod(jed - ja, step)
         tc = 2.0 * jremain / step - 1.0
@@ -70,7 +72,7 @@ def main():
         center = int(fields[4])
         coordinate_number = int(fields[5])
         coordinate = float(fields[6])
-        if target > 9 or center > 9 or coordinate_number > 1:
+        if target > 13 or center > 13:
             continue
         print '%s %s %s(%d) -> %s(%d) field #%d' % (
             fields[1], jed, body_names[center], center,
@@ -85,18 +87,34 @@ def main():
             break
 
 def compute(ephemeris, jed, target):
+    if target == 12:
+        return np.zeros(6)  # solar system barycenter is our origin
     c = ephemeris.compute
+    if target == 13:
+        return c(3, jed)
     if target == 3:
-        return c(3, jed) - c(10, jed) / (1.0 + ephemeris.EMRAT)
-    if target <= 9:
+        return c(3, jed) - c(10, jed) * ephemeris.earth_share
+    if target == 10:
+        return c(3, jed) + c(10, jed) * ephemeris.moon_share
+    if target <= 11:
         return c(target, jed)
     raise ValueError('hmm %d' % target)
 
 def pleph(ephemeris, jed, target, center):
+
+    if target == center:
+        return np.zeros(6)
+
     # todo: nutations
     # todo: librations
+    # c = ephemeris.compute
 
     # Map between test-file target integers and ephemeris series.
+
+    # if target == 10 and center == 3:
+    #     return c(10, jed)
+    # if target == 3 and center == 10:
+    #     return - c(10, jed)
 
     tpos = compute(ephemeris, jed, target)
     cpos = compute(ephemeris, jed, center)
