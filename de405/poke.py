@@ -72,12 +72,18 @@ def main():
         center = int(fields[4])
         coordinate_number = int(fields[5])
         coordinate = float(fields[6])
-        if target > 13 or center > 13:
-            continue
         print '%s %s %s(%d) -> %s(%d) field #%d' % (
             fields[1], jed, body_names[center], center,
             body_names[target], target, coordinate_number)
-        r = pleph(ephemeris, jed, target, center)
+        if target == 14:
+            continue
+        elif target == 15:
+            continue
+        else:
+            tpos = compute(ephemeris, jed, target)
+            cpos = compute(ephemeris, jed, center)
+            r = (tpos - cpos) / ephemeris.AU
+
         delta = r[coordinate_number - 1] - coordinate
         print '%.15f %.15f %.15f' % (
             r[coordinate_number - 1], coordinate, delta,
@@ -99,26 +105,6 @@ def compute(ephemeris, jed, target):
     if target <= 11:
         return c(target, jed)
     raise ValueError('hmm %d' % target)
-
-def pleph(ephemeris, jed, target, center):
-
-    if target == center:
-        return np.zeros(6)
-
-    # todo: nutations
-    # todo: librations
-    # c = ephemeris.compute
-
-    # Map between test-file target integers and ephemeris series.
-
-    # if target == 10 and center == 3:
-    #     return c(10, jed)
-    # if target == 3 and center == 10:
-    #     return - c(10, jed)
-
-    tpos = compute(ephemeris, jed, target)
-    cpos = compute(ephemeris, jed, center)
-    return (tpos - cpos) / ephemeris.AU
 
 if __name__ == '__main__':
     main()
