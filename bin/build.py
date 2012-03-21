@@ -55,13 +55,14 @@ def main():
             num_coefficients = np.array(next(lines).split(), np.int_)
             coefficient_sets = np.array(next(lines).split(), np.int_)
 
-        for filename in filenames:
-            if '1600' not in filename:
+        tdatasets = []
+
+        for filename in sorted(filenames):
+            if not filename.startswith('asc'):
                 continue
             print filename
 
             n = 0
-            tdatasets = []
             with open(os.path.join(dirpath, filename)) as f:
                 lines = iter(f)
                 for line in lines:
@@ -89,16 +90,24 @@ def main():
 
                     tdatasets.append((j0, j1, data))
 
+        # Sort all coefficient sets and remove adacent duplicates, which
+        # occur because the last record of one file is sometimes (!) the
+        # first record of the next file.
+
+        tdatasets.sort()
+        for i in range(len(tdatasets) - 1, 0, -1):
+            if tdatasets[i] == tdatasets[i - 1]:
+                del tdatasets[i]
+
         # Verify that all time periods are equal, and that the datasets
         # in sequence cover adjacent time periods.
 
-        tdatasets.sort()
         step = tdatasets[0][1] - tdatasets[0][0]
         j = tdatasets[0][0]
         for tds in tdatasets:
-            assert j == tds[0]
+            assert j == tds[0], (j, tds[0])
             j += step
-            assert j == tds[1]
+            assert j == tds[1], (j, tds[1])
 
         # Remove the (j0, j1) tuples and create a pure list of datasets.
 
@@ -120,7 +129,7 @@ def main():
                         for j in range(3)
                         ] for dataset in datasets for csi in range(cs) ])
             print a.shape
-            np.save('series%d' % (planet + 1), a)
+            np.save('series%02d' % (planet + 1), a)
 
         np.save('constants', constants)
 
