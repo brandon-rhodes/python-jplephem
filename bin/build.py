@@ -121,12 +121,13 @@ def main():
         for planet, offset in enumerate(planet_offsets):
             nc = num_coefficients[planet]
             cs = coefficient_sets[planet]
+            ncm = 2 if planet == 11 else 3
             a = np.array([[
                         dataset[
-                            offset + j * nc + 3 * csi * nc :
-                            offset + j * nc + 3 * csi * nc + nc
+                            offset + j * nc + ncm * csi * nc :
+                            offset + j * nc + ncm * csi * nc + nc
                             ]
-                        for j in range(3)
+                        for j in range(ncm)
                         ] for dataset in datasets for csi in range(cs) ])
 
             print 'series', planet + 1, a.shape

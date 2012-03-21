@@ -76,7 +76,7 @@ def main():
             fields[1], jed, body_names[center], center,
             body_names[target], target, coordinate_number)
         if target == 14:
-            continue
+            r = ephemeris.compute(12, jed)
         elif target == 15:
             continue
         else:
