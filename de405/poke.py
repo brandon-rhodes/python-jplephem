@@ -5,7 +5,8 @@ import os
 from bisect import bisect
 from math import floor
 
-AU = 149597870.691
+AU = 149597870.691  # TODO: read from file
+EMRAT = 0.813005600000000044E+02 # TODO: read from file
 
 body_names = (None, 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter',
               'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Moon', 'Sun',
@@ -115,8 +116,14 @@ def main():
         coordinate = float(fields[6])
         print jed, body_names[center], '->', body_names[target]
         r = pleph(ephemeris, jed, target, center)
-        print coordinate_number, r[coordinate_number - 1], coordinate, \
-            r[coordinate_number - 1] - coordinate
+        delta = r[coordinate_number - 1] - coordinate
+        print '%.15f %.15f %.15f' % (
+            r[coordinate_number - 1],
+            coordinate,
+            delta,
+            )
+        if delta >= 1e-13:
+            print 'WARNING: difference =', delta
         break
 
 def pleph(ephemeris, jed, target, center):
@@ -141,8 +148,10 @@ def pleph(ephemeris, jed, target, center):
     # print a + b
 
     tpos = ephemeris.compute(target, jed)
-    print tpos.dtype
     cpos = ephemeris.compute(center, jed)
+    if center == 3:
+        moonpos = ephemeris.compute(10, jed)
+        cpos -= moonpos / (1.0 + EMRAT)
     return (tpos - cpos) / AU
 
 if __name__ == '__main__':
