@@ -63,6 +63,8 @@ def main():
         center = int(fields[4])
         coordinate_number = int(fields[5])
         coordinate = float(fields[6])
+        if target > 9 or center > 9 or coordinate_number > 1:
+            continue
         print '%s %s %s(%d) -> %s(%d) field #%d' % (
             fields[1], jed, body_names[center], center,
             body_names[target], target, coordinate_number)
