@@ -25,7 +25,7 @@ def main():
             while next(lines).strip() != 'GROUP   1030':
                 continue
             assert next(lines).strip() == ''
-            jeda, jedz, _ = (float(s) for s in e(next(lines)).split())
+            jalpha, jomega, jdelta = (float(s) for s in e(next(lines)).split())
 
             while next(lines).strip() != 'GROUP   1040':
                 continue
@@ -43,10 +43,10 @@ def main():
             while len(values) < nconstants:
                 values.extend(float(s) for s in e(next(lines)).split())
 
-            constants = np.zeros(nconstants + 2, dtype=[
+            constants = np.zeros(nconstants + 3, dtype=[
                     ('name','a6'), ('value','f8')])
-            constants['name'] = names + ['JEDA', 'JEDZ']
-            constants['value'] = values + [jeda, jedz]
+            constants['name'] = names + ['jalpha', 'jomega', 'jdelta']
+            constants['value'] = values + [jalpha, jomega, jdelta]
 
             while next(lines).strip() != 'GROUP   1050':
                 continue
@@ -128,7 +128,8 @@ def main():
                             ]
                         for j in range(3)
                         ] for dataset in datasets for csi in range(cs) ])
-            print a.shape
+
+            print 'series', planet + 1, a.shape
             np.save('series%02d' % (planet + 1), a)
 
         np.save('constants', constants)

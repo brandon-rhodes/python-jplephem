@@ -17,7 +17,7 @@ class Ephemeris(object):
 
     def compute(self, planet, jed):
         constants = dict(np.load('constants.npy'))
-        ja, jz = constants['JEDA'], constants['JEDZ']
+        ja, jz, jd = constants['jalpha'], constants['jomega'], constants['jdelta']
 
         series = np.load('series%02d.npy' % planet)
         step = (jz - ja) / series.shape[0]  # TODO: isn't this in header file?
