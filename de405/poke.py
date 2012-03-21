@@ -1,10 +1,11 @@
 # First experiment in poking at the DE405 data.
 
+import numpy as np
 import os
 from bisect import bisect
 from math import floor
 
-AU = 149597870.7
+AU = 149597870.691
 
 body_names = (None, 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter',
               'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Moon', 'Sun',
@@ -36,7 +37,7 @@ class Ephemeris(object):
         datanames = [ n for n in filenames if n.startswith('asc') ]
         ranges = []  # each item is ((start, end), [...])
         for dataname in datanames:
-            if '2000' not in dataname:
+            if '1600' not in dataname:
                 continue
             with open(os.path.join(dirpath, dataname)) as f:
                 body = f.read()
@@ -54,11 +55,13 @@ class Ephemeris(object):
         ranges.sort()
         self.ranges = ranges
 
-    def compute(self, planet, d):
-        i = bisect(self.ranges, ((d,),))
+    def compute(self, planet, jed):
+        planet -= 1
+
+        i = bisect(self.ranges, ((jed,),))
         dates, coefficients = self.ranges[i - 1]
         t2 = dates[1] - dates[0]
-        t1 = (d - dates[0]) / t2
+        t1 = (jed - dates[0]) / t2
 
         ncf = self.coeffs[planet]
         ncm = 3
@@ -88,28 +91,16 @@ class Ephemeris(object):
                                          + j
                                          + i * ncf
                                          + l * ncf * ncm]
-                    for j in range(ncf)
+                    for j in reversed(range(ncf))
                     ))
 
-        return [a/AU for a in answers]
+        return np.array(answers)
 
 #
 
 def main():
     ephemeris = Ephemeris('ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405')
-    d0 = 2456007.0
-    dates = [ d0 + i for i in range(365) ]
 
-    for planet in range(4):
-        xyz = [ ephemeris.compute(planet, d) for d in dates ]
-        x = [ k[0] for k in xyz ]
-        from math import copysign
-        y = [ copysign((k[1]*k[1] + k[2]*k[2]) ** 0.5, k[1]) for k in xyz ]
-        from matplotlib import pyplot
-        pyplot.plot(x, y)
-
-    pyplot.show()
-    return
     testpo = open('ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405/testpo.405')
     lines = iter(testpo)
     while next(lines).strip() != 'EOT':
@@ -123,11 +114,12 @@ def main():
         coordinate_number = int(fields[5])
         coordinate = float(fields[6])
         print jed, body_names[center], '->', body_names[target]
-        r = pleph(jed, target, center)
-        print r[coordinate_number], coordinate
+        r = pleph(ephemeris, jed, target, center)
+        print coordinate_number, r[coordinate_number - 1], coordinate, \
+            r[coordinate_number - 1] - coordinate
         break
 
-def pleph(jed, target, center):
+def pleph(ephemeris, jed, target, center):
     # todo: nutations
     # todo: librations
     bary = True
@@ -144,7 +136,14 @@ def pleph(jed, target, center):
         if k == 13:
             LIST[3] = 2.0
 
-    return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    # a = np.array([102, 202, 302], np.float)
+    # b = np.array([100, 100, 100], np.float)
+    # print a + b
+
+    tpos = ephemeris.compute(target, jed)
+    print tpos.dtype
+    cpos = ephemeris.compute(center, jed)
+    return (tpos - cpos) / AU
 
 if __name__ == '__main__':
     main()
