@@ -63,8 +63,9 @@ def main():
         center = int(fields[4])
         coordinate_number = int(fields[5])
         coordinate = float(fields[6])
-        print fields[1], jed, body_names[center], '->', body_names[target], \
-            coordinate_number
+        print '%s %s %s(%d) -> %s(%d) field #%d' % (
+            fields[1], jed, body_names[center], center,
+            body_names[target], target, coordinate_number)
         r = pleph(ephemeris, jed, target, center)
         delta = r[coordinate_number - 1] - coordinate
         print '%.15f %.15f %.15f' % (
