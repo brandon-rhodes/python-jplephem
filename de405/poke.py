@@ -54,29 +54,22 @@ class Ephemeris(object):
         ranges.sort()
         self.ranges = ranges
 
-    def compute(self):
-        d = 2456007.0
+    def compute(self, planet, d):
         i = bisect(self.ranges, ((d,),))
         dates, coefficients = self.ranges[i - 1]
         t2 = dates[1] - dates[0]
         t1 = (d - dates[0]) / t2
-        print dates, t2, t1
 
-        EARTH = 3 - 1
-        print 'starts:', self.starts[EARTH], len(body_names)
-
-        ncf = self.coeffs[EARTH]
+        ncf = self.coeffs[planet]
         ncm = 3
-        na = self.cosets[EARTH]
+        na = self.cosets[planet]
 
         dna = float(na)
         dt1 = floor(t1)
         temp = dna * t1
         l = int(temp - dt1) # + 1 offset was because fortran arrays
-        print 'ell', l
 
         tc = 2.0 * (temp % 1.0 + dt1) - 1.0
-        print 'tc', tc
 
         # np = 2
         # nv = 3
@@ -89,7 +82,7 @@ class Ephemeris(object):
         answers = []
         for i in range(ncm):
             answers.append(sum(
-                    pc[j] * coefficients[self.starts[EARTH]
+                    pc[j] * coefficients[self.starts[planet]
                                          - 3
                                          # BUF(J,I,L)
                                          + j
@@ -98,14 +91,24 @@ class Ephemeris(object):
                     for j in range(ncf)
                     ))
 
-        print answers
-        print [a/AU for a in answers]
+        return [a/AU for a in answers]
 
 #
 
 def main():
     ephemeris = Ephemeris('ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405')
-    ephemeris.compute()
+    d0 = 2456007.0
+    dates = [ d0 + i for i in range(365) ]
+
+    for planet in range(4):
+        xyz = [ ephemeris.compute(planet, d) for d in dates ]
+        x = [ k[0] for k in xyz ]
+        from math import copysign
+        y = [ copysign((k[1]*k[1] + k[2]*k[2]) ** 0.5, k[1]) for k in xyz ]
+        from matplotlib import pyplot
+        pyplot.plot(x, y)
+
+    pyplot.show()
     return
     testpo = open('ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405/testpo.405')
     lines = iter(testpo)
