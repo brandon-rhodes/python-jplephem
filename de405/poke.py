@@ -33,7 +33,19 @@ class Ephemeris(object):
         for i in range(2, ncf):
             pc[i] = twot * pc[i-1] - pc[i-2]
 
-        return np.sum(series[l] * pc, axis=1)
+        coords = np.sum(series[l] * pc, axis=1)
+        # can return coords at this point if velocities not needed
+
+        vfac = 2.0 / step
+
+        vc = np.zeros(ncf)
+        vc[1] = 1.0
+        vc[2] = twot + twot
+        for i in range(3, ncf):
+            vc[i] = twot * vc[i-1] + pc[i-1] + pc[i-1] - vc[i-2]
+
+        velocities = np.sum(series[l] * vc, axis=1) * vfac
+        return np.concatenate((coords, velocities))
 
 #
 
@@ -46,23 +58,21 @@ def main():
         continue
     for line in lines:
         fields = line.split()
-        print fields
         jed = float(fields[2])
         target = int(fields[3])
         center = int(fields[4])
         coordinate_number = int(fields[5])
         coordinate = float(fields[6])
-        print jed, body_names[center], '->', body_names[target]
+        print fields[1], jed, body_names[center], '->', body_names[target], \
+            coordinate_number
         r = pleph(ephemeris, jed, target, center)
         delta = r[coordinate_number - 1] - coordinate
         print '%.15f %.15f %.15f' % (
-            r[coordinate_number - 1],
-            coordinate,
-            delta,
+            r[coordinate_number - 1], coordinate, delta,
             )
         if abs(delta) >= 1e-13:
             print 'WARNING: difference =', delta
-        break
+            break
 
 def pleph(ephemeris, jed, target, center):
     # todo: nutations
