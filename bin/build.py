@@ -22,6 +22,11 @@ def main():
         with open(os.path.join(dirpath, headername)) as f:
             lines = iter(f)
 
+            while next(lines).strip() != 'GROUP   1030':
+                continue
+            assert next(lines).strip() == ''
+            jeda, jedz, _ = (float(s) for s in e(next(lines)).split())
+
             while next(lines).strip() != 'GROUP   1040':
                 continue
             assert next(lines).strip() == ''
@@ -38,10 +43,10 @@ def main():
             while len(values) < nconstants:
                 values.extend(float(s) for s in e(next(lines)).split())
 
-            constants = np.zeros(nconstants, dtype=[
+            constants = np.zeros(nconstants + 2, dtype=[
                     ('name','a6'), ('value','f8')])
-            constants['name'] = names
-            constants['value'] = values
+            constants['name'] = names + ['JEDA', 'JEDZ']
+            constants['value'] = values + [jeda, jedz]
 
             while next(lines).strip() != 'GROUP   1050':
                 continue
