@@ -15,11 +15,18 @@ class Ephemeris(object):
     def __init__(self):
         # Load constants as instance attributes.
         self.__dict__.update(dict(np.load('constants.npy')))  # Ruby
+        self.series = [None] * 14
+
+    def load_series(self, n):
+        s = self.series[n]
+        if s is None:
+            self.series[n] = s = np.load('series%02d.npy' % n)
+        return s
 
     def compute(self, planet, jed):
         ja, jz, jd = self.jalpha, self.jomega, self.jdelta
 
-        series = np.load('series%02d.npy' % planet)
+        series = self.load_series(planet)
         step = (jz - ja) / series.shape[0]  # TODO: isn't this in header file?
 
         l, jremain = divmod(jed - ja, step)
