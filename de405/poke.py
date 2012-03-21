@@ -20,29 +20,20 @@ class Ephemeris(object):
         ja, jz = constants['JEDA'], constants['JEDZ']
 
         series = np.load('series%02d.npy' % planet)
-        t2 = (jz - ja) / series.shape[0]  # TODO: isn't this in header file?
+        step = (jz - ja) / series.shape[0]  # TODO: isn't this in header file?
 
-        l, jremain = divmod(jed - ja, t2)
-        t1 = jremain / t2
-
+        l, jremain = divmod(jed - ja, step)
+        tc = 2.0 * jremain / step - 1.0
         ncf = series.shape[2]
-        ncm = 3
-        tc = 2.0 * t1 - 1.0
 
-        pc = [1.0, tc]
+        pc = np.zeros(ncf)
+        pc[0] = 1.0
+        pc[1] = tc
         twot = tc + tc
-
         for i in range(2, ncf):
-            pc.append(twot * pc[-1] - pc[-2])
+            pc[i] = twot * pc[i-1] - pc[i-2]
 
-        answers = []
-        for i in range(ncm):
-            answers.append(sum(
-                    pc[j] * series[l,i,j]
-                    for j in reversed(range(ncf))
-                    ))
-
-        return np.array(answers)
+        return np.sum(series[l] * pc, axis=1)
 
 #
 
