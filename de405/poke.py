@@ -78,7 +78,7 @@ def main():
         if target == 14:
             r = ephemeris.compute(12, jed)
         elif target == 15:
-            continue
+            r = ephemeris.compute(13, jed)
         else:
             tpos = compute(ephemeris, jed, target)
             cpos = compute(ephemeris, jed, center)
