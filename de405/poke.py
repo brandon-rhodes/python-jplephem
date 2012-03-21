@@ -60,11 +60,13 @@ class Ephemeris(object):
 
 def main():
     ephemeris = Ephemeris()
+    verbose = False
 
     testpo = open('ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405/testpo.405')
     lines = iter(testpo)
     while next(lines).strip() != 'EOT':
         continue
+    successes = 0
     for line in lines:
         fields = line.split()
         jed = float(fields[2])
@@ -72,9 +74,10 @@ def main():
         center = int(fields[4])
         coordinate_number = int(fields[5])
         coordinate = float(fields[6])
-        print '%s %s %s(%d) -> %s(%d) field #%d' % (
-            fields[1], jed, body_names[center], center,
-            body_names[target], target, coordinate_number)
+        if verbose:
+            print '%s %s %s(%d) -> %s(%d) field #%d' % (
+                fields[1], jed, body_names[center], center,
+                body_names[target], target, coordinate_number)
         if target == 14:
             r = ephemeris.compute(12, jed)
         elif target == 15:
@@ -85,12 +88,15 @@ def main():
             r = (tpos - cpos) / ephemeris.AU
 
         delta = r[coordinate_number - 1] - coordinate
-        print '%.15f %.15f %.15f' % (
-            r[coordinate_number - 1], coordinate, delta,
-            )
+        if verbose:
+            print '%.15f %.15f %.15f' % (
+                r[coordinate_number - 1], coordinate, delta,
+                )
         if abs(delta) >= 1e-13:
             print 'WARNING: difference =', delta
             break
+        successes += 1
+    print '%d tests successful' % successes
 
 def compute(ephemeris, jed, target):
     if target == 12:
