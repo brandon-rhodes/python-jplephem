@@ -123,8 +123,8 @@ def main():
             cs = coefficient_sets[planet]
             a = np.array([[
                         dataset[
-                            offset + 3 * csi * nc :
-                            offset + 3 * csi * nc + nc
+                            offset + j * nc + 3 * csi * nc :
+                            offset + j * nc + 3 * csi * nc + nc
                             ]
                         for j in range(3)
                         ] for dataset in datasets for csi in range(cs) ])
