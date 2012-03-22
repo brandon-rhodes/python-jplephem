@@ -17,44 +17,55 @@ class Ephemeris(object):
         self.__dict__.update(dict(np.load('constants.npy')))  # Ruby
         self.earth_share = 1.0 / (1.0 + self.EMRAT)
         self.moon_share = self.EMRAT / (1.0 + self.EMRAT)
-        self.series = [None] * 14
+        self.sets = [None] * 14
 
-    def load_series(self, n):
-        s = self.series[n]
+    def load_sets(self, n):
+        s = self.sets[n]
         if s is None:
-            self.series[n] = s = np.load('series%02d.npy' % n)
+            self.sets[n] = s = np.load('jpl-%02d.npy' % n)
         return s
 
-    def compute(self, planet, jed):
-        ja, jz, jd = self.jalpha, self.jomega, self.jdelta
+    def compute(self, item, jed):
+        """Given int `item` 1-13 compute its polynomials for date `jed`."""
 
-        series = self.load_series(planet)
-        step = (jz - ja) / series.shape[0]
+        # Load the polynomial sets for this item.
 
-        l, jremain = divmod(jed - ja, step)
-        tc = 2.0 * jremain / step - 1.0
-        ncf = series.shape[2]
+        sets = self.load_sets(item)
 
-        pc = np.zeros(ncf)
+        # How many days are covered by each polynomial set?
+
+        interval = (self.jomega - self.jalpha) / sets.shape[0]
+
+        # Select the paritcular polynomial set in which the date `jed`
+        # falls, and determine the offset of `jed` into that date range.
+
+        index, toffset = divmod(jed - self.jalpha, interval)
+        coefficients = sets[index]
+
+        # We make two passes for this set of coefficients, first
+        # computing simple values, and then computing derivatives.  Each
+        # time through we set up a list of `terms` then multiply by the
+        # polynomical coefficients provided by JPL.
+
+        length = sets.shape[2]
+        pc = np.zeros(length)  # "p" = position
+        vc = np.zeros(length)  # "v" = velocity
+
         pc[0] = 1.0
-        pc[1] = tc
-        twot = tc + tc
-        for i in range(2, ncf):
-            pc[i] = twot * pc[i-1] - pc[i-2]
+        pc[1] = t1 = 2.0 * toffset / interval - 1.0
+        twot1 = t1 + t1
+        for i in range(2, length):
+            pc[i] = twot1 * pc[i-1] - pc[i-2]
 
-        coords = np.sum(series[l] * pc, axis=1)
-        # can return coords at this point if velocities not needed
-
-        vfac = 2.0 / step
-
-        vc = np.zeros(ncf)
         vc[1] = 1.0
-        vc[2] = twot + twot
-        for i in range(3, ncf):
-            vc[i] = twot * vc[i-1] + pc[i-1] + pc[i-1] - vc[i-2]
+        vc[2] = twot1 + twot1
+        for i in range(3, length):
+            vc[i] = twot1 * vc[i-1] + pc[i-1] + pc[i-1] - vc[i-2]
 
-        velocities = np.sum(series[l] * vc, axis=1) * vfac
-        return np.concatenate((coords, velocities))
+        position = np.sum(coefficients * pc, axis=1)
+        velocity = np.sum(coefficients * vc, axis=1) * (2.0 / interval)
+
+        return np.concatenate((position, velocity))
 
 #
 
@@ -108,9 +119,7 @@ def compute(ephemeris, jed, target):
         return c(3, jed) - c(10, jed) * ephemeris.earth_share
     if target == 10:
         return c(3, jed) + c(10, jed) * ephemeris.moon_share
-    if target <= 11:
-        return c(target, jed)
-    raise ValueError('hmm %d' % target)
+    return c(target, jed)
 
 if __name__ == '__main__':
     main()
