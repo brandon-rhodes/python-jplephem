@@ -130,8 +130,8 @@ def main():
                         for j in range(ncm)
                         ] for dataset in datasets for csi in range(cs) ])
 
-            print 'series', planet + 1, a.shape
-            np.save('series%02d' % (planet + 1), a)
+            print 'polynomials', planet + 1, a.shape
+            np.save('jpl-%02d' % (planet + 1), a)
 
         np.save('constants', constants)
 
