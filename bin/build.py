@@ -13,9 +13,10 @@ def e(s):
 def main():
     topdir = 'ssd.jpl.nasa.gov/pub/eph/planets/ascii'
     dirs = os.listdir(topdir)
-    for dirname in dirs:
+    for dirname in sorted(dirs):
         if not dirname.startswith('de'):
             continue
+        print '=' * 16, dirname
         if not os.path.isdir(dirname):
             os.mkdir(dirname)
         with open(os.path.join(dirname, '__init__.py'), 'w') as f:
