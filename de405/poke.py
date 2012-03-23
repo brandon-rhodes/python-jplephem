@@ -1,25 +1,16 @@
-# First experiment in poking at the DE405 data.
-
 import numpy as np
 
-body_names = (None, 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter',
-              'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Moon', 'Sun',
-              'Solar System Barycenter', 'Earth-Moon Barycenter',
-              'Nutations', 'Librations')
-coordinate_names = ('x', 'y', 'z', 'xdot', 'ydot', 'zdot')
-
-#
 
 class Ephemeris(object):
 
     def __init__(self):
         # Load constants as instance attributes.
-        self.__dict__.update(dict(np.load('constants.npy')))  # Ruby
+        self.__dict__.update(dict(np.load('constants.npy')))
         self.earth_share = 1.0 / (1.0 + self.EMRAT)
         self.moon_share = self.EMRAT / (1.0 + self.EMRAT)
         self.sets = [None] * 14
 
-    def load_sets(self, n):
+    def load_set(self, n):
         s = self.sets[n]
         if s is None:
             self.sets[n] = s = np.load('jpl-%02d.npy' % n)
@@ -30,7 +21,7 @@ class Ephemeris(object):
 
         # Load the polynomial sets for this item.
 
-        sets = self.load_sets(item)
+        sets = self.load_set(item)
 
         # How many days are covered by each polynomial set?
 
