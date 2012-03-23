@@ -2,4 +2,7 @@
 
 cd $(dirname "$0")/..
 pwd
-wget -rc ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405/
+for n in 405 406 421 422
+do
+    wget -rc ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de$n/
+done
