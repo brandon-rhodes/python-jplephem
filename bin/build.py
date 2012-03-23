@@ -16,6 +16,10 @@ def main():
     for dirname in dirs:
         if not dirname.startswith('de'):
             continue
+        if not os.path.isdir(dirname):
+            os.mkdir(dirname)
+        with open(os.path.join(dirname, '__init__.py'), 'w') as f:
+            pass
         dirpath = os.path.join(topdir, dirname)
         filenames = os.listdir(dirpath)
         headername = [ n for n in filenames if n.startswith('header') ][0]
@@ -131,9 +135,9 @@ def main():
                         ] for dataset in datasets for csi in range(cs) ])
 
             print 'polynomials', planet + 1, a.shape
-            np.save('jpl-%02d' % (planet + 1), a)
+            np.save(os.path.join(dirname, 'jpl-%02d' % (planet + 1)), a)
 
-        np.save('constants', constants)
+        np.save(os.path.join(dirname, 'constants'), constants)
 
 if __name__ == '__main__':
     main()
