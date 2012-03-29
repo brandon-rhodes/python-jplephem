@@ -5,6 +5,7 @@
 
 import numpy as np
 import os
+from operator import itemgetter
 
 def e(s):
     """Convert a string in 0.1D+01 FORTRAN notation into 0.1e+10."""
@@ -87,22 +88,27 @@ def main():
                     # Read the rest of the coefficients in this block.
 
                     datalen -= 2
-                    data = [ datum ]
-                    while len(data) < datalen:
-                        data.extend(float(s) for s in e(next(lines)).split())
+                    dataset = [ datum ]
+                    while len(dataset) < datalen:
+                        dataset.extend(
+                            float(s) for s in e(next(lines)).split()
+                            )
 
                     # Store the date range and coefficients.
 
-                    tdatasets.append((j0, j1, data))
+                    dataset = np.array(dataset)  # array uses half the memory
+                    tdatasets.append((j0, j1, dataset))
 
         # Sort all coefficient sets and remove adacent duplicates, which
         # occur because the last record of one file is sometimes (!) the
         # first record of the next file.
 
-        tdatasets.sort()
-        for i in range(len(tdatasets) - 1, 0, -1):
-            if tdatasets[i] == tdatasets[i - 1]:
-                del tdatasets[i]
+        tdatasets.sort(key=itemgetter(0))
+        for i in reversed(range(0, len(tdatasets) - 1)):
+            if (tdatasets[i][0] == tdatasets[i+1][0] and
+                tdatasets[i][1] == tdatasets[i+1][1] and
+                (tdatasets[i][2] == tdatasets[i+1][2]).all()):
+                del tdatasets[i+1]
 
         # Verify that all time periods are equal, and that the datasets
         # in sequence cover adjacent time periods.
