@@ -147,6 +147,10 @@ def main():
                         for j in range(ncm)
                         ] for dataset in datasets for csi in range(cs) ])
 
+            # Skip empty data sets instead of saving empty files.
+            if a.shape == (0,):
+                continue
+
             print 'polynomials', planet + 1, a.shape
             np.save(os.path.join(dirname, ('jpl-%s' % polynames[planet])), a)
 
