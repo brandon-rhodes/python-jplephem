@@ -34,7 +34,7 @@ def testpo(module, testpo_path):
             exit(1)
 
         successes += 1
-    print '%d tests successful' % successes
+    print '  %d tests successful' % successes
 
 
 def _position(ephemeris, jed, target):
@@ -76,6 +76,14 @@ def _position(ephemeris, jed, target):
         return c('librations', jed)
 
 
+def test_all():
+    for number in 405, 406, 422, 423:
+        name = 'de%d' % number
+        module = __import__(name)
+        fname = 'ssd.jpl.nasa.gov/pub/eph/planets/ascii/de%d/testpo.%d' % (
+            number, number)
+        print name
+        testpo(module, fname)
+
 if __name__ == '__main__':
-    import de405
-    testpo(de405, 'ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405/testpo.405')
+    test_all()
