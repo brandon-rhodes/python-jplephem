@@ -19,7 +19,7 @@ def testpo(module, testpo_path):
             in zip((str, str, float, int, int, int, float), line.split())]
 
         if 14 <= target <= 15:
-            r = ephemeris.compute(target - 2, jed)
+            r = _position(ephemeris, jed, target)
         else:
             tpos = _position(ephemeris, jed, target)
             cpos = _position(ephemeris, jed, center)
@@ -39,16 +39,41 @@ def testpo(module, testpo_path):
 
 def _position(ephemeris, jed, target):
     """Compute position given a JPL test file target integer identifier."""
+
     if target == 12:
         return np.zeros(6)  # solar system barycenter is the origin
+
     c = ephemeris.compute
-    if target == 13:
-        return c(3, jed)
+
+    if target == 1:
+        return c('mercury', jed)
+    if target == 2:
+        return c('venus', jed)
     if target == 3:
-        return c(3, jed) - c(10, jed) * ephemeris.earth_share
+        return c('earthmoon', jed) - c('moon', jed) * ephemeris.earth_share
+    if target == 4:
+        return c('mars', jed)
+    if target == 5:
+        return c('jupiter', jed)
+    if target == 6:
+        return c('saturn', jed)
+    if target == 7:
+        return c('uranus', jed)
+    if target == 8:
+        return c('neptune', jed)
+    if target == 9:
+        return c('pluto', jed)
     if target == 10:
-        return c(3, jed) + c(10, jed) * ephemeris.moon_share
-    return c(target, jed)
+        return c('earthmoon', jed) + c('moon', jed) * ephemeris.moon_share
+    if target == 11:
+        return c('sun', jed)
+    #
+    if target == 13:
+        return c('earthmoon', jed)
+    if target == 14:
+        return c('nutations', jed)
+    if target == 15:
+        return c('librations', jed)
 
 
 if __name__ == '__main__':

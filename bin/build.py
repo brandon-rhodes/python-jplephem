@@ -7,6 +7,12 @@ import numpy as np
 import os
 from operator import itemgetter
 
+polynames = [
+    'mercury', 'venus', 'earthmoon', 'mars',
+    'jupiter', 'saturn', 'uranus', 'neptune',
+    'pluto', 'moon', 'sun', 'nutations', 'librations',
+    ]
+
 def e(s):
     """Convert a string in 0.1D+01 FORTRAN notation into 0.1e+10."""
     return s.replace('D', 'e')
@@ -142,7 +148,7 @@ def main():
                         ] for dataset in datasets for csi in range(cs) ])
 
             print 'polynomials', planet + 1, a.shape
-            np.save(os.path.join(dirname, 'jpl-%02d' % (planet + 1)), a)
+            np.save(os.path.join(dirname, ('jpl-%s' % polynames[planet])), a)
 
         np.save(os.path.join(dirname, 'constants'), constants)
 

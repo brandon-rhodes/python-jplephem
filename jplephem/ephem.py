@@ -10,17 +10,17 @@ class Ephemeris(object):
         self.__dict__.update(dict(np.load(self.path('constants.npy'))))
         self.earth_share = 1.0 / (1.0 + self.EMRAT)
         self.moon_share = self.EMRAT / (1.0 + self.EMRAT)
-        self.sets = [None] * 14
+        self.sets = {}
 
     def path(self, filename):
         """Compute the path to a particular file in the ephemeris."""
         return os.path.join(self.dirpath, filename)
 
-    def load_set(self, n):
+    def load_set(self, item):
         """Load the polynomial series for object `n`."""
-        s = self.sets[n]
+        s = self.sets.get(item)
         if s is None:
-            self.sets[n] = s = np.load(self.path('jpl-%02d.npy' % n))
+            self.sets[item] = s = np.load(self.path('jpl-%s.npy' % item))
         return s
 
     def compute(self, item, jed):
