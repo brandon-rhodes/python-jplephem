@@ -4,9 +4,8 @@ import numpy as np
 from sys import exit
 from .ephem import Ephemeris
 
-def testpo(module, testpo_path):
+def testpo(ephemeris, testpo_path):
     """Compare the positions we calculate against those computed by the JPL."""
-    ephemeris = Ephemeris(module)
     lines = iter(open(testpo_path))
 
     while next(lines).strip() != 'EOT':
@@ -26,6 +25,11 @@ def testpo(module, testpo_path):
             r = (tpos - cpos) / ephemeris.AU
 
         delta = r[number - 1] - value
+        if (target == 15 and number == 3):
+            delta = delta / (0.23 * (jed - 2451545.0))
+        elif (target == 15 and number == 6):
+            delta = delta * 0.01 / (1.0 + (jed - 2451545.0) / 365.25)
+
         if abs(delta) >= 1e-13:
             print '%s %s %s->%s field %d' % (date, jed, center, target, number)
             print 'JPL result: %.15f' % value
@@ -77,13 +81,16 @@ def _position(ephemeris, jed, target):
 
 
 def test_all():
-    for number in 405, 406, 422, 423:
+    #for number in 405, 406, 422, 423:
+    for number in 405, 422, 423:
         name = 'de%d' % number
         module = __import__(name)
         fname = 'ssd.jpl.nasa.gov/pub/eph/planets/ascii/de%d/testpo.%d' % (
             number, number)
-        print name
-        testpo(module, fname)
+        ephemeris = Ephemeris(module)
+        print name, 'AU =', ephemeris.AU, 'km'
+        testpo(ephemeris, fname)
+
 
 if __name__ == '__main__':
     test_all()
