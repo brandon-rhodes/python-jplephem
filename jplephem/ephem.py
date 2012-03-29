@@ -38,6 +38,9 @@ class Ephemeris(object):
         # falls, and determine the offset of `jed` into that date range.
 
         index, toffset = divmod(jed - self.jalpha, interval)
+        if index == sets.shape[0]:
+            index -= 1
+            toffset += interval
         coefficients = sets[index]
 
         # We make two passes for this set of Chebyshev coefficients,
