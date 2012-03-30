@@ -55,11 +55,6 @@ def main():
             while len(values) < nconstants:
                 values.extend(float(s) for s in e(next(lines)).split())
 
-            constants = np.zeros(nconstants + 3, dtype=[
-                    ('name','a6'), ('value','f8')])
-            constants['name'] = names + ['jalpha', 'jomega', 'jdelta']
-            constants['value'] = values + [jalpha, jomega, jdelta]
-
             while next(lines).strip() != 'GROUP   1050':
                 continue
             assert next(lines).strip() == ''
@@ -105,7 +100,7 @@ def main():
                     dataset = np.array(dataset)  # array uses half the memory
                     tdatasets.append((j0, j1, dataset))
 
-        # Sort all coefficient sets and remove adacent duplicates, which
+        # Sort all coefficient sets and remove adjacent duplicates, which
         # occur because the last record of one file is sometimes (!) the
         # first record of the next file.
 
@@ -116,8 +111,19 @@ def main():
                 (tdatasets[i][2] == tdatasets[i+1][2]).all()):
                 del tdatasets[i+1]
 
-        # Verify that all time periods are equal, and that the datasets
-        # in sequence cover adjacent time periods.
+        # Verify that all time periods are equal, that the datasets in
+        # sequence cover adjacent time periods, and that they really
+        # range from jalpha to jomega.
+
+        if tdatasets[0][0] != jalpha:
+            print '  WARNING: claims start= %f but in fact start= %f' % (
+                jalpha, tdatasets[0][0])
+            jalpha = tdatasets[0][0]
+
+        if tdatasets[-1][1] != jomega:
+            print '  WARNING: claims end= %f but in fact end= %f' %  (
+                jomega, tdatasets[-1][1])
+            jomega = tdatasets[-1][1]
 
         step = tdatasets[0][1] - tdatasets[0][0]
         j = tdatasets[0][0]
@@ -125,6 +131,16 @@ def main():
             assert j == tds[0], (j, tds[0])
             j += step
             assert j == tds[1], (j, tds[1])
+
+        # Now that we know the true values of all constants, including
+        # the "j" variables, we save them to a numpy array.
+
+        names.extend(['jalpha', 'jomega', 'jdelta'])
+        values.extend([jalpha, jomega, jdelta])
+
+        constants = np.zeros(len(names), dtype=[('name','a6'), ('value','f8')])
+        constants['name'] = names
+        constants['value'] = values
 
         # Remove the (j0, j1) tuples and create a pure list of datasets.
 
