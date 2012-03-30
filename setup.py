@@ -1,19 +1,19 @@
 import sys
 from distutils.core import setup
 
-packages = ['jplephem', 'de405', 'de406', 'de421', 'de422', 'de423']
-if len(sys.argv) < 2 or sys.argv[1] not in packages:
-    print 'usage: setup.py %s ...' % '|'.join(packages)
+versions = {'jplephem': '0.1', 'de405': '1997', 'de406': '1997',
+            'de421': '2008', 'de422': '2009', 'de423': '2010'}
+if len(sys.argv) < 2 or sys.argv[1] not in versions:
+    print 'usage: setup.py %s ...' % '|'.join(versions.keys())
     sys.exit(2)
 
-name = sys.argv[1]
-del sys.argv[1]
+name = sys.argv.pop(1)
 
 if name.startswith('d'):
     module = __import__(name)
     description, long_description = module.__doc__.split('\n', 1)
     setup(name = name,
-          version = '1.0',
+          version = versions[name],
           description = description,
           long_description = long_description,
           license = 'MIT',
