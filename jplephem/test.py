@@ -1,7 +1,6 @@
 """Test harness for checking jplephem against actual JPL computations."""
 
 import numpy as np
-from sys import exit
 from .ephem import Ephemeris
 
 def testpo(ephemeris, testpo_path):
