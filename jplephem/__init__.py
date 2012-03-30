@@ -3,7 +3,13 @@
 This package lets you consult a Jet Propulsion Laboratory ephemeris for
 the position and velocity of one of the planets, or the magnitude and
 rate-of-change of the Earth's nutation or the Moon's libration.  To
-determine the position of Mars, for example::
+determine the position of Mars using the DE423 ephemeris, for example,
+you would start by installing two packages::
+
+    pip install jplephem
+    pip install de423
+
+Then you can compute positions using a script like this::
 
     import de423
     from jplephem import Ephemeris
@@ -26,12 +32,6 @@ links explain the differences between them) are:
 * `DE421 <http://pypi.python.org/pypi/de421>`_ (February 2008)
 * `DE422 <http://pypi.python.org/pypi/de421>`_ (September 2009)
 * `DE423 <http://pypi.python.org/pypi/de421>`_ (February 2010)
-
-Any of these ephemerides, as well as ``jplephem`` itself, can be
-installed with a simple ``pip`` command::
-
-    pip install jplephem
-    pip install de423
 
 """
 from .ephem import Ephemeris
