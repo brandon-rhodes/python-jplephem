@@ -1,7 +1,7 @@
 import sys
 from distutils.core import setup
 
-packages = ['jplephem', 'de405', 'de406', 'de422', 'de423']
+packages = ['jplephem', 'de405', 'de406', 'de421', 'de422', 'de423']
 if len(sys.argv) < 2 or sys.argv[1] not in packages:
     print 'usage: setup.py %s ...' % '|'.join(packages)
     sys.exit(2)
@@ -11,7 +11,7 @@ del sys.argv[1]
 
 if name.startswith('d'):
     module = __import__(name)
-    description, long_description = name.__doc__.split('\n', 1)
+    description, long_description = module.__doc__.split('\n', 1)
     setup(name = name,
           version = '1.0',
           description = description,

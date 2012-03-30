@@ -1,14 +1,32 @@
-"""JPL Planetary and Lunar Ephemeris DE423 for the `jplephem` package.
+"""JPL Planetary and Lunar Ephemeris DE423 for the jplephem package.
 
 This is the most recent short-period ephemeris published by the Jet
-Propulsion Laboratory, in February 2010.  It requires 36 MB of storage
-and achieves especially high accuracy for Mercury and Venus since it was
-prepared for the MESSENGER mission, and should be able to predict the
-coordinates of those planets within a few milliarcseconds.
+Propulsion Laboratory.  It achieves especially high accuracy for Mercury
+and Venus since it was prepared for the MESSENGER mission, and should be
+able to predict the coordinates of those planets within a few
+milliarcseconds.
 
-Coordinates and velocities are provided for the major planets, the Sun,
-and Earth's Moon for the years 1800 through 2200.  To use this ephemeris
-in Python, see the `jplephem <http://pypi.python.org/pypi/jplephem>`_
-package on the Python Package Index.
+:Name: DE423 (February 2010)
+:Years: 1800 through 2200
+:Planets: Yes
+:Sun/Moon: Yes
+:Nutations: Yes
+:Librations: Yes
+:Report: `Folkner (2010) [PDF] <ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de423_for_mercury_and_venus/de423.iom.pdf>`_
+:Size: 36 MB
+
+While lunar missions will want to use the slightly older ephemeris
+`DE421 <http://pypi.python.org/pypi/de421>`_ because of the extra
+accuracy that it provides for the Moon, general purpose users will
+probably find this ephemeris more useful, especially as it covers a full
+400 years instead of only 150 years.
+
+Similar accuracy can be expected from the long-term ephemeris `DE422
+<http://pypi.python.org/pypi/de422>`_ which also covers a period of 6000
+years, making it useful to astronomy historians.  But as it requires a
+half-gigabyte of disk space, some users may prefer DE423.
+
+To compute using this ephemeris in Python, see the `jplephem
+<http://pypi.python.org/pypi/jplephem>`_ package.
 
 """

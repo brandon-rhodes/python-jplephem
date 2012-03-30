@@ -1,19 +1,31 @@
-"""JPL Planetary and Lunar Ephemeris DE405 for the `jplephem` package.
+"""JPL Planetary and Lunar Ephemeris DE405 for the jplephem package.
 
-This ephemeris, published in May 1997, has been the basis for the
-Astronomical Almanac of the United States Naval Observatory since 2003,
-and powers the Jet Propulsion Laboratory's online HORIZONS service.
-While the more recent `DE422 <http://pypi.python.org/pypi/de422>`_
-ephemeris (September 2009) provides even greater accuracy, it requires
-ten times the disk space and memory, while this ephemeris requires only
-54 MB of storage.
+This ephemeris has been the basis for the Astronomical Almanac of the
+United States Naval Observatory since 2003 and powers the Jet Propulsion
+Laboratory's online HORIZONS service. Coordinates and velocities are
+provided for the major planets, the Sun, and Earth's Moon.
 
-Positions computed using this ephemeris should be accurate to within
-roughly 0.001 arcseconds for the inner planets, and 0.1 arcseconds for
-the outer planets.  Coordinates and velocities are provided for the
-major planets, the Sun, and Earth's Moon for the years 1600 through
-2200.  See the ephemeris `DE406 <http://pypi.python.org/pypi/de406>`_ if
-you are interested in dates farther in the past or future.
+:Name: DE405 (May 1997)
+:Years: 1600 through 2200
+:Planets: Yes
+:Sun/Moon: Yes
+:Nutations: Yes
+:Librations: Yes
+:Report: `Standish (1998) [PDF] <http://iau-comm4.jpl.nasa.gov/de405iom/de405iom.pdf>`_
+:Size: 54 MB
+
+The accuracy of this ephemeris is good; the position of the Earth or
+Mars, for example, should be accurate to within 2 km.  But the more
+recent `DE421 <http://pypi.python.org/pypi/de421>`_ ephemeris provides
+greater accuracy, especially with respect to the Moon, and you should
+use it instead if you are planning a space mission.  For missions to
+Mercury or Venus, `DE423 <http://pypi.python.org/pypi/de421>`_ will be
+an even better choice.
+
+See `DE406 <http://pypi.python.org/pypi/de406>`_ if you are interested
+in a similar ephemeris for dates far in the past or future, or `DE422
+<http://pypi.python.org/pypi/de422>`_ if you want high accuracy over a
+long time period (and have enough disk space).
 
 To compute using this ephemeris in Python, see the `jplephem
 <http://pypi.python.org/pypi/jplephem>`_ package.
