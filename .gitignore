@@ -1,4 +1,5 @@
-de*/__init__.py
+MANIFEST
 de*/constants.npy
 de*/jpl-*.npy
-ssd.jpl.nasa.gov
+dist/
+ssd.jpl.nasa.gov/

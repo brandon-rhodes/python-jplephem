@@ -26,8 +26,6 @@ def main():
         print '=' * 16, dirname
         if not os.path.isdir(dirname):
             os.mkdir(dirname)
-        with open(os.path.join(dirname, '__init__.py'), 'w') as f:
-            pass
         dirpath = os.path.join(topdir, dirname)
         filenames = os.listdir(dirpath)
         headername = [ n for n in filenames if n.startswith('header') ][0]
