@@ -36,6 +36,8 @@ setup(name = name,
       license = 'MIT',
       author = 'Brandon Rhodes',
       author_email = 'brandon@rhodesmill.org',
+      url = ('http://jplephem.s3.amazonaws.com/packages.html'
+             if name.startswith('d') else None),
       classifiers = [
         'Development Status :: 5 - Production/Stable' if name.startswith('d')
         else 'Development Status :: 4 - Beta',
