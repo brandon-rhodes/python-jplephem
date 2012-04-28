@@ -67,3 +67,68 @@ class Ephemeris(object):
         velocity = np.sum(coefficients * vc, axis=1) * (2.0 / interval)
 
         return np.concatenate((position, velocity))
+
+    def compute_spherical(self, item, jed):
+        """Cartesian 6D vector to spherical components.
+
+        Returns r, alpha, delta, rdot, alphadot, deltadot.
+        """
+        # ref: TPM manual.
+        # See http://phn.github.com/pytpm/_downloads/tpm.pdf
+        # r = sqrt(x^2 + y^2 + z^2)
+        # alpha = arctan(y/x)  # longitude/azimuth
+        # delta = arcsin(z/r)  # latitude/elevation
+        # rdot = (x*xdot + y*ydot + z*zdot) / r
+        # alphadot = (x*xdot - y*ydot) / (r*cos(delta))**2
+        # deltadot = (zdot - (rdot*sin(delta))) / (r*cos(delta))
+        # Special conditions are handled as follows:
+        # If r==0: rdot = xdot and alpha, delta, alphadot, deltadot = 0.
+        # If x==0: alpha = -pi/2 if y < 0, 0 if y == 0 and pi/2 if y > 0.
+        # If cos(delta) == 0: rdot = zdot/sin(delta) and
+        #   if cos(alpha)==0: deltadot = -ydot /(r.sin(delta).cos(alpha))
+        #   else: deltadot = -xdot/ (r.sin(delta).cos(alpha))
+        CLOSE_TO_ZERO = 1e-15  # 2.2e16 is the lowest?
+        abs = np.abs  # overwrites builtin abs
+        sqrt = np.sqrt
+        cos = np.cos
+        sin = np.sin
+        atan2 = np.arctan2
+        pi = np.pi
+
+        x, y, z, xdot, ydot, zdot = self.compute(item, jed)
+        print x, y, z, xdot, ydot, zdot
+
+        r = sqrt(x ** 2 + y ** 2 + z ** 2)
+
+        # Check for potential singularites i.e, division by 0.
+        if r <= CLOSE_TO_ZERO:  # r == 0, r is always +ve
+            rdot = xdot
+            alpha, alphadot, delta, deltadot = 0.0, 0.0, 0.0, 0.0
+            return r, alpha, delta, rdot, alphadot, deltadot
+
+        if (abs(x) <= CLOSE_TO_ZERO):
+            if abs(y) <= CLOSE_TO_ZERO:
+                alpha = 0.0
+            elif y < 0:
+                alpha = -pi / 2.0
+            elif y > 0:
+                alpha = pi / 2.0
+        else:
+            alpha = atan2(y, x)
+
+        delta = atan2(z, sqrt(x ** 2 + y ** 2))
+
+        if abs(cos(delta)) <= CLOSE_TO_ZERO:  # cos(delta) == 0; poles
+            rdot = zdot / sin(delta)
+            if abs(cos(alpha)) <= CLOSE_TO_ZERO:
+                deltadot = -ydot / (r * sin(delta) * sin(alpha))
+            else:
+                deltadot = -xdot / (r * sin(delta) * cos(alpha))
+            return r, alpha, delta, rdot, alphadot, deltadot
+
+        # If we are here then no singularities should occur.
+        rdot = (x * xdot + y * ydot + z * zdot) / r
+        alphadot = (x * ydot - y * xdot) / (r * cos(delta)) ** 2
+        deltadot = (zdot - rdot * sin(delta)) / (r * cos(delta))
+
+        return r, alpha, delta, rdot, alphadot, deltadot
