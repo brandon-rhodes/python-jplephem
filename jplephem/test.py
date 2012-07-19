@@ -98,8 +98,7 @@ def test_all():
 if __name__ == '__main__':
     try:
         test_all()
-    except IOError:
-        raise
+    except IOError as e:
         print >>sys.stderr, """
 Cannot find the JPL "testpo" files against which this test suite
 validates that the positions it generates are correct. To fetch them,
@@ -114,4 +113,5 @@ These commands create a "ssd.jpl.nasa.gov" directory containing the
 necessary files. When you are done running the tests, simply remove the
 directory.
 """
+        print str(e)
         exit(1)
