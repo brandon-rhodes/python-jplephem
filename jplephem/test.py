@@ -1,6 +1,12 @@
-"""Test harness for checking jplephem against actual JPL computations."""
+"""Test harness for checking jplephem against actual JPL computations.
 
+This test can be invoked with a simple::
+
+    python -m jplephem.test
+
+"""
 import numpy as np
+import sys
 from .ephem import Ephemeris
 
 def testpo(ephemeris, testpo_path):
@@ -90,4 +96,22 @@ def test_all():
 
 
 if __name__ == '__main__':
-    test_all()
+    try:
+        test_all()
+    except IOError:
+        raise
+        print >>sys.stderr, """
+Cannot find the JPL "testpo" files against which this test suite
+validates that the positions it generates are correct. To fetch them,
+run these four commands in your current working directory:
+
+    ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405/
+    ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de406/
+    ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de422/
+    ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de423/
+
+These commands create a "ssd.jpl.nasa.gov" directory containing the
+necessary files. When you are done running the tests, simply remove the
+directory.
+"""
+        exit(1)
