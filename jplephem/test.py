@@ -104,10 +104,10 @@ Cannot find the JPL "testpo" files against which this test suite
 validates that the positions it generates are correct. To fetch them,
 run these four commands in your current working directory:
 
-    ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405/
-    ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de406/
-    ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de422/
-    ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de423/
+    wget -r ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de405/testpo.405
+    wget -r ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de406/testpo.406
+    wget -r ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de422/testpo.422
+    wget -r ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/de423/testpo.423
 
 These commands create a "ssd.jpl.nasa.gov" directory containing the
 necessary files. When you are done running the tests, simply remove the
