@@ -7,7 +7,8 @@ class Ephemeris(object):
 
     def __init__(self, module):
         self.dirpath = os.path.dirname(module.__file__)
-        self.__dict__.update(dict(np.load(self.path('constants.npy'))))
+        path = self.path('constants.npy')
+        self.__dict__.update((k.decode('ascii'), v) for k, v in np.load(path))
         self.earth_share = 1.0 / (1.0 + self.EMRAT)
         self.moon_share = self.EMRAT / (1.0 + self.EMRAT)
         self.sets = {}

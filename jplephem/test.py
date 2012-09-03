@@ -36,13 +36,13 @@ def testpo(ephemeris, testpo_path):
             delta = delta * 0.01 / (1.0 + (jed - 2451545.0) / 365.25)
 
         if abs(delta) >= 1e-13:
-            print '%s %s %s->%s field %d' % (date, jed, center, target, number)
-            print '  JPL result: %.15f' % value
-            print '  Our result: %.15f' % r[number - 1]
-            print '    ERROR: difference =', delta
+            print('%s %s %s->%s field %d' % (date, jed, center, target, number))
+            print('  JPL result: %.15f' % value)
+            print('  Our result: %.15f' % r[number - 1])
+            print('    ERROR: difference = %s' % (delta,))
 
         successes += 1
-    print '  %d tests successful' % successes
+    print('  %d tests successful' % successes)
 
 
 def _position(ephemeris, jed, target):
@@ -91,7 +91,7 @@ def test_all():
         fname = 'ssd.jpl.nasa.gov/pub/eph/planets/ascii/de%d/testpo.%d' % (
             number, number)
         ephemeris = Ephemeris(module)
-        print name, 'AU =', ephemeris.AU, 'km'
+        print(name, 'AU = %s km' % (ephemeris.AU,))
         testpo(ephemeris, fname)
 
 
@@ -113,5 +113,5 @@ These commands create a "ssd.jpl.nasa.gov" directory containing the
 necessary files. When you are done running the tests, simply remove the
 directory.
 """
-        print str(e)
+        print(str(e))
         exit(1)
