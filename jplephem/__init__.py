@@ -14,15 +14,28 @@ Then you can compute positions using a script like this::
     import de421
     from jplephem import Ephemeris
 
-    e = Ephemeris(de421)
-    jed = 2444391.5  # 1980.06.01
-    print e.compute('mars', jed)
+    eph = Ephemeris(de421)
+    jd = 2444391.5  # 1980.06.01
+    print eph.compute('mars', jd)
 
-The result should be a tuple providing the object's position in the
-Solar System given in kilometers, as well as its velocity in kilometers
-per second::
+The result will be a 6-element NumPy array providing the object's
+position in the Solar System, given in kilometers along the axes of the
+ICRF (a more precise reference frame than J2000 but oriented in the same
+direction), as well as its velocity along those axes in kilometers per
+second::
 
     (x, y, z, xrate, yrate, zrate)
+
+The string that you provide to `e.compute()`, like `mars` in the example
+above, actually names the data file that you want loaded and used from
+the ephemeris package.  To see the full list of data files that an
+ephemeris provides, you can simply list the files in its directory.
+Most of the ephemerides provide thirteen data sets::
+
+    earthmoon   mercury    pluto   venus
+    jupiter     moon       saturn
+    librations  neptune    sun
+    mars        nutations  uranus
 
 The ephemerides currently available as Python packages (the following
 links explain the differences between them) are:
