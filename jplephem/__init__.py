@@ -26,11 +26,11 @@ second::
 
     (x, y, z, xrate, yrate, zrate)
 
-The string that you provide to `e.compute()`, like `mars` in the example
-above, actually names the data file that you want loaded and used from
-the ephemeris package.  To see the full list of data files that an
-ephemeris provides, you can simply list the files in its directory.
-Most of the ephemerides provide thirteen data sets::
+The string that you provide to ``e.compute()``, like ``mars`` in the
+example above, actually names the data file that you want loaded and
+used from the ephemeris package.  To see the full list of data files
+that an ephemeris provides, you can simply list the files in its
+directory.  Most of the ephemerides provide thirteen data sets::
 
     earthmoon   mercury    pluto   venus
     jupiter     moon       saturn
