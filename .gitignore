@@ -1,5 +1,5 @@
 MANIFEST
-de*/constants.npy
-de*/jpl-*.npy
+de*/de*/constants.npy
+de*/de*/jpl-*.npy
 dist/
 ssd.jpl.nasa.gov/

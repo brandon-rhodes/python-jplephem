@@ -22,7 +22,7 @@ The result will be a 6-element NumPy array providing the object's
 position in the Solar System, given in kilometers along the axes of the
 ICRF (a more precise reference frame than J2000 but oriented in the same
 direction), as well as its velocity along those axes in kilometers per
-second::
+day::
 
     (x, y, z, xrate, yrate, zrate)
 
