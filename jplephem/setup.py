@@ -3,6 +3,10 @@ from distutils.core import setup
 versions = {'jplephem': '0.1', 'de405': '1997', 'de406': '1997',
             'de421': '2008', 'de422': '2009', 'de423': '2010'}
 
+# Fake the presence of numpy so __import__() always succeeds.
+import sys
+sys.modules['numpy'] = sys.modules['sys']
+
 name = 'jplephem'
 module = __import__(name)
 description, long_description = module.__doc__.split('\n', 1)
@@ -29,4 +33,5 @@ setup(name = name,
         ],
       packages = [name],
       package_data = {name: ['*.npy',]},
+      install_requires = ['numpy'],
       )
