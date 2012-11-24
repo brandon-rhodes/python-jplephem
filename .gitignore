@@ -1,5 +1,5 @@
-MANIFEST
-de*/de*/constants.npy
-de*/de*/jpl-*.npy
-dist/
+/de*/de*/constants.npy
+/de*/de*/jpl-*.npy
+/jplephem/.tox/
+/jplephem/MANIFEST
 ssd.jpl.nasa.gov/
