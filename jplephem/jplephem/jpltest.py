@@ -1,8 +1,8 @@
-"""Test harness for checking jplephem against actual JPL computations.
+"""Test harness for checking ``jplephem`` against actual JPL results.
 
 This test can be invoked with a simple::
 
-    python -m jplephem.test
+    python -m jplephem.jpltest
 
 """
 import numpy as np
@@ -42,6 +42,8 @@ def testpo(ephemeris, testpo_path):
             print('    ERROR: difference = %s' % (delta,))
 
         successes += 1
+        break
+
     print('  %d tests successful' % successes)
 
 
@@ -99,6 +101,7 @@ if __name__ == '__main__':
     try:
         test_all()
     except IOError as e:
+        print >>sys.stderr, str(e)
         print >>sys.stderr, """
 Cannot find the JPL "testpo" files against which this test suite
 validates that the positions it generates are correct. To fetch them,
