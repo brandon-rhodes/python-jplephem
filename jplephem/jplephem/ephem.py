@@ -7,6 +7,9 @@ class Ephemeris(object):
 
     def __init__(self, module):
         self.dirpath = os.path.dirname(module.__file__)
+        self.names = [ name.split('-')[-1].split('.')[0]
+                       for name in os.listdir(self.dirpath)
+                       if name.endswith('.npy') ]
         path = self.path('constants.npy')
         self.__dict__.update((k.decode('ascii'), v) for k, v in np.load(path))
         self.earth_share = 1.0 / (1.0 + self.EMRAT)
@@ -17,19 +20,23 @@ class Ephemeris(object):
         """Compute the path to a particular file in the ephemeris."""
         return os.path.join(self.dirpath, filename)
 
-    def load_set(self, item):
-        """Load the polynomial series for object `n`."""
-        s = self.sets.get(item)
+    def load_set(self, name):
+        """Load the polynomial series for `name`."""
+        s = self.sets.get(name)
         if s is None:
-            self.sets[item] = s = np.load(self.path('jpl-%s.npy' % item))
+            self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
         return s
 
-    def compute(self, item, jed):
-        """Given int `item` 1-13 compute its polynomials for date `jed`."""
+    def compute(self, name, jed):
+        """Compute the position and velocity of `name` on date `jed`.
 
+        Run the `names()` method on a given ephemeris to learn the
+        values that it will accept for the `name` parameter.
+
+        """
         # Load the polynomial sets for this item.
 
-        sets = self.load_set(item)
+        sets = self.load_set(name)
 
         # How many days are covered by each polynomial set?
 
