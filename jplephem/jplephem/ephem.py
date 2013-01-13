@@ -46,9 +46,18 @@ class Ephemeris(object):
         # falls, and determine the offset of `jed` into that date range.
 
         index, toffset = divmod(jed - self.jalpha, interval)
-        if index == sets.shape[0]:
-            index -= 1
-            toffset += interval
+
+        # TODO: restore the ability to ask about the last date in the ephemeris
+        # print index, toffset
+        # at_end = index >= sets.shape[0]
+        # index[at_end] -= 1
+        # toffset[at_end] += interval
+        # print index, toffset
+        # if index == sets.shape[0]:
+        #     index -= 1
+        #     toffset += interval
+        if hasattr(jed, 'shape'):
+            index = index.astype(int)
         coefficients = sets[index]
 
         # We make two passes for this set of Chebyshev coefficients,
@@ -57,8 +66,9 @@ class Ephemeris(object):
         # the polynomical coefficients provided by JPL.
 
         length = sets.shape[2]
-        pc = np.zeros(length)  # "p" = position
-        vc = np.zeros(length)  # "v" = velocity
+        # print length
+        pc = [0.0] * length  # position
+        vc = [0.0] * length  # velocity
 
         pc[0] = 1.0
         pc[1] = t1 = 2.0 * toffset / interval - 1.0
@@ -71,7 +81,40 @@ class Ephemeris(object):
         for i in range(3, length):
             vc[i] = twot1 * vc[i-1] + pc[i-1] + pc[i-1] - vc[i-2]
 
-        position = np.sum(coefficients * pc, axis=1)
-        velocity = np.sum(coefficients * vc, axis=1) * (2.0 / interval)
+        # print 'pc:', pc
+        # print 'coeff:', coefficients
 
-        return np.concatenate((position, velocity))
+        # Generate return values of the same dimension as jed.
+
+        x = jed * 0.0
+        y = jed * 0.0
+        z = jed * 0.0
+        dx = jed * 0.0
+        dy = jed * 0.0
+        dz = jed * 0.0
+
+        for i in range(length):
+            # print 'x:', x
+            # print 'pc[i]:', pc[i]
+            # print 'coefficients[0, i]:', coefficients[0, i]
+            if hasattr(jed, 'shape'):
+                x += pc[i] * coefficients[:, 0, i]
+                y += pc[i] * coefficients[:, 1, i]
+                z += pc[i] * coefficients[:, 2, i]
+                dx += vc[i] * coefficients[:, 0, i]
+                dy += vc[i] * coefficients[:, 1, i]
+                dz += vc[i] * coefficients[:, 2, i]
+            else:
+                x += pc[i] * coefficients[0, i]
+                y += pc[i] * coefficients[1, i]
+                z += pc[i] * coefficients[2, i]
+                dx += vc[i] * coefficients[0, i]
+                dy += vc[i] * coefficients[1, i]
+                dz += vc[i] * coefficients[2, i]
+
+        dd = (2.0 / interval)
+        dx *= dd
+        dy *= dd
+        dz *= dd
+
+        return x, y, z, dx, dy, dz
