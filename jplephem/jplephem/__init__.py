@@ -47,4 +47,4 @@ links explain the differences between them) are:
 * `DE423 <http://pypi.python.org/pypi/de423>`_ (February 2010)
 
 """
-from .ephem import Ephemeris
+from .ephem import Ephemeris, DateError

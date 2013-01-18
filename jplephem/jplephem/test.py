@@ -10,7 +10,7 @@ smaller and more feature-oriented suite can be run with::
 """
 import numpy as np
 from functools import partial
-from jplephem import Ephemeris
+from jplephem import Ephemeris, DateError
 from unittest import TestCase
 
 class Tests(TestCase):
@@ -50,20 +50,20 @@ class Tests(TestCase):
         self.check0(*v[:,0])
         self.check1(*v[:,1])
 
+    def test_ephemeris_end_date(self):
+        import de421
+        e = Ephemeris(de421)
+        x, y, z = e.compute('earthmoon', e.jomega)
+        self.assertAlmostEqual(x, -2.81196460e+07, delta=1.0)
+        self.assertAlmostEqual(y, 1.32000379e+08, delta=1.0)
+        self.assertAlmostEqual(z, 5.72139011e+07, delta=1.0)
+
     def test_too_early_date(self):
         import de421
         e = Ephemeris(de421)
-        self.assertRaises(IndexError, e.compute, 'earthmoon', e.jalpha - 0.01)
+        self.assertRaises(DateError, e.compute, 'earthmoon', e.jalpha - 0.01)
 
     def test_too_late_date(self):
         import de421
         e = Ephemeris(de421)
-        self.assertRaises(IndexError, e.compute, 'earthmoon', e.jomega + 0.01)
-
-    def test_scalar_at_ephemeris_end(self):
-        # TODO
-        pass
-
-    def test_array_at_ephemeris_end(self):
-        # TODO
-        pass
+        self.assertRaises(DateError, e.compute, 'earthmoon', e.jomega + 0.01)

@@ -2,6 +2,10 @@ import os
 import numpy as np
 
 
+class DateError(Exception):
+    """Date input is outside the range covered by the ephemeris."""
+
+
 class Ephemeris(object):
     """Load and make computations with a JPL planetary ephemeris."""
 
@@ -38,8 +42,8 @@ class Ephemeris(object):
 
         """
         if (tdb < self.jalpha).any() or (self.jomega < tdb).any():
-            raise IndexError('ephemeris %s only covers dates %.1f through %.1f'
-                             % (self.name, self.jalpha, self.jomega))
+            raise DateError('ephemeris %s only covers dates %.1f through %.1f'
+                            % (self.name, self.jalpha, self.jomega))
 
         input_was_scalar = getattr(tdb, 'shape', ()) == ()
         if input_was_scalar:
@@ -51,6 +55,11 @@ class Ephemeris(object):
         days_per_set = (self.jomega - self.jalpha) / number_of_sets
         index, offset = divmod(tdb - self.jalpha, days_per_set)
         index = index.astype(int)
+
+        omegas = (tdb == self.jomega)
+        index[omegas] -= 1
+        offset[omegas] += days_per_set
+
         coefficients = np.rollaxis(coefficient_sets[index], 1)
 
         # Chebyshev recurrence:
