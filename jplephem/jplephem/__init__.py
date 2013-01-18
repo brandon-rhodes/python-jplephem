@@ -2,15 +2,16 @@
 
 This package uses a Jet Propulsion Laboratory ephemeris to predict the
 position and velocity of a planet, or the magnitude and rate-of-change
-of the Earth's nutation or the Moon's libration.  To take the smallest
-and most convenient ephemeris as an example, you can install this
-package alongside ephemeris DE421 with these commands::
+of the Earth's nutation or the Moon's libration.  Its only dependency is
+``NumPy``.  To take the smallest and most convenient ephemeris as an
+example, you can install this package alongside ephemeris DE421 with
+these commands::
 
     pip install jplephem
     pip install de421
 
-Loading the ephemeris and computing a position require one line of
-Python each, given a barycentric dynamical time Julian date::
+Loading DE421 and computing a position require one line of Python each,
+given a barycentric dynamical time expressed as a Julian date::
 
     import de421
     from jplephem import Ephemeris
@@ -26,18 +27,18 @@ call ``compute()`` instead::
 
     x, y, z, dx, dy, dz = eph.compute('mars', 2444391.5)
 
-Both of these methods can also accept a NumPy array of dates, which is
-the most efficient way of computing a series of positions or velocities.
-For example, the position of Mars at each midnight over an entire year
-can be computed with::
+Both of these methods will also accept a NumPy array, which is the most
+efficient way of computing a series of positions or velocities.  For
+example, the position of Mars at each midnight over an entire year can
+be computed with::
 
     import numpy as np
     t0 = 2444391.5
     t = np.arange(t0, t0 + 366.0, 1.0)
     x, y, z = eph.position('mars', 2444391.5)
 
-You will find that ``x``, ``y``, and ``z`` in this case are each NumPy
-arrays of the same length as your input ``t``.
+You will find that ``x``, ``y``, and ``z`` in this case are each a NumPy
+array of the same length as your input ``t``.
 
 The string that you provide to ``e.compute()``, like ``'mars'`` in the
 example above, actually names the data file that you want loaded from
