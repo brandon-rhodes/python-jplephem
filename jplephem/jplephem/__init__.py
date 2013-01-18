@@ -1,36 +1,49 @@
-"""Package supporting JPL planetary ephemeris computations.
+"""Use a JPL planetary ephemeris to predict planet positions.
 
-This package lets you consult a Jet Propulsion Laboratory ephemeris for
-the position and velocity of one of the planets, or the magnitude and
-rate-of-change of the Earth's nutation or the Moon's libration.  To
-determine the position of Mars using the DE421 ephemeris, for example,
-you would start by installing two packages::
+This package uses a Jet Propulsion Laboratory ephemeris to predict the
+position and velocity of a planet, or the magnitude and rate-of-change
+of the Earth's nutation or the Moon's libration.  To take the smallest
+and most convenient ephemeris as an example, you can install this
+package alongside ephemeris DE421 with these commands::
 
     pip install jplephem
     pip install de421
 
-Then you can compute positions using a script like this::
+Loading the ephemeris and computing a position require one line of
+Python each, given a barycentric dynamical time Julian date::
 
     import de421
     from jplephem import Ephemeris
 
     eph = Ephemeris(de421)
-    jd = 2444391.5  # 1980.06.01
-    print eph.compute('mars', jd)
+    x, y, z = eph.position('mars', 2444391.5)  # 1980.06.01
 
-The result will be a 6-element NumPy array providing the object's
-position in the Solar System, given in kilometers along the axes of the
-ICRF (a more precise reference frame than J2000 but oriented in the same
-direction), as well as its velocity along those axes in kilometers per
-day::
+The result of calling ``position()`` is a 3-element NumPy array giving
+the planet's position in the solar system in kilometers along the three
+axes of the ICRF (a more precise reference frame than J2000 but oriented
+in the same direction).  If you also want to know the planet's velocity,
+call ``compute()`` instead::
 
-    (x, y, z, xrate, yrate, zrate)
+    x, y, z, dx, dy, dz = eph.compute('mars', 2444391.5)
 
-The string that you provide to ``e.compute()``, like ``mars`` in the
-example above, actually names the data file that you want loaded and
-used from the ephemeris package.  To see the full list of data files
-that an ephemeris provides, you can simply list the files in its
-directory.  Most of the ephemerides provide thirteen data sets::
+Both of these methods can also accept a NumPy array of dates, which is
+the most efficient way of computing a series of positions or velocities.
+For example, the position of Mars at each midnight over an entire year
+can be computed with::
+
+    import numpy as np
+    t0 = 2444391.5
+    t = np.arange(t0, t0 + 366.0, 1.0)
+    x, y, z = eph.position('mars', 2444391.5)
+
+You will find that ``x``, ``y``, and ``z`` in this case are each NumPy
+arrays of the same length as your input ``t``.
+
+The string that you provide to ``e.compute()``, like ``'mars'`` in the
+example above, actually names the data file that you want loaded from
+the ephemeris package.  To see the list of data files that an ephemeris
+provides, call its ``names()`` method.  Most of the ephemerides provide
+thirteen data sets::
 
     earthmoon   mercury    pluto   venus
     jupiter     moon       saturn

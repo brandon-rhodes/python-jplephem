@@ -37,14 +37,14 @@ class Tests(TestCase):
         import de421
         e = Ephemeris(de421)
 
-        self.check0(*e.compute('earthmoon', 2414994.0, True))
-        self.check1(*e.compute('earthmoon', 2415112.5, True))
+        self.check0(*e.compute('earthmoon', 2414994.0))
+        self.check1(*e.compute('earthmoon', 2415112.5))
 
     def test_array_input(self):
         import de421
         e = Ephemeris(de421)
 
-        v = e.compute('earthmoon', np.array([2414994.0, 2415112.5]), True)
+        v = e.compute('earthmoon', np.array([2414994.0, 2415112.5]))
 
         v = np.array(v)
         self.check0(*v[:,0])
@@ -53,7 +53,7 @@ class Tests(TestCase):
     def test_ephemeris_end_date(self):
         import de421
         e = Ephemeris(de421)
-        x, y, z = e.compute('earthmoon', e.jomega)
+        x, y, z = e.position('earthmoon', e.jomega)
         self.assertAlmostEqual(x, -2.81196460e+07, delta=1.0)
         self.assertAlmostEqual(y, 1.32000379e+08, delta=1.0)
         self.assertAlmostEqual(z, 5.72139011e+07, delta=1.0)
@@ -66,4 +66,4 @@ class Tests(TestCase):
     def test_too_late_date(self):
         import de421
         e = Ephemeris(de421)
-        self.assertRaises(DateError, e.compute, 'earthmoon', e.jomega + 0.01)
+        self.assertRaises(DateError, e.compute, 'earthmoon', e.jomega + 16.01)

@@ -25,27 +25,44 @@ class Ephemeris(object):
         """Compute the path to a particular file in the ephemeris."""
         return os.path.join(self.dirpath, filename)
 
-    def load_set(self, name):
+    def load(self, name):
         """Load the polynomial series for `name`."""
         s = self.sets.get(name)
         if s is None:
             self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
         return s
 
-    def compute(self, name, tdb, differentiate=False):
-        """Compute the position and, optionally, velocity of `name` at `tdb`.
+    def position(self, name, tdb):
+        """Compute the position of `name` at time `tdb`.
 
-        The barycentric dynamical time `tdb` can be either a single
-        value, or a NumPy array of many moments for which you want the
-        computation run.  Run the `names()` method on a given ephemeris
-        to learn the values it will accept for the `name` parameter.
+        Run the `names()` method on this ephemeris to learn the values
+        it will accept for the `name` parameter, such as ``'mars'`` and
+        ``'earthmoon'``.  The barycentric dynamical time `tdb` can be
+        either a normal number or a NumPy array of times, in which case
+        each of the three return values ``(x, y, z)`` will be an array.
 
         """
+        return self._interpolate(name, tdb, False)
+
+    def compute(self, name, tdb):
+        """Compute the position and velocity of `name` at time `tdb`.
+
+        Run the `names()` method on this ephemeris to learn the values
+        it will accept for the `name` parameter, such as ``'mars'`` and
+        ``'earthmoon'``.  The barycentric dynamical time `tdb` can be
+        either a normal number or a NumPy array of times, in which case
+        each of the six return values ``(x, y, z, dx, dy, dz)`` will be
+        an array.
+
+        """
+        return self._interpolate(name, tdb, True)
+
+    def _interpolate(self, name, tdb, differentiate):
         input_was_scalar = getattr(tdb, 'shape', ()) == ()
         if input_was_scalar:
             tdb = np.array((tdb,))
 
-        coefficient_sets = self.load_set(name)
+        coefficient_sets = self.load(name)
         number_of_sets, axis_count, coefficient_count = coefficient_sets.shape
 
         jalpha, jomega = self.jalpha, self.jomega
@@ -54,8 +71,6 @@ class Ephemeris(object):
         index = index.astype(int)
 
         if (tdb < jalpha).any() or (jomega + days_per_set < tdb).any():
-            print tdb[tdb < jalpha]
-            print tdb[tdb > jomega]
             raise DateError('ephemeris %s only covers dates %.1f through %.1f'
                             % (self.name, jalpha, jomega))
 
