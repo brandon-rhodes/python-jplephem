@@ -37,86 +37,42 @@ class Ephemeris(object):
         parameter.
 
         """
-        # There are two main expenses involved in this computation.
-        #
-        # The first expense is fetching each coefficient set within
-        # whose period at least one `tdb` value lies.  The most naive
-        # implementation would do one lookup per `tdb`, either forcing
-        # the creation of one view per `tdb` if we use a simple index
-        # coefficients[n] while looping over `tdb`, or an actual data
-        # copy per `tdb` if we try fancy indexing with coefficients[(n0,
-        # n1, n2...)].  One lookup per `tdb` is, of course, inevitable
-        # if `tdb` values are spaced far enough apart that each of them
-        # falls under different coefficients; but since coefficients
-        # tend to cover a couple of weeks, a few adjacent values of
-        # `tdb` can often re-use the same coefficients (assuming an
-        # ordered array `tdb`; we do not attempt to optimize for
-        # unordered input).
-        #
-        # The second expense is computing the Chebyshev polynomial for
-        # each `jremainder` by which the corresponding `tdb` exceeds the
-        # start date for its polynomial.  Right now we do not attempt to
-        # optimize this, but in the future we might try to detect if
-        # successive runs of `tdb` fall at the same remainders, which
-        # happens when the difference between uniformly spaced `tdb`
-        # values is evenly divisible by the period covered by a
-        # polynomial.
-
-        coefficient_sets = self.load_set(name)
-        number_of_sets, axis_count, coefficient_count = coefficient_sets.shape
-        days_per_set = (self.jomega - self.jalpha) / number_of_sets
-
         input_was_scalar = not hasattr(tdb, 'shape')
         if input_was_scalar:
             tdb = np.array((tdb,))
+
+        coefficient_sets = self.load_set(name)
+        number_of_sets, axis_count, coefficient_count = coefficient_sets.shape
+
         date_count = len(tdb)
 
+        days_per_set = (self.jomega - self.jalpha) / number_of_sets
         index, offset = divmod(tdb - self.jalpha, days_per_set)
+        index = index.astype(int)
+        coefficients = np.rollaxis(coefficient_sets[index], 1)
 
-        unique_index, put_index = np.unique(index, return_inverse=True)
-        unique_offset, put_offset = np.unique(offset, return_inverse=True)
-
-        unique_index = unique_index.astype(int)
-        coefficients = [coefficient_sets[i] for i in unique_index]
-
-        T = np.empty((coefficient_count, unique_offset.size))
+        T = np.empty((coefficient_count, date_count))
         T[0] = 1.0
-        T[1] = t1 = 2.0 * unique_offset / days_per_set - 1.0
+        T[1] = t1 = 2.0 * offset / days_per_set - 1.0
         twot1 = t1 + t1
         for i in range(2, coefficient_count):
             T[i] = twot1 * T[i-1] - T[i-2]
 
-        p_arrays = [T[:,i] for i in range(T.shape[1])]
-
         if differentiate:
-            dT = np.zeros((coefficient_count, unique_offset.size))
+            dT = np.empty_like(T)
+            dT[0] = 0.0
             dT[1] = 1.0
             dT[2] = twot1 + twot1
             for i in range(3, coefficient_count):
                 dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
             dT *= 2.0 / days_per_set
 
-            v_arrays = [dT[:,i] for i in range(dT.shape[1])]
-
-            result = np.empty((axis_count * 2, date_count))
+        if differentiate:
+            result = np.empty((2 * axis_count, date_count))
+            result[:axis_count] = (T.T * coefficients).sum(axis=2)
+            result[axis_count:] = (dT.T * coefficients).sum(axis=2)
         else:
-            result = np.empty((axis_count, date_count))
-
-        scratch = np.empty((axis_count, coefficient_count))
-
-        for i in range(date_count):
-            i1 = put_index[i]
-            i2 = put_offset[i]
-
-            c = coefficients[i1]
-            scratch[:,:] = c
-            scratch *= p_arrays[i2]
-            result[:axis_count, i] = scratch.sum(axis=1)
-
-            if differentiate:
-                scratch[:,:] = c
-                scratch *= v_arrays[i2]
-                result[axis_count:,i] = scratch.sum(axis=1)
+            result = (T.T * coefficients).sum(axis=2)
 
         if input_was_scalar:
             return result[:,0]
