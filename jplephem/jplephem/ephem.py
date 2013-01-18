@@ -6,6 +6,7 @@ class Ephemeris(object):
     """Load and make computations with a JPL planetary ephemeris."""
 
     def __init__(self, module):
+        self.name = module.__name__.upper()
         self.dirpath = os.path.dirname(module.__file__)
         self.names = [ name.split('-')[-1].split('.')[0]
                        for name in os.listdir(self.dirpath)
@@ -37,8 +38,8 @@ class Ephemeris(object):
 
         """
         if (tdb < self.jalpha).any() or (self.jomega < tdb).any():
-            raise IndexError('ephemeris only supports dates from %.1f to %.1f'
-                             % (self.jalpha, self.jomega))
+            raise IndexError('ephemeris %s only covers dates %.1f through %.1f'
+                             % (self.name, self.jalpha, self.jomega))
 
         input_was_scalar = getattr(tdb, 'shape', ()) == ()
         if input_was_scalar:
