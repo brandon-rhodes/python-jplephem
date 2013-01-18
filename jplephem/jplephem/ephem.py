@@ -27,94 +27,98 @@ class Ephemeris(object):
             self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
         return s
 
-    def compute(self, name, jed):
-        """Compute the position and velocity of `name` on date `jed`.
+    def compute(self, name, tdb, differentiate=False):
+        """Compute the position and optionally velocity of `name` at `tdb`.
 
-        Run the `names()` method on a given ephemeris to learn the
-        values that it will accept for the `name` parameter.
+        The barycentric dynamical time `tdb` can be either a single
+        value, or an array of many moments for which you want the
+        computation run.  Run the `names()` method on a given ephemeris
+        to learn the values that it will accept for the `name`
+        parameter.
 
         """
-        # Load the polynomial sets for this item.
+        # There are two main expenses involved in this computation.
+        #
+        # The first expense is fetching each coefficient set within
+        # whose period at least one `tdb` value lies.  The most naive
+        # implementation would do one lookup per `tdb`, either forcing
+        # the creation of one view per `tdb` if we use a simple index
+        # coefficients[n] while looping over `tdb`, or an actual data
+        # copy per `tdb` if we try fancy indexing with coefficients[(n0,
+        # n1, n2...)].  One lookup per `tdb` is, of course, inevitable
+        # if `tdb` values are spaced far enough apart that each of them
+        # falls under different coefficients; but since coefficients
+        # tend to cover a couple of weeks, a few adjacent values of
+        # `tdb` can often re-use the same coefficients (assuming an
+        # ordered array `tdb`; we do not attempt to optimize for
+        # unordered input).
+        #
+        # The second expense is computing the Chebyshev polynomial for
+        # each `jremainder` by which the corresponding `tdb` exceeds the
+        # start date for its polynomial.  Right now we do not attempt to
+        # optimize this, but in the future we might try to detect if
+        # successive runs of `tdb` fall at the same remainders, which
+        # happens when the difference between uniformly spaced `tdb`
+        # values is evenly divisible by the period covered by a
+        # polynomial.
 
-        sets = self.load_set(name)
+        coefficient_sets = self.load_set(name)
+        number_of_sets, axis_count, coefficient_count = coefficient_sets.shape
+        days_per_set = (self.jomega - self.jalpha) / number_of_sets
 
-        # How many days are covered by each polynomial set?
+        input_was_scalar = not hasattr(tdb, 'shape')
+        if input_was_scalar:
+            tdb = np.array((tdb,))
+        date_count = len(tdb)
 
-        interval = (self.jomega - self.jalpha) / sets.shape[0]
+        index, offset = divmod(tdb - self.jalpha, days_per_set)
 
-        # Select the paritcular polynomial set in which the date `jed`
-        # falls, and determine the offset of `jed` into that date range.
+        unique_index, put_index = np.unique(index, return_inverse=True)
+        unique_offset, put_offset = np.unique(offset, return_inverse=True)
 
-        index, toffset = divmod(jed - self.jalpha, interval)
+        unique_index = unique_index.astype(int)
+        coefficients = [coefficient_sets[i] for i in unique_index]
 
-        # TODO: restore the ability to ask about the last date in the ephemeris
-        # print index, toffset
-        # at_end = index >= sets.shape[0]
-        # index[at_end] -= 1
-        # toffset[at_end] += interval
-        # print index, toffset
-        # if index == sets.shape[0]:
-        #     index -= 1
-        #     toffset += interval
-        if hasattr(jed, 'shape'):
-            index = index.astype(int)
-        coefficients = sets[index]
-
-        # We make two passes for this set of Chebyshev coefficients,
-        # first computing simple values, and then computing derivatives.
-        # Each time through we set up a list of `terms` then multiply by
-        # the polynomical coefficients provided by JPL.
-
-        length = sets.shape[2]
-        # print length
-        pc = [0.0] * length  # position
-        vc = [0.0] * length  # velocity
-
-        pc[0] = 1.0
-        pc[1] = t1 = 2.0 * toffset / interval - 1.0
+        T = np.empty((coefficient_count, unique_offset.size))
+        T[0] = 1.0
+        T[1] = t1 = 2.0 * unique_offset / days_per_set - 1.0
         twot1 = t1 + t1
-        for i in range(2, length):
-            pc[i] = twot1 * pc[i-1] - pc[i-2]
+        for i in range(2, coefficient_count):
+            T[i] = twot1 * T[i-1] - T[i-2]
 
-        vc[1] = 1.0
-        vc[2] = twot1 + twot1
-        for i in range(3, length):
-            vc[i] = twot1 * vc[i-1] + pc[i-1] + pc[i-1] - vc[i-2]
+        p_arrays = [T[:,i] for i in range(T.shape[1])]
 
-        # print 'pc:', pc
-        # print 'coeff:', coefficients
+        if differentiate:
+            dT = np.zeros((coefficient_count, unique_offset.size))
+            dT[1] = 1.0
+            dT[2] = twot1 + twot1
+            for i in range(3, coefficient_count):
+                dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
+            dT *= 2.0 / days_per_set
 
-        # Generate return values of the same dimension as jed.
+            v_arrays = [dT[:,i] for i in range(dT.shape[1])]
 
-        x = jed * 0.0
-        y = jed * 0.0
-        z = jed * 0.0
-        dx = jed * 0.0
-        dy = jed * 0.0
-        dz = jed * 0.0
+            result = np.empty((axis_count * 2, date_count))
+        else:
+            result = np.empty((axis_count, date_count))
 
-        for i in range(length):
-            # print 'x:', x
-            # print 'pc[i]:', pc[i]
-            # print 'coefficients[0, i]:', coefficients[0, i]
-            if hasattr(jed, 'shape'):
-                x += pc[i] * coefficients[:, 0, i]
-                y += pc[i] * coefficients[:, 1, i]
-                z += pc[i] * coefficients[:, 2, i]
-                dx += vc[i] * coefficients[:, 0, i]
-                dy += vc[i] * coefficients[:, 1, i]
-                dz += vc[i] * coefficients[:, 2, i]
-            else:
-                x += pc[i] * coefficients[0, i]
-                y += pc[i] * coefficients[1, i]
-                z += pc[i] * coefficients[2, i]
-                dx += vc[i] * coefficients[0, i]
-                dy += vc[i] * coefficients[1, i]
-                dz += vc[i] * coefficients[2, i]
+        scratch = np.empty((axis_count, coefficient_count))
 
-        dd = (2.0 / interval)
-        dx *= dd
-        dy *= dd
-        dz *= dd
+        for i in range(date_count):
+            i1 = put_index[i]
+            i2 = put_offset[i]
 
-        return x, y, z, dx, dy, dz
+            c = coefficients[i1]
+            scratch[:,:] = c
+            scratch *= p_arrays[i2]
+            result[:axis_count, i] = scratch.sum(axis=1)
+
+            if differentiate:
+                scratch[:,:] = c
+                scratch *= v_arrays[i2]
+                result[axis_count:,i] = scratch.sum(axis=1)
+
+        if input_was_scalar:
+            return result[:,0]
+        else:
+            return result

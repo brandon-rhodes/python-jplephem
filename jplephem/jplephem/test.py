@@ -33,18 +33,19 @@ class Tests(TestCase):
         eq(dy, -1.73625791e+06)
         eq(dz, -7.54793163e+05)
 
-    def test_scalar(self):
+    def test_scalar_input(self):
         import de405
         e = Ephemeris(de405)
 
-        self.check0(*e.compute('earthmoon', 2305447.5))
-        self.check1(*e.compute('earthmoon', 2305478.5))
+        self.check0(*e.compute('earthmoon', 2305447.5, True))
+        self.check1(*e.compute('earthmoon', 2305478.5, True))
 
-    def test_array(self):
+    def test_array_input(self):
         import de405
         e = Ephemeris(de405)
 
-        v = e.compute('earthmoon', np.array([2305447.5, 2305478.5]))
+        v = e.compute('earthmoon', np.array([2305447.5, 2305478.5]), True)
+
         v = np.array(v)
         self.check0(*v[:,0])
         self.check1(*v[:,1])
