@@ -7,6 +7,7 @@ This test can be invoked with a simple::
 """
 import numpy as np
 import sys
+from functools import partial
 from .ephem import Ephemeris
 
 def testpo(ephemeris, testpo_path):
@@ -42,7 +43,6 @@ def testpo(ephemeris, testpo_path):
             print('    ERROR: difference = %s' % (delta,))
 
         successes += 1
-        break
 
     print('  %d tests successful' % successes)
 
@@ -53,7 +53,7 @@ def _position(ephemeris, jed, target):
     if target == 12:
         return np.zeros(6)  # solar system barycenter is the origin
 
-    c = ephemeris.compute
+    c = partial(ephemeris.compute, differentiate=True)
 
     if target == 1:
         return c('mercury', jed)

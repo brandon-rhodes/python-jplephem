@@ -41,10 +41,6 @@ class Ephemeris(object):
         to learn the values it will accept for the `name` parameter.
 
         """
-        if (tdb < self.jalpha).any() or (self.jomega < tdb).any():
-            raise DateError('ephemeris %s only covers dates %.1f through %.1f'
-                            % (self.name, self.jalpha, self.jomega))
-
         input_was_scalar = getattr(tdb, 'shape', ()) == ()
         if input_was_scalar:
             tdb = np.array((tdb,))
@@ -52,11 +48,18 @@ class Ephemeris(object):
         coefficient_sets = self.load_set(name)
         number_of_sets, axis_count, coefficient_count = coefficient_sets.shape
 
-        days_per_set = (self.jomega - self.jalpha) / number_of_sets
-        index, offset = divmod(tdb - self.jalpha, days_per_set)
+        jalpha, jomega = self.jalpha, self.jomega
+        days_per_set = (jomega - jalpha) / number_of_sets
+        index, offset = divmod(tdb - jalpha, days_per_set)
         index = index.astype(int)
 
-        omegas = (tdb == self.jomega)
+        if (tdb < jalpha).any() or (jomega + days_per_set < tdb).any():
+            print tdb[tdb < jalpha]
+            print tdb[tdb > jomega]
+            raise DateError('ephemeris %s only covers dates %.1f through %.1f'
+                            % (self.name, jalpha, jomega))
+
+        omegas = (index == number_of_sets)
         index[omegas] -= 1
         offset[omegas] += days_per_set
 
