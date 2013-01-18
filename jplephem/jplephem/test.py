@@ -50,6 +50,16 @@ class Tests(TestCase):
         self.check0(*v[:,0])
         self.check1(*v[:,1])
 
+    def test_too_early_date(self):
+        import de405
+        e = Ephemeris(de405)
+        self.assertRaises(IndexError, e.compute, 'earthmoon', e.jalpha - 0.01)
+
+    def test_too_late_date(self):
+        import de405
+        e = Ephemeris(de405)
+        self.assertRaises(IndexError, e.compute, 'earthmoon', e.jomega + 0.01)
+
     def test_scalar_at_ephemeris_end(self):
         # TODO
         pass
