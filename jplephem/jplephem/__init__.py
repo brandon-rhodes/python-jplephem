@@ -27,6 +27,8 @@ call ``compute()`` instead::
 
     x, y, z, dx, dy, dz = eph.compute('mars', 2444391.5)
 
+Velocities are returned as kilometers per day.
+
 Both of these methods will also accept a NumPy array, which is the most
 efficient way of computing a series of positions or velocities.  For
 example, the position of Mars at each midnight over an entire year can
