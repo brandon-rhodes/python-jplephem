@@ -51,6 +51,12 @@ thirteen data sets::
     librations  neptune    sun
     mars        nutations  uranus
 
+Each ephemeris covers a specific range of dates, beyond which it cannot
+provide reliable predictions of each planet's position.  These limits
+are available as attributes of the ephemeris::
+
+    t0, t1 = eph.jalpha, eph.jomega
+
 The ephemerides currently available as Python packages (the following
 links explain the differences between them) are:
 
