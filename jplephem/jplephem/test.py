@@ -15,7 +15,8 @@ from unittest import TestCase
 
 class Tests(TestCase):
 
-    def check0(self, x, y, z, dx, dy, dz):
+    def check0(self, a):
+        x, y, z, dx, dy, dz = a
         eq = partial(self.assertAlmostEqual, delta=1.0)
         eq(x, 39705023.28)
         eq(y, 131195345.65)
@@ -24,7 +25,8 @@ class Tests(TestCase):
         eq(dy, 619970.11)
         eq(dz, 268928.26)
 
-    def check1(self, x, y, z, dx, dy, dz):
+    def check1(self, a):
+        x, y, z, dx, dy, dz = a
         eq = partial(self.assertAlmostEqual, delta=1.0)
         eq(x, -144692624.00)
         eq(y, -32707965.14)
@@ -37,8 +39,8 @@ class Tests(TestCase):
         import de421
         e = Ephemeris(de421)
 
-        self.check0(*e.compute('earthmoon', 2414994.0))
-        self.check1(*e.compute('earthmoon', 2415112.5))
+        self.check0(e.compute('earthmoon', 2414994.0))
+        self.check1(e.compute('earthmoon', 2415112.5))
 
     def test_array_input(self):
         import de421
@@ -47,8 +49,8 @@ class Tests(TestCase):
         v = e.compute('earthmoon', np.array([2414994.0, 2415112.5]))
 
         v = np.array(v)
-        self.check0(*v[:,0])
-        self.check1(*v[:,1])
+        self.check0(v[:,0])
+        self.check1(v[:,1])
 
     def test_ephemeris_end_date(self):
         import de421
