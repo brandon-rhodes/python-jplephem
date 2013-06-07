@@ -32,42 +32,74 @@ class Ephemeris(object):
             self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
         return s
 
-    def position(self, name, tdb):
-        """Compute the position of `name` at time `tdb`.
+    def position(self, name, tdb1, tdb2=0.):
+        """Compute the position of `name` at time `tdb1` [+`tdb2`]
 
         Run the `names()` method on this ephemeris to learn the values
-        it will accept for the `name` parameter, such as ``'mars'`` and
-        ``'earthmoon'``.  The barycentric dynamical time `tdb` can be
-        either a normal number or a NumPy array of times, in which case
-        each of the three return values ``(x, y, z)`` will be an array.
+        it will accept for the `name` parameter, such as ``'mars'``
+        and ``'earthmoon'``.  If ``'earthmoon'`` and ``'moon'`` are
+        both present, then ``'earth'`` will combine the two and give
+        the barycentric position of the Earth (note that ``'moon'`` is
+        always relative to the Earth).
 
+        The barycentric dynamical time `tdb1` can be either a normal number or
+        a NumPy array of times, in which case each of the three return values
+        ``(x, y, z)`` will be an array.
+
+        For extra precision, one can give a two-part
+        tdb; rounding errors are avoided if `tdb1` is an (half-)integer part
+        and `tdb2` a fraction.
         """
-        return self._interpolate(name, tdb, False)
+        if name == 'earth':
+            return self._interpolate_earth(tdb1, tdb2, False)
+        else:
+            return self._interpolate(name, tdb1, tdb2, False)
 
-    def compute(self, name, tdb):
-        """Compute the position and velocity of `name` at time `tdb`.
+    def compute(self, name, tdb1, tdb2=0.):
+        """Compute the position and velocity of `name` at time `tdb1` [+`tdb2]`
 
         Run the `names()` method on this ephemeris to learn the values
-        it will accept for the `name` parameter, such as ``'mars'`` and
-        ``'earthmoon'``.  The barycentric dynamical time `tdb` can be
-        either a normal number or a NumPy array of times, in which case
-        each of the six return values ``(x, y, z, dx, dy, dz)`` will be
-        an array.
+        it will accept for the `name` parameter, such as ``'mars'``
+        and ``'earthmoon'``.  If ``'earthmoon'`` and ``'moon'`` are
+        both present, then ``'earth'`` will combine the two and give
+        the barycentric position of the Earth (note that ``'moon'`` is
+        always relative to the Earth).
 
+        The barycentric dynamical time `tdb1` can be either a normal number or
+        a NumPy array of times, in which case each of the three return values
+        ``(x, y, z)`` will be an array.
+
+        For extra precision, one can give a two-part
+        tdb; rounding errors are avoided if `tdb1` is an (half-)integer part
+        and `tdb2` a fraction.
         """
-        return self._interpolate(name, tdb, True)
+        if name == 'earth':
+            return self._interpolate_earth(tdb1, tdb2, True)
+        else:
+            return self._interpolate(name, tdb1, tdb2, True)
 
-    def _interpolate(self, name, tdb, differentiate):
-        input_was_scalar = getattr(tdb, 'shape', ()) == ()
+    def _interpolate_earth(self, tdb1, tdb2, differentiate):
+        earthmoon_ssb = self._interpolate('earthmoon', tdb1, tdb2,
+                                          differentiate)
+        moon_earth = self._interpolate('moon', tdb1, tdb2, differentiate)
+        # earth relative to Moon-Earth barycentre
+        # earth_share=1/(1+EMRAT), EMRAT=Earth/Moon mass ratio
+        return -moon_earth*self.earth_share + earthmoon_ssb
+
+    def _interpolate(self, name, tdb1, tdb2, differentiate):
+        input_was_scalar = getattr(tdb1, 'shape', ()) == ()
         if input_was_scalar:
-            tdb = np.array((tdb,))
+            tdb1 = np.array((tdb1,))
+            tdb2 = np.array((tdb2,))
 
         coefficient_sets = self.load(name)
         number_of_sets, axis_count, coefficient_count = coefficient_sets.shape
 
         jalpha, jomega = self.jalpha, self.jomega
         days_per_set = (jomega - jalpha) / number_of_sets
-        index, offset = divmod(tdb - jalpha, days_per_set)
+        # to keep precision, first subtract, then add
+        index, offset = divmod((tdb1 - jalpha) + tdb2, days_per_set)
+        tdb = tdb1 + tdb2
         index = index.astype(int)
 
         if (tdb < jalpha).any() or (jomega + days_per_set < tdb).any():
