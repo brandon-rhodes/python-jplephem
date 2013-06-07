@@ -90,7 +90,7 @@ class Ephemeris(object):
         input_was_scalar = getattr(tdb1, 'shape', ()) == ()
         if input_was_scalar:
             tdb1 = np.array((tdb1,))
-            tdb2 = np.array((tdb2,))
+        # no need to deal with tdb2; numpy broadcast will add fine below.
 
         coefficient_sets = self.load(name)
         number_of_sets, axis_count, coefficient_count = coefficient_sets.shape
@@ -99,9 +99,9 @@ class Ephemeris(object):
         days_per_set = (jomega - jalpha) / number_of_sets
         # to keep precision, first subtract, then add
         index, offset = divmod((tdb1 - jalpha) + tdb2, days_per_set)
-        tdb = tdb1 + tdb2
         index = index.astype(int)
 
+        tdb = tdb1 + tdb2
         if (tdb < jalpha).any() or (jomega + days_per_set < tdb).any():
             raise DateError('ephemeris %s only covers dates %.1f through %.1f'
                             % (self.name, jalpha, jomega))
