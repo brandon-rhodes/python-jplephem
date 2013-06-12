@@ -26,6 +26,9 @@ def main():
         print '=' * 16, dirname
         if not os.path.isdir(dirname):
             os.mkdir(dirname)
+        dirname2 = os.path.join(dirname, dirname)
+        if not os.path.isdir(dirname2):
+            os.mkdir(dirname2)
         dirpath = os.path.join(topdir, dirname)
         filenames = os.listdir(dirpath)
         headername = [ n for n in filenames if n.startswith('header') ][0]
@@ -166,9 +169,31 @@ def main():
                 continue
 
             print 'polynomials', planet + 1, a.shape
-            np.save(os.path.join(dirname, ('jpl-%s' % polynames[planet])), a)
+            np.save(os.path.join(dirname2, ('jpl-%s' % polynames[planet])), a)
 
-        np.save(os.path.join(dirname, 'constants'), constants)
+        np.save(os.path.join(dirname2, 'constants'), constants)
+
+        setuppath = os.path.join(dirname, 'setup.py')
+        initpath = os.path.join(dirname2, '__init__.py')
+
+        if not os.path.exists(setuppath):
+            with open(setuppath, 'w') as f:
+                f.write(SETUP_TEMPLATE % dirname)
+
+        if not os.path.exists(initpath):
+            with open(initpath, 'w') as f:
+                pass
+
+SETUP_TEMPLATE = """\
+from distutils.core import setup
+name = %r
+setup(name=name,
+    version='1.0',
+    description='Ephemeris %%s for use with jplephem' %% name,
+    packages=[name],
+    package_data={name: ['*.npy',]},
+    )
+"""
 
 if __name__ == '__main__':
     main()
