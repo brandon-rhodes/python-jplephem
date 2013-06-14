@@ -33,34 +33,36 @@ class Ephemeris(object):
         return s
 
     def position(self, name, tdb, tdb2=0.):
-        """Compute the position of `name` at time `tdb` [+`tdb2`].
+        """Compute the position of `name` at time `tdb [+ tdb2]`.
 
         Run the `names()` method on this ephemeris to learn the values
         it will accept for the `name` parameter, such as ``'mars'`` and
         ``'earthmoon'``.
 
-        The barycentric dynamical time `tdb` can be either a normal number or
-        a NumPy array of times, in which case each of the three return values
-        ``(x, y, z)`` will be an array.
+        The barycentric dynamical time `tdb` can be either a normal
+        number or a NumPy array of times, in which case each of the
+        three return values ``(x, y, z)`` will be an array.  For extra
+        precision, the time can be split into two values; a popular
+        choice is to use `tdb` for the integer or half-integer date, and
+        `tdb2` to hold the remaining fraction.
 
-        For extra precision, one can give a two-part tdb; rounding errors are
-        avoided if `tdb` is an (half-)integer part and `tdb2` a fraction.
         """
         return self._interpolate(name, tdb, tdb2, False)
 
     def compute(self, name, tdb, tdb2=0.):
-        """Compute the position and velocity of `name` at time `tdb` [+`tdb2`].
+        """Compute the position and velocity of `name` at time `tdb [+ tdb2]`.
 
         Run the `names()` method on this ephemeris to learn the values
         it will accept for the `name` parameter, such as ``'mars'`` and
         ``'earthmoon'``.
 
-        The barycentric dynamical time `tdb` can be either a normal number or
-        a NumPy array of times, in which case each of the three return values
-        ``(x, y, z)`` will be an array.
+        The barycentric dynamical time `tdb` can be either a normal
+        number or a NumPy array of times, in which case each of the six
+        return values ``(x, y, z, xdot, ydot, zdot)`` will be an array.
+        For extra precision, the time can be split into two values; a
+        popular choice is to use `tdb` for the integer or half-integer
+        date, and `tdb2` to hold the remaining fraction.
 
-        For extra precision, one can give a two-part tdb; rounding errors are
-        avoided if `tdb` is an (half-)integer part and `tdb2` a fraction.
         """
         return self._interpolate(name, tdb, tdb2, True)
 
