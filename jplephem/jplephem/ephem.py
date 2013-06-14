@@ -32,42 +32,42 @@ class Ephemeris(object):
             self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
         return s
 
-    def position(self, name, tdb1, tdb2=0.):
-        """Compute the position of `name` at time `tdb1` [+`tdb2`].
+    def position(self, name, tdb, tdb2=0.):
+        """Compute the position of `name` at time `tdb` [+`tdb2`].
 
         Run the `names()` method on this ephemeris to learn the values
         it will accept for the `name` parameter, such as ``'mars'`` and
         ``'earthmoon'``.
 
-        The barycentric dynamical time `tdb1` can be either a normal number or
+        The barycentric dynamical time `tdb` can be either a normal number or
         a NumPy array of times, in which case each of the three return values
         ``(x, y, z)`` will be an array.
 
         For extra precision, one can give a two-part tdb; rounding errors are
-        avoided if `tdb1` is an (half-)integer part and `tdb2` a fraction.
+        avoided if `tdb` is an (half-)integer part and `tdb2` a fraction.
         """
-        return self._interpolate(name, tdb1, tdb2, False)
+        return self._interpolate(name, tdb, tdb2, False)
 
-    def compute(self, name, tdb1, tdb2=0.):
-        """Compute the position and velocity of `name` at time `tdb1` [+`tdb2`].
+    def compute(self, name, tdb, tdb2=0.):
+        """Compute the position and velocity of `name` at time `tdb` [+`tdb2`].
 
         Run the `names()` method on this ephemeris to learn the values
         it will accept for the `name` parameter, such as ``'mars'`` and
         ``'earthmoon'``.
 
-        The barycentric dynamical time `tdb1` can be either a normal number or
+        The barycentric dynamical time `tdb` can be either a normal number or
         a NumPy array of times, in which case each of the three return values
         ``(x, y, z)`` will be an array.
 
         For extra precision, one can give a two-part tdb; rounding errors are
-        avoided if `tdb1` is an (half-)integer part and `tdb2` a fraction.
+        avoided if `tdb` is an (half-)integer part and `tdb2` a fraction.
         """
-        return self._interpolate(name, tdb1, tdb2, True)
+        return self._interpolate(name, tdb, tdb2, True)
 
-    def _interpolate(self, name, tdb1, tdb2=0., differentiate=True):
-        input_was_scalar = getattr(tdb1, 'shape', ()) == ()
+    def _interpolate(self, name, tdb, tdb2=0., differentiate=True):
+        input_was_scalar = getattr(tdb, 'shape', ()) == ()
         if input_was_scalar:
-            tdb1 = np.array((tdb1,))
+            tdb = np.array((tdb,))
         # no need to deal with tdb2; numpy broadcast will add fine below.
 
         coefficient_sets = self.load(name)
@@ -76,10 +76,10 @@ class Ephemeris(object):
         jalpha, jomega = self.jalpha, self.jomega
         days_per_set = (jomega - jalpha) / number_of_sets
         # to keep precision, first subtract, then add
-        index, offset = divmod((tdb1 - jalpha) + tdb2, days_per_set)
+        index, offset = divmod((tdb - jalpha) + tdb2, days_per_set)
         index = index.astype(int)
 
-        tdb = tdb1 + tdb2
+        tdb = tdb + tdb2
         if (tdb < jalpha).any() or (jomega + days_per_set < tdb).any():
             raise DateError('ephemeris %s only covers dates %.1f through %.1f'
                             % (self.name, jalpha, jomega))

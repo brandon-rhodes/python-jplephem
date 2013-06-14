@@ -35,18 +35,71 @@ class Tests(TestCase):
         eq(dy, -2297419.36)
         eq(dz, -996628.74)
 
-    def test_scalar_input(self):
+    def test_scalar_tdb(self):
         import de421
         e = Ephemeris(de421)
 
         self.check0(e.compute('earthmoon', 2414994.0))
         self.check1(e.compute('earthmoon', 2415112.5))
 
-    def test_array_input(self):
+    def test_scalar_tdb2(self):
+        import de421
+        e = Ephemeris(de421)
+
+        self.check0(e.compute('earthmoon', 2414990.0, 4.0))
+        self.check1(e.compute('earthmoon', 2415110.0, 2.5))
+
+    def test_scalar_tdb_keyword(self):
+        import de421
+        e = Ephemeris(de421)
+
+        self.check0(e.compute('earthmoon', tdb=2414994.0))
+        self.check1(e.compute('earthmoon', tdb=2415112.5))
+
+    def test_scalar_tdb2_keyword(self):
+        import de421
+        e = Ephemeris(de421)
+
+        self.check0(e.compute('earthmoon', tdb=2414990.0, tdb2=4.0))
+        self.check1(e.compute('earthmoon', tdb=2415110.0, tdb2=2.5))
+
+    def test_array_tdb(self):
         import de421
         e = Ephemeris(de421)
 
         v = e.compute('earthmoon', np.array([2414994.0, 2415112.5]))
+
+        v = np.array(v)
+        self.check0(v[:,0])
+        self.check1(v[:,1])
+
+    def test_array_tdb_scalar_tdb2(self):
+        import de421
+        e = Ephemeris(de421)
+
+        v = e.compute('earthmoon', np.array([2414991.5, 2415110.0]), 2.5)
+
+        v = np.array(v)
+        self.check0(v[:,0])
+        self.check1(v[:,1])
+
+    def test_scalar_tdb_array_tdb2(self):
+        import de421
+        e = Ephemeris(de421)
+
+        d = 2415112.5 - 2414990.0
+        v = e.compute('earthmoon', 2414990.0, np.array([4.0, d]))
+
+        v = np.array(v)
+        self.check0(v[:,0])
+        self.check1(v[:,1])
+
+    def test_array_tdb_array_tdb2(self):
+        import de421
+        e = Ephemeris(de421)
+
+        v = e.compute('earthmoon', np.array([2414990.0, 2415110.0]),
+                      np.array([4.0, 2.5]))
 
         v = np.array(v)
         self.check0(v[:,0])
