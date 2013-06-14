@@ -32,45 +32,56 @@ class Ephemeris(object):
             self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
         return s
 
-    def position(self, name, tdb):
-        """Compute the position of `name` at time `tdb`.
+    def position(self, name, tdb, tdb2=0.):
+        """Compute the position of `name` at time `tdb [+ tdb2]`.
 
         Run the `names()` method on this ephemeris to learn the values
         it will accept for the `name` parameter, such as ``'mars'`` and
-        ``'earthmoon'``.  The barycentric dynamical time `tdb` can be
-        either a normal number or a NumPy array of times, in which case
-        each of the three return values ``(x, y, z)`` will be an array.
+        ``'earthmoon'``.
+
+        The barycentric dynamical time `tdb` can be either a normal
+        number or a NumPy array of times, in which case each of the
+        three return values ``(x, y, z)`` will be an array.  For extra
+        precision, the time can be split into two values; a popular
+        choice is to use `tdb` for the integer or half-integer date, and
+        `tdb2` to hold the remaining fraction.
 
         """
-        return self._interpolate(name, tdb, False)
+        return self._interpolate(name, tdb, tdb2, False)
 
-    def compute(self, name, tdb):
-        """Compute the position and velocity of `name` at time `tdb`.
+    def compute(self, name, tdb, tdb2=0.):
+        """Compute the position and velocity of `name` at time `tdb [+ tdb2]`.
 
         Run the `names()` method on this ephemeris to learn the values
         it will accept for the `name` parameter, such as ``'mars'`` and
-        ``'earthmoon'``.  The barycentric dynamical time `tdb` can be
-        either a normal number or a NumPy array of times, in which case
-        each of the six return values ``(x, y, z, dx, dy, dz)`` will be
-        an array.
+        ``'earthmoon'``.
+
+        The barycentric dynamical time `tdb` can be either a normal
+        number or a NumPy array of times, in which case each of the six
+        return values ``(x, y, z, xdot, ydot, zdot)`` will be an array.
+        For extra precision, the time can be split into two values; a
+        popular choice is to use `tdb` for the integer or half-integer
+        date, and `tdb2` to hold the remaining fraction.
 
         """
-        return self._interpolate(name, tdb, True)
+        return self._interpolate(name, tdb, tdb2, True)
 
-    def _interpolate(self, name, tdb, differentiate):
+    def _interpolate(self, name, tdb, tdb2=0., differentiate=True):
         input_was_scalar = getattr(tdb, 'shape', ()) == ()
         if input_was_scalar:
             tdb = np.array((tdb,))
+        # no need to deal with tdb2; numpy broadcast will add fine below.
 
         coefficient_sets = self.load(name)
         number_of_sets, axis_count, coefficient_count = coefficient_sets.shape
 
         jalpha, jomega = self.jalpha, self.jomega
         days_per_set = (jomega - jalpha) / number_of_sets
-        index, offset = divmod(tdb - jalpha, days_per_set)
+        # to keep precision, first subtract, then add
+        index, offset = divmod((tdb - jalpha) + tdb2, days_per_set)
         index = index.astype(int)
 
-        if (tdb < jalpha).any() or (jomega + days_per_set < tdb).any():
+        if (index < 0).any() or (number_of_sets < index).any():
             raise DateError('ephemeris %s only covers dates %.1f through %.1f'
                             % (self.name, jalpha, jomega))
 
@@ -82,7 +93,7 @@ class Ephemeris(object):
 
         # Chebyshev recurrence:
 
-        T = np.empty((coefficient_count, len(tdb)))
+        T = np.empty((coefficient_count, len(index)))
         T[0] = 1.0
         T[1] = t1 = 2.0 * offset / days_per_set - 1.0
         twot1 = t1 + t1
@@ -100,7 +111,7 @@ class Ephemeris(object):
                 dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
             dT *= 2.0 / days_per_set
 
-            result = np.empty((2 * axis_count, len(tdb)))
+            result = np.empty((2 * axis_count, len(index)))
             result[:axis_count] = (T.T * coefficients).sum(axis=2)
             result[axis_count:] = (dT.T * coefficients).sum(axis=2)
 
