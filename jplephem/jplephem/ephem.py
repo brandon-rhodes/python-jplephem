@@ -79,8 +79,7 @@ class Ephemeris(object):
         index, offset = divmod((tdb - jalpha) + tdb2, days_per_set)
         index = index.astype(int)
 
-        tdb = tdb + tdb2
-        if (tdb < jalpha).any() or (jomega + days_per_set < tdb).any():
+        if (index < 0).any() or (number_of_sets < index).any():
             raise DateError('ephemeris %s only covers dates %.1f through %.1f'
                             % (self.name, jalpha, jomega))
 
@@ -92,7 +91,7 @@ class Ephemeris(object):
 
         # Chebyshev recurrence:
 
-        T = np.empty((coefficient_count, len(tdb)))
+        T = np.empty((coefficient_count, len(index)))
         T[0] = 1.0
         T[1] = t1 = 2.0 * offset / days_per_set - 1.0
         twot1 = t1 + t1
@@ -110,7 +109,7 @@ class Ephemeris(object):
                 dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
             dT *= 2.0 / days_per_set
 
-            result = np.empty((2 * axis_count, len(tdb)))
+            result = np.empty((2 * axis_count, len(index)))
             result[:axis_count] = (T.T * coefficients).sum(axis=2)
             result[axis_count:] = (dT.T * coefficients).sum(axis=2)
 
