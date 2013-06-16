@@ -12,9 +12,11 @@ class Ephemeris(object):
     def __init__(self, module):
         self.name = module.__name__.upper()
         self.dirpath = os.path.dirname(module.__file__)
-        self.names = [ name.split('-')[-1].split('.')[0]
-                       for name in os.listdir(self.dirpath)
-                       if name.endswith('.npy') ]
+        self.names = tuple(sorted(
+            name.split('-')[-1].split('.')[0]
+            for name in os.listdir(self.dirpath)
+            if not name.startswith('constants') and name.endswith('.npy')
+            ))
         path = self.path('constants.npy')
         self.__dict__.update((k.decode('ascii'), v) for k, v in np.load(path))
         self.earth_share = 1.0 / (1.0 + self.EMRAT)

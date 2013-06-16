@@ -35,6 +35,15 @@ class Tests(TestCase):
         eq(dy, -2297419.36)
         eq(dz, -996628.74)
 
+    def test_names(self):
+        import de421
+        e = Ephemeris(de421)
+        self.assertEqual(e.names,  (
+            'earthmoon', 'jupiter', 'librations', 'mars', 'mercury',
+            'moon', 'neptune', 'nutations', 'pluto', 'saturn', 'sun',
+            'uranus', 'venus',
+            ))
+
     def test_scalar_tdb(self):
         import de421
         e = Ephemeris(de421)
