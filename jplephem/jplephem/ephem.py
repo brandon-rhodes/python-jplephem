@@ -7,7 +7,7 @@ class DateError(Exception):
 
 
 class Ephemeris(object):
-    """Load and make computations with a JPL planetary ephemeris."""
+    """A JPL planetary ephemeris that, given dates, computes positions."""
 
     def __init__(self, module):
         self.name = module.__name__.upper()
@@ -28,47 +28,94 @@ class Ephemeris(object):
         return os.path.join(self.dirpath, filename)
 
     def load(self, name):
-        """Load the polynomial series for `name`."""
+        """Load the polynomial series for `name` and return it."""
         s = self.sets.get(name)
         if s is None:
             self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
         return s
 
-    def position(self, name, tdb, tdb2=0.):
-        """Compute the position of `name` at time `tdb [+ tdb2]`.
+    def position(self, name, tdb, tdb2=0.0):
+        """Compute the position of `name` at time ``tdb [+ tdb2]``.
 
-        Run the `names()` method on this ephemeris to learn the values
-        it will accept for the `name` parameter, such as ``'mars'`` and
-        ``'earthmoon'``.
+        The position is returned as a NumPy array ``[x y z]``.
 
-        The barycentric dynamical time `tdb` can be either a normal
-        number or a NumPy array of times, in which case each of the
-        three return values ``(x, y, z)`` will be an array.  For extra
-        precision, the time can be split into two values; a popular
-        choice is to use `tdb` for the integer or half-integer date, and
-        `tdb2` to hold the remaining fraction.
+        The barycentric dynamical time `tdb` argument should be a float.
+        If there are many dates you want computed, then make `tdb` an
+        array, which is more efficient than calling this method multiple
+        times; the return value will be a two-dimensional array giving a
+        row of values for each coordinate.
 
-        """
-        return self._interpolate(name, tdb, tdb2, False)
-
-    def compute(self, name, tdb, tdb2=0.):
-        """Compute the position and velocity of `name` at time `tdb [+ tdb2]`.
-
-        Run the `names()` method on this ephemeris to learn the values
-        it will accept for the `name` parameter, such as ``'mars'`` and
-        ``'earthmoon'``.
-
-        The barycentric dynamical time `tdb` can be either a normal
-        number or a NumPy array of times, in which case each of the six
-        return values ``(x, y, z, xdot, ydot, zdot)`` will be an array.
-        For extra precision, the time can be split into two values; a
+        For extra precision, the time can be split into two floats; a
         popular choice is to use `tdb` for the integer or half-integer
         date, and `tdb2` to hold the remaining fraction.
 
-        """
-        return self._interpolate(name, tdb, tdb2, True)
+        Consult the `names` attribute of this ephemeris for the values
+        of `name` it supports, such as ``'mars'`` or ``'earthmoon'``.
 
-    def _interpolate(self, name, tdb, tdb2=0., differentiate=True):
+        """
+        bundle = self.compute_bundle(name, tdb, tdb2)
+        return self.position_from_bundle(bundle)
+
+    def position_and_velocity(self, name, tdb, tdb2=2.0):
+        """Compute the position and velocity of `name` at ``tdb [+ tdb2]``.
+
+        The position and velocity are returned in a 2-tuple::
+
+            ([x y z], [xdot ydot zdot])
+
+        The barycentric dynamical time `tdb` argument should be a float.
+        If there are many dates you want computed, then make `tdb` an
+        array, which is more efficient than calling this method multiple
+        times; the return values will be two-dimensional arrays giving a
+        row of values for each coordinate.
+
+        For extra precision, the time can be split into two floats; a
+        popular choice is to use `tdb` for the integer or half-integer
+        date, and `tdb2` to hold the remaining fraction.
+
+        Consult the `names` attribute of this ephemeris for the values
+        of `name` it supports, such as ``'mars'`` or ``'earthmoon'``.
+
+        """
+        bundle = self.compute_bundle(name, tdb, tdb2)
+        position = self.position_from_bundle(bundle)
+        velocity = self.velocity_from_bundle(bundle)
+        return position, velocity
+
+    def compute(self, name, tdb):
+        """Legacy routine that concatenates position and velocity vectors.
+
+        This routine is deprecated.  Use the methods `position()` and
+        `position_and_velocity()` instead.  This method follows the same
+        calling convention, but incurs extra copy operations in order to
+        return a single NumPy array::
+
+            [x y z xdot ydot zdot]
+
+        """
+        bundle = self.compute_bundle(name, tdb, 0.0)
+        position = self.position_from_bundle(bundle)
+        velocity = self.velocity_from_bundle(bundle)
+        return np.concatenate((position, velocity))
+
+    def compute_bundle(self, name, tdb, tdb2=0.0):
+        """Return a tuple of coefficients and parameters for `tdb`.
+
+        The return value is a tuple that bundles together the
+        coefficients and other Chebyshev intermediate values that are
+        needed for the computation of either the position or velocity.
+        The bundle can then be passed to either `position_from_bundle()`
+        or `velocity_from_bundle()` to finish the computation.  See the
+        package-level documentation for details; most users will simply
+        call `position()` or `position_and_velocity()` instead.
+
+        The barycentric dynamical time `tdb` argument should be a float.
+        If there are many dates you want computed, then make `tdb` an
+        array, which is more efficient than calling this method multiple
+        times; the return values will be two-dimensional arrays giving a
+        row of values for each coordinate.
+
+        """
         input_was_scalar = getattr(tdb, 'shape', ()) == ()
         if input_was_scalar:
             tdb = np.array((tdb,))
@@ -102,22 +149,30 @@ class Ephemeris(object):
         for i in range(2, coefficient_count):
             T[i] = twot1 * T[i-1] - T[i-2]
 
-        if not differentiate:
-            result = (T.T * coefficients).sum(axis=2)
-        else:
-            dT = np.empty_like(T)
-            dT[0] = 0.0
-            dT[1] = 1.0
-            dT[2] = twot1 + twot1
-            for i in range(3, coefficient_count):
-                dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
-            dT *= 2.0 / days_per_set
+        bundle = coefficients, days_per_set, T, twot1
+        return bundle
 
-            result = np.empty((2 * axis_count, len(index)))
-            result[:axis_count] = (T.T * coefficients).sum(axis=2)
-            result[axis_count:] = (dT.T * coefficients).sum(axis=2)
+    def position_from_bundle(self, bundle):
+        """Return position, given the `coefficient_bundle()` return value."""
 
-        if input_was_scalar:
-            return np.squeeze(result)
+        coefficients, days_per_set, T, twot1 = bundle
+        return (T.T * coefficients).sum(axis=2)
 
-        return result
+    def velocity_from_bundle(self, bundle):
+        """Return velocity, given the `coefficient_bundle()` return value."""
+
+        coefficients, days_per_set, T, twot1 = bundle
+        coefficient_count = coefficients.shape[2]
+
+        # Chebyshev derivative:
+
+        dT = np.empty_like(T)
+        dT[0] = 0.0
+        dT[1] = 1.0
+        dT[2] = twot1 + twot1
+        for i in range(3, coefficient_count):
+            dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
+        dT *= 2.0
+        dT /= days_per_set
+
+        return (dT.T * coefficients).sum(axis=2)
