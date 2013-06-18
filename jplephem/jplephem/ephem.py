@@ -112,8 +112,15 @@ class Ephemeris(object):
         The barycentric dynamical time `tdb` argument should be a float.
         If there are many dates you want computed, then make `tdb` an
         array, which is more efficient than calling this method multiple
-        times; the return values will be two-dimensional arrays giving a
-        row of values for each coordinate.
+        times; the return values will be arrays providing a value for
+        each time in `tdb`.
+
+        For extra precision, the time can be split into two floats; a
+        popular choice is to use `tdb` for the integer or half-integer
+        date, and `tdb2` to hold the remaining fraction.
+
+        Consult the `names` attribute of this ephemeris for the values
+        of `name` it supports, such as ``'mars'`` or ``'earthmoon'``.
 
         """
         input_was_scalar = getattr(tdb, 'shape', ()) == ()

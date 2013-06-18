@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 """Use a JPL planetary ephemeris to predict planet positions.
 
 This package uses a Jet Propulsion Laboratory ephemeris to predict the
@@ -23,9 +25,11 @@ The result of calling ``position()`` is a 3-element NumPy array giving
 the planet's position in the solar system in kilometers along the three
 axes of the ICRF (a more precise reference frame than J2000 but oriented
 in the same direction).  If you also want to know the planet's velocity,
-call ``compute()`` instead::
+call ``position_and_velocity()`` instead::
 
-    x, y, z, dx, dy, dz = eph.compute('mars', 2444391.5)
+    position, velocity = eph.position_and_velocity('mars', 2444391.5)
+    x, y, z = position            # a NumPy array
+    xdot, ydot, zdot = velocity   # another array
 
 Velocities are returned as kilometers per day.
 
@@ -45,8 +49,8 @@ array of the same length as your input ``t``.
 The string that you provide to ``e.compute()``, like ``'mars'`` in the
 example above, actually names the data file that you want loaded from
 the ephemeris package.  To see the list of data files that an ephemeris
-provides, call its ``names()`` method.  Most of the ephemerides provide
-thirteen data sets::
+provides, consult its ``names`` attribute.  Most of the JPL ephemerides
+provide thirteen data sets::
 
     earthmoon   mercury    pluto   venus
     jupiter     moon       saturn
@@ -68,5 +72,77 @@ links explain the differences between them) are:
 * `DE422 <http://pypi.python.org/pypi/de422>`_ (September 2009)
 * `DE423 <http://pypi.python.org/pypi/de423>`_ (February 2010)
 
+High-Precision Dates
+--------------------
+
+Since all modern Julian dates are numbers larger than 2.4 million, a
+standard 64-bit Python or NumPy float necessarily leaves only a limited
+number of bits available for the fractional part.  An unpublished paper
+(“AA Technical Note 2011-02”) by the United States Naval Observatory's
+Astronomical Applications Department suggests that the `precision
+possible with a 64-bit floating point Julian date is around 20.1µs
+<http://ad.usno.navy.mil/edboard/110308.txt>`_.
+
+If you need to supply times and receive back planetary positions with
+greater precision than 20.1µs, then you have two options.
+
+First, you can supply times using the special `float96` NumPy type,
+which is also aliased to the name `longfloat`.  If you provide either a
+`float96` or a `float96` array as your `TB` parameter to any `jplephem`
+routine, you should get back a high-precision result.
+
+Second, you can split your date or dates into two pieces, and supply
+them as a pair of arguments `tdb` and `tdb2`; a popular approach is to
+use the `tdb` float for the integer Julian date, and use `tdb2` for the
+fraction that specifies the time of day.  All `jplephem` routines take
+an optional `tdb2` argument if you wish to provide it.
+
+Waiting To Compute Velocity
+---------------------------
+
+When a high-level astronomy library computes the distance between an
+observer and a solar system body, it typically measures the light travel
+delay to body and then uses a loop to take several steps backwards in
+time, because a human with a telescope will not see the planet as it is
+right now.  Instead, the planet will appear at the position it occupied
+when the light that is now reaching Earth left the planet's surface or
+clouds.
+
+To make such loops less computationally expensive — loops that only need
+to compute the planet position repeatedly, where computing the velocity
+can wait until the loop's conclusion — `jplephem` provides a way to
+split the `position_and_velocity()` call into two pieces.  This lets you
+examine the position *before* deciding whether to proceed with also
+with the expense of computing the velocity.
+
+The key is the special `compute_bundle()` method, with returns a tuple
+containing the coefficients and intermediate results that are needed by
+*both* the position and the velocity computations.  There is nothing
+wasted in calling `compute_bundle()` whether you are going to ask for
+the position, the velocity, or both as your next computing step!
+
+So your loop can look something like this::
+
+    bundle = eph.compute_bundle('mars', tdb)
+    position = eph.position_from_bundle(bundle)
+
+    while True:
+        # ...determine whether you are happy...
+        if you_are_happy:
+            break
+        # otherwise, adjust `tdb` and re-compute:
+        bundle = eph.compute_bundle('mars', tdb)
+        position = eph.position_from_bundle(bundle)
+
+    # Now we re-use the values in `bundle`, for free!
+    velocity = eph.velocity_from_bundle(bundle)
+
+This is especially important when the number of dates in `tdb` is large,
+since even NumPy vector operations over hundreds of thousands of values
+is going to take a noticeable amount of time, and every mass operation
+that is avoided will help shepherd your program toward completion.
+
 """
 from .ephem import Ephemeris, DateError
+
+__all__ = ['Ephemeris', 'DateError']
