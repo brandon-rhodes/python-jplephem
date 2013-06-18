@@ -92,10 +92,11 @@ which is also aliased to the name `longfloat`.  If you provide either a
 routine, you should get back a high-precision result.
 
 Second, you can split your date or dates into two pieces, and supply
-them as a pair of arguments `tdb` and `tdb2`; a popular approach is to
-use the `tdb` float for the integer Julian date, and use `tdb2` for the
-fraction that specifies the time of day.  All `jplephem` routines take
-an optional `tdb2` argument if you wish to provide it.
+them as a pair of arguments two `tdb` and `tdb2`; one popular approach
+for how to split your date is to use the `tdb` float for the integer
+Julian date, and `tdb2` for the fraction that specifies the time of day.
+Nearly all `jplephem` routines accept this optional `tdb2` argument if
+you wish to provide it, thanks to the work of Marten van Kerkwijk!
 
 Waiting To Compute Velocity
 ---------------------------
