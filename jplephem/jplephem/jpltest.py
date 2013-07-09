@@ -51,9 +51,9 @@ def _position(ephemeris, jed, target):
     """Compute position given a JPL test file target integer identifier."""
 
     if target == 12:
-        return np.zeros(6)  # solar system barycenter is the origin
+        return np.zeros((6, 1))  # solar system barycenter is the origin
 
-    c = partial(ephemeris.compute, differentiate=True)
+    c = partial(ephemeris.compute)
 
     if target == 1:
         return c('mercury', jed)
