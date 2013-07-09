@@ -72,6 +72,21 @@ links explain the differences between them) are:
 * `DE422 <http://pypi.python.org/pypi/de422>`_ (September 2009)
 * `DE423 <http://pypi.python.org/pypi/de423>`_ (February 2010)
 
+Earth and Moon
+--------------
+
+The raw ephemerides provide one position for the Earth-Moon barycenter,
+and another for the position of the Moon relative to the geocenter.  The
+JPL expects you to combine these values yourself if you want the Solar
+System location of the Earth or Moon, which gives you the chance to be
+more efficient by asking the ephemeris for each position only once::
+
+    barycenter = eph.position('earthmoon', j)
+    moonvector = eph.position('moon', j)
+
+    earth = barycenter - moonvector * eph.earth_share
+    moon = barycenter + moonvector * eph.moon_share
+
 High-Precision Dates
 --------------------
 
