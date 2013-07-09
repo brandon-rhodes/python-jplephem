@@ -155,8 +155,22 @@ So your loop can look something like this::
 
 This is especially important when the number of dates in `tdb` is large,
 since even NumPy vector operations over hundreds of thousands of values
-is going to take a noticeable amount of time, and every mass operation
+are going to take a noticeable amount of time, and every mass operation
 that is avoided will help shepherd your program toward completion.
+
+References
+----------
+
+The Jet Propulsion Laboratory's “Solar System Dynamics” page introduces
+the various options for doing solar system position computations:
+http://ssd.jpl.nasa.gov/?ephemerides
+
+The plain ASCII format element sets from which the `jplephem` Python
+ephemeris packages are built, along with documentation, can be found at:
+ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/
+
+Equivalent FORTRAN code for using the ephemerides be found at the same
+FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
 """
 from .ephem import Ephemeris, DateError
