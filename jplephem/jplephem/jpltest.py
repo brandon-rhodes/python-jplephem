@@ -100,7 +100,7 @@ def test_all():
         try:
             testpo_file = open(testpo_path)
         except IOError:
-            raise MissingTestpo('cannot open: %s' % fname)
+            raise MissingTestpo('cannot open: %s' % testpo_path)
         ephemeris = Ephemeris(module)
         print(name, 'AU = %s km' % (ephemeris.AU,))
         testpo(ephemeris, testpo_file)
