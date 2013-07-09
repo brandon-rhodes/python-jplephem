@@ -10,9 +10,9 @@ import sys
 from functools import partial
 from .ephem import Ephemeris
 
-def testpo(ephemeris, testpo_path):
+def testpo(ephemeris, testpo_file):
     """Compare the positions we calculate against those computed by the JPL."""
-    lines = iter(open(testpo_path))
+    lines = iter(testpo_file)
 
     while next(lines).strip() != 'EOT':
         continue
@@ -86,21 +86,30 @@ def _position(ephemeris, jed, target):
         return c('librations', jed)
 
 
+class MissingTestpo(Exception):
+    pass
+
+
 def test_all():
     for number in 405, 406, 422, 423:
         name = 'de%d' % number
         module = __import__(name)
-        fname = 'ssd.jpl.nasa.gov/pub/eph/planets/ascii/de%d/testpo.%d' % (
-            number, number)
+        testpo_path = (
+            'ssd.jpl.nasa.gov/pub/eph/planets/ascii/de%d/testpo.%d'
+            % (number, number))
+        try:
+            testpo_file = open(testpo_path)
+        except IOError:
+            raise MissingTestpo('cannot open: %s' % fname)
         ephemeris = Ephemeris(module)
         print(name, 'AU = %s km' % (ephemeris.AU,))
-        testpo(ephemeris, fname)
+        testpo(ephemeris, testpo_file)
 
 
 if __name__ == '__main__':
     try:
         test_all()
-    except IOError as e:
+    except MissingTestpo as e:
         print >>sys.stderr, str(e)
         print >>sys.stderr, """
 Cannot find the JPL "testpo" files against which this test suite
