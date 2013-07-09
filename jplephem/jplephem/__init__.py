@@ -158,6 +158,24 @@ since even NumPy vector operations over hundreds of thousands of values
 are going to take a noticeable amount of time, and every mass operation
 that is avoided will help shepherd your program toward completion.
 
+Changelog
+---------
+
+**2013 July 9 — Version 1.1**
+
+  * Deprecates the old `compute()` method in favor of separate
+    `position()` and `position_and_velocity()` methods.
+
+  * Supports computing position and velocity in two separate phases by
+    saving a “bundle” of coefficients returned by `compute_bundle()`.
+
+  * From Marten van Kerkwijk: a second `tdb2` time argument, for users
+    who want to build higher precision dates out of two 64-bit floats.
+
+**2013 January 18 — Version 1.0**
+
+  * Initial release
+
 References
 ----------
 
