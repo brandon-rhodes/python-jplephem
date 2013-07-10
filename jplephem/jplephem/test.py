@@ -107,9 +107,9 @@ class Tests(TestCase):
 
     def test_ephemeris_end_date(self):
         x, y, z = self.e.position('earthmoon', self.e.jomega)
-        self.assertAlmostEqual(x, -2.81196460e+07, delta=1.0)
-        self.assertAlmostEqual(y, 1.32000379e+08, delta=1.0)
-        self.assertAlmostEqual(z, 5.72139011e+07, delta=1.0)
+        self.assertAlmostEqual(x, -94189805.73967789, delta=1.0)
+        self.assertAlmostEqual(y, 1.05103857e+08, delta=1.0)
+        self.assertAlmostEqual(z, 45550861.44383482, delta=1.0)
 
     def test_too_early_date(self):
         tdb = self.e.jalpha - 0.01

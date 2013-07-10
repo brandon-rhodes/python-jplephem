@@ -8,7 +8,7 @@ import jplephem
 description, long_description = jplephem.__doc__.split('\n', 1)
 
 setup(name = 'jplephem',
-      version = '1.0',
+      version = '1.1',
       description = description,
       long_description = long_description,
       license = 'MIT',
@@ -21,7 +21,7 @@ setup(name = 'jplephem',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
         'Topic :: Scientific/Engineering :: Astronomy',
         ],
       packages = ['jplephem'],
