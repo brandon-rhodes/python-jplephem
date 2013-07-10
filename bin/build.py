@@ -107,9 +107,15 @@ def main():
 
         tdatasets.sort(key=itemgetter(0))
         for i in reversed(range(0, len(tdatasets) - 1)):
-            if (tdatasets[i][0] == tdatasets[i+1][0] and
-                tdatasets[i][1] == tdatasets[i+1][1] and
-                (tdatasets[i][2] == tdatasets[i+1][2]).all()):
+            if tdatasets[i][0:1] == tdatasets[i+1][0:1]:
+
+                difference = tdatasets[i+1][2] - tdatasets[i][2]
+                if difference.any():
+                    print('WARNING: duplicate block of coefficients for dates'
+                          ' %s - %s has some coefficients that differ by'
+                          % (tdatasets[i][0], tdatasets[i][1]))
+                    print(difference[difference != 0.0])
+
                 del tdatasets[i+1]
 
         # Verify that all time periods are equal, that the datasets in
