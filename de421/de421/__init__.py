@@ -1,7 +1,7 @@
 """JPL Planetary and Lunar Ephemeris DE421 for the jplephem package.
 
 This is a recent short-period ephemeris published by the Jet Propulsion
-Laboratory.  It requires only 14 MB of storage and is specially accurate
+Laboratory.  It requires only 27 MB of storage and is specially accurate
 with respect to the position of Earth's Moon.
 
 :Name: DE421 (February 2008)
@@ -11,7 +11,7 @@ with respect to the position of Earth's Moon.
 :Nutations: Yes
 :Librations: Yes
 :Report: `Folkner, Williams, Boggs (2009) [PDF] <http://tmo.jpl.nasa.gov/progress_report/42-178/178C.pdf>`_
-:Size: 14 MB
+:Size: 27 MB
 
 The JPL called this ephemeris is a "significant advance" over
 predecessors like `DE405 <http://pypi.python.org/pypi/de405>`_ / `DE406
