@@ -11,7 +11,7 @@ setup(name = name,
       license = 'MIT',
       author = 'Brandon Rhodes',
       author_email = 'brandon@rhodesmill.org',
-      url = 'http://jplephem.s3.amazonaws.com/packages.html',
+      download_url = 'http://jplephem.s3.amazonaws.com/de421-2008.tar.gz',
       classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
