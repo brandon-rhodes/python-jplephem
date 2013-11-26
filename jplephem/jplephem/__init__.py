@@ -166,23 +166,36 @@ large, since vector operations over thousands or millions of dates are
 going to take a noticeable amount of time, and every mass operation that
 can be avoided will help move your program toward completion.
 
+Reporting issues
+----------------
+
+You can report any issues, bugs, or problems at the GitHub repository:
+
+https://github.com/brandon-rhodes/python-jplephem/
+
 Changelog
 ---------
 
+**2013 November 26 — Version 1.2**
+
+* Helge Eichhorn fixed the default for the ``position_and_velocity()``
+  argument ``tdb2`` so it defaults to zero days instead of 2.0 days.
+  Tests were added to prevent any future regression.
+
 **2013 July 10 — Version 1.1**
 
-  * Deprecates the old ``compute()`` method in favor of separate
-    ``position()`` and ``position_and_velocity()`` methods.
+* Deprecates the old ``compute()`` method in favor of separate
+  ``position()`` and ``position_and_velocity()`` methods.
 
-  * Supports computing position and velocity in two separate phases by
-    saving a “bundle” of coefficients returned by ``compute_bundle()``.
+* Supports computing position and velocity in two separate phases by
+  saving a “bundle” of coefficients returned by ``compute_bundle()``.
 
-  * From Marten van Kerkwijk: a second ``tdb2`` time argument, for users
-    who want to build higher precision dates out of two 64-bit floats.
+* From Marten van Kerkwijk: a second ``tdb2`` time argument, for users
+  who want to build higher precision dates out of two 64-bit floats.
 
 **2013 January 18 — Version 1.0**
 
-  * Initial release
+* Initial release
 
 References
 ----------
