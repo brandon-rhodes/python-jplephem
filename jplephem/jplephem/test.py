@@ -69,9 +69,17 @@ class Tests(TestCase):
         self.check1(self.e.position('earthmoon', tdb=2415110.0, tdb2=2.5))
 
     def check_2d_result(self, name, tdb, tdb2):
+        p = self.e.position(name, tdb + tdb2)
+        self.check0(p[:,0])
+        self.check1(p[:,1])
+
         p = self.e.position(name, tdb, tdb2)
         self.check0(p[:,0])
         self.check1(p[:,1])
+
+        p, v = self.e.position_and_velocity(name, tdb + tdb2)
+        self.check0(p[:,0], v[:,0])
+        self.check1(p[:,1], v[:,1])
 
         p, v = self.e.position_and_velocity(name, tdb, tdb2)
         self.check0(p[:,0], v[:,0])
