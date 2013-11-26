@@ -56,7 +56,7 @@ class Ephemeris(object):
         bundle = self.compute_bundle(name, tdb, tdb2)
         return self.position_from_bundle(bundle)
 
-    def position_and_velocity(self, name, tdb, tdb2=2.0):
+    def position_and_velocity(self, name, tdb, tdb2=0.0):
         """Compute the position and velocity of `name` at ``tdb [+ tdb2]``.
 
         The position and velocity are returned in a 2-tuple::
