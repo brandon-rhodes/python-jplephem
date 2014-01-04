@@ -96,11 +96,12 @@ more efficient by asking the ephemeris for each position only once::
 High-Precision Dates
 --------------------
 
-Since Julian dates in the current century are larger than 2.4 million, a
-standard 64-bit float leaves only a limited number of bits available for
-the fraction that represents the time of day.  The precision possible
-with a 64-bit floating point Julian date is thus about 20.1 µs, `as
-detailed in a recent United States Naval Observatory technical note
+Since all modern Julian dates are numbers larger than 2.4 million, a
+standard 64-bit Python or NumPy float necessarily leaves only a limited
+number of bits available for the fractional part.  Technical Note
+2011-02 from the United States Naval Observatory's Astronomical
+Applications Department suggests that the `precision possible with a
+64-bit floating point Julian date is around 20.1 µs
 <http://jplephem.s3.amazonaws.com/JD_precision_test.pdf>`_.
 
 If you need to supply times and receive back planetary positions with
