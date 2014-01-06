@@ -5,13 +5,12 @@ module = __import__(name)
 description, long_description = module.__doc__.split('\n', 1)
 
 setup(name = name,
-      version = '2008',
+      version = '2008.1',
       description = description,
       long_description = long_description,
       license = 'MIT',
       author = 'Brandon Rhodes',
       author_email = 'brandon@rhodesmill.org',
-      download_url = 'http://jplephem.s3.amazonaws.com/de421-2008.tar.gz',
       classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
