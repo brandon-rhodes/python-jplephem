@@ -11,6 +11,7 @@ setup(name = name,
       license = 'MIT',
       author = 'Brandon Rhodes',
       author_email = 'brandon@rhodesmill.org',
+      url = 'https://github.com/brandon-rhodes/python-jplephem/',
       classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
