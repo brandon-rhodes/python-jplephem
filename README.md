@@ -8,6 +8,18 @@ download link on the Python Package Index:
 
 https://pypi.python.org/pypi/jplephem
 
+The five data packages that are available for use with it are:
+
+https://pypi.python.org/pypi/de405
+
+https://pypi.python.org/pypi/de406
+
+https://pypi.python.org/pypi/de421
+
+https://pypi.python.org/pypi/de422
+
+https://pypi.python.org/pypi/de423
+
 This repository is where the development version of `jplephem` is
 maintained.  You will find its source code beneath the `jplephem`
 directory, alongside its `setup.py` file.
