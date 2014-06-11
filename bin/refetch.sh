@@ -17,7 +17,7 @@ do
     name=$(echo $filename | sed 's/-.*//')
 
     wget -c $url
-    mkdir tmp
+    mkdir -p tmp
     cd tmp
     tar xvfz ../$filename
     mv */*/* ../$name/$name
