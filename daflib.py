@@ -5,13 +5,14 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 """
 import mmap
 import struct
-from pprint import pprint
 
 BFF = 'BIG-IEEE', 'LTL-IEEE', 'VAX-GFLT', 'VAX-DFLT'      # Binary file format
 FTPSTR = 'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
 RECORD_LENGTH = 1024
 
 class DAF(object):
+    """Access to NASA SPICE Double Precision Array Files (DAF)."""
+
     def __init__(self, open_file):
         self.map = mmap.mmap(open_file.fileno(), 0, access=mmap.ACCESS_READ)
         self.read_file_record()
@@ -25,12 +26,13 @@ class DAF(object):
         elif self.locfmt == b'LTL-IEEE':
             self.endian = '<'
         else:
-            raise ValueError('unrecognized format: {0!r}'.format(self.locfmt))
+            raise ValueError('unrecognized format {0!r}'.format(self.locfmt))
 
         (locidw, self.nd, self.ni, locifn, self.fward, self.bward,
          self.free) = struct.unpack(self.endian + '8sII60sIII', map[:88])
 
         self.ss = self.nd + (self.ni + 1) // 2
+
         self.summary_step = 8 * self.ss
         self.summary_format = self.endian + 'd' * self.nd + 'i' * self.ni
         self.summary_length = struct.calcsize(self.summary_format)
@@ -45,32 +47,46 @@ class DAF(object):
         if map[500:1000].strip(b'\0') != FTPSTR:
             raise ValueError('the file has been damaged')
 
-        n = self.fward - 1
-        i = RECORD_LENGTH * n
+    def record(self, n):
+        """Return record `n` as bytes, where the first record is record 1."""
+        start = RECORD_LENGTH * (n - 1)
+        return self.map[start:start + RECORD_LENGTH]
 
-        summary_record = map[i:i + RECORD_LENGTH]
-        name_record = map[i + RECORD_LENGTH:i + 2 * RECORD_LENGTH]
+    def summaries(self):
+        """Yield a (name, values) tuple for each summary in the file."""
 
-        next_summary, previous_summary, n_summaries = struct.unpack(
-            self.endian + 'ddd', summary_record[:24])
-
-        n_summaries = int(n_summaries)
-        print n_summaries
-
-        step = self.summary_step
+        record_number = self.fward
         length = self.summary_length
+        step = self.summary_step
 
-        for i in range(0, n_summaries * step, step):
-            print name_record[i:i+step],
-            j = 24 + i
-            print struct.unpack(self.summary_format, summary_record[j:j+length])
+        while record_number:
+            summary_record = self.record(record_number)
+            name_record = self.record(record_number + 1)
 
-        pprint(vars(self))
+            next_number, previous_number, n_summaries = struct.unpack(
+                self.endian + 'ddd', summary_record[:24])
 
+            for i in range(0, int(n_summaries) * step, step):
+                name = name_record[i:i+step].strip()
+                j = 24 + i
+                data = summary_record[j:j+length]
+                values = struct.unpack(self.summary_format, data)
+                yield name, values
+
+            record_number = int(next_number)
+
+    def __getslice__(self, start, stop):
+        format = self.endian + 'd' * (stop - start)
+        return struct.unpack(format, self.map[8 * start - 8:8 * stop - 8])
 
 def main():
     with open('jup310.tmp', 'rb') as f:
         daf = DAF(f)
+
+    for name, values in daf.summaries():
+        print name, values
+
+    print daf[897:907]
 
     # print repr(b[128:128+32])
     # print b.index('LTL-IEEE')
