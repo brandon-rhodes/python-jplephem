@@ -16,6 +16,7 @@ class DAF(object):
 
     def __init__(self, open_file):
         self.map = mmap.mmap(open_file.fileno(), 0, access=mmap.ACCESS_READ)
+        self.map = memoryview(self.map)
         self.read_file_record()
 
     def read_file_record(self):
@@ -45,7 +46,7 @@ class DAF(object):
             raise ValueError(
                 'the first bytes do not identify this as a DAF/SPK file')
 
-        if map[500:1000].strip(b'\0') != FTPSTR:
+        if bytes(map[500:1000]).strip(b'\0') != FTPSTR:
             raise ValueError('the file has been damaged')
 
     def record(self, n):
@@ -68,13 +69,16 @@ class DAF(object):
                 self.endian + 'ddd', summary_record[:24])
 
             for i in range(0, int(n_summaries) * step, step):
-                name = name_record[i:i+step].strip()
+                name = bytes(name_record[i:i+step]).strip()
                 j = 24 + i
                 data = summary_record[j:j+length]
                 values = struct.unpack(self.summary_format, data)
                 yield name, values
 
             record_number = int(next_number)
+
+    def bytes(self, start, stop):
+        return self.map[8 * start - 8 : 8 * stop - 8]
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -87,7 +91,7 @@ class DAF(object):
             8 * index - 8, 8 * index])
 
 def main():
-    with open('jup310.tmp', 'rb') as f:
+    with open('jup310.bsp', 'rb') as f:
         daf = DAF(f)
 
     for name, values in daf.summaries():
@@ -96,16 +100,32 @@ def main():
          data_type, start, end) = values
         break
 
-    print(daf[897:897 + 76])
     n = 7208500
     init, intlen, rsize, n = daf[n-3:n+1]
     rsize = int(rsize)
     n = int(n)
-    print(rsize)
-    print(rsize * n)
-    print(7208500 + 1 - 897 - 4)
+    # print(rsize)
+    # print(rsize * n)
+    # print(7208500 + 1 - 897 - 4)
     coefficient_count = (rsize - 2) / 6  # -2 for mid, radius
-    print(coefficient_count)
+    # print(coefficient_count)
+
+    mid = numpy.ndarray(
+        (8,),
+        daf.endian + 'd',
+        daf.bytes(start, end + 1),
+        strides=rsize * 8,
+    )
+    print(mid)
+
+    radius = numpy.ndarray(
+        (8,),
+        daf.endian + 'd',
+        daf.bytes(start, end + 1),
+        offset=8,
+        strides=rsize * 8,
+    )
+    print(radius)
 
     # print repr(b[128:128+32])
     # print b.index('LTL-IEEE')
