@@ -107,7 +107,7 @@ def main():
     # print(rsize)
     # print(rsize * n)
     # print(7208500 + 1 - 897 - 4)
-    coefficient_count = (rsize - 2) / 6  # -2 for mid, radius
+    coefficient_count = (rsize - 2) // 6  # -2 for mid, radius
     # print(coefficient_count)
 
     mid = numpy.ndarray(
@@ -127,6 +127,41 @@ def main():
     )
     print(radius)
 
+    radius = numpy.ndarray(
+        (8,),
+        daf.endian + 'd',
+        daf.bytes(start, end + 1),
+        offset=8,
+        strides=rsize * 8,
+    )
+    print(radius)
+
+    a = numpy.ndarray(
+        (n, rsize),
+        daf.endian + 'd',
+        daf.bytes(start, end + 1),
+    )
+    print('-------')
+    print(a[0])
+    print('-------')
+    # print(a[1])
+    b = a[:,0]
+    c = a[:,1]
+    d = a[:,2::coefficient_count]
+    e = a[:,3::coefficient_count]
+    f = a[:,2+coefficient_count-1::coefficient_count]
+    print(b)
+    print(c)
+    print(d[0])
+    print(e[0])
+    print(f[0])
+    #b = a.resize
+    g = a[:,2:]
+    g.shape = (n, 6, coefficient_count)
+    #h = g.reshape(
+    print('==========')
+    for i in range(0, coefficient_count):
+        print(g[0,:,i])
     # print repr(b[128:128+32])
     # print b.index('LTL-IEEE')
 
