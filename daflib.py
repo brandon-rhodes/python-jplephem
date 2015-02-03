@@ -4,6 +4,7 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 
 """
 import mmap
+import numpy
 import struct
 
 BFF = 'BIG-IEEE', 'LTL-IEEE', 'VAX-GFLT', 'VAX-DFLT'      # Binary file format
@@ -77,6 +78,7 @@ class DAF(object):
 
     def __getslice__(self, start, stop):
         format = self.endian + 'd' * (stop - start)
+        print(8 * start)
         return struct.unpack(format, self.map[8 * start - 8:8 * stop - 8])
 
 def main():
@@ -85,8 +87,20 @@ def main():
 
     for name, values in daf.summaries():
         print name, values
+        (initial_epoch, final_epoch, target_code, center_code, frame_code,
+         data_type, start, end) = values
+        break
 
-    print daf[897:907]
+    print daf[897:897 + 76]
+    n = 7208500
+    init, intlen, rsize, n = daf[n-3:n+1]
+    rsize = int(rsize)
+    n = int(n)
+    print rsize
+    print rsize * n
+    print 7208500 + 1 - 897 - 4
+    coefficient_count = (rsize - 2) / 6  # -2 for mid, radius
+    print coefficient_count
 
     # print repr(b[128:128+32])
     # print b.index('LTL-IEEE')
