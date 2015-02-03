@@ -7,8 +7,8 @@ import mmap
 import numpy
 import struct
 
-BFF = 'BIG-IEEE', 'LTL-IEEE', 'VAX-GFLT', 'VAX-DFLT'      # Binary file format
-FTPSTR = 'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
+BFF = b'BIG-IEEE', b'LTL-IEEE', b'VAX-GFLT', b'VAX-DFLT'   # Binary file format
+FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
 RECORD_LENGTH = 1024
 
 class DAF(object):
@@ -76,31 +76,36 @@ class DAF(object):
 
             record_number = int(next_number)
 
-    def __getslice__(self, start, stop):
-        format = self.endian + 'd' * (stop - start)
-        print(8 * start)
-        return struct.unpack(format, self.map[8 * start - 8:8 * stop - 8])
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            start = index.start
+            stop = index.stop
+            format = self.endian + 'd' * (stop - start)
+            print(8 * start)
+            return struct.unpack(format, self.map[8 * start - 8:8 * stop - 8])
+        return struct.unpack(self.endian + 'd', self.map[
+            8 * index - 8, 8 * index])
 
 def main():
     with open('jup310.tmp', 'rb') as f:
         daf = DAF(f)
 
     for name, values in daf.summaries():
-        print name, values
+        print(name, values)
         (initial_epoch, final_epoch, target_code, center_code, frame_code,
          data_type, start, end) = values
         break
 
-    print daf[897:897 + 76]
+    print(daf[897:897 + 76])
     n = 7208500
     init, intlen, rsize, n = daf[n-3:n+1]
     rsize = int(rsize)
     n = int(n)
-    print rsize
-    print rsize * n
-    print 7208500 + 1 - 897 - 4
+    print(rsize)
+    print(rsize * n)
+    print(7208500 + 1 - 897 - 4)
     coefficient_count = (rsize - 2) / 6  # -2 for mid, radius
-    print coefficient_count
+    print(coefficient_count)
 
     # print repr(b[128:128+32])
     # print b.index('LTL-IEEE')
