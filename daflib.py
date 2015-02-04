@@ -6,6 +6,7 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 import mmap
 import numpy
 import struct
+import sys
 
 BFF = b'BIG-IEEE', b'LTL-IEEE', b'VAX-GFLT', b'VAX-DFLT'   # Binary file format
 FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
@@ -16,7 +17,8 @@ class DAF(object):
 
     def __init__(self, open_file):
         self.map = mmap.mmap(open_file.fileno(), 0, access=mmap.ACCESS_READ)
-        self.map = memoryview(self.map)
+        if sys.version_info > (3,):
+            self.map = memoryview(self.map)
         self.read_file_record()
 
     def read_file_record(self):
