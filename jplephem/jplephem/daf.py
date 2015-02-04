@@ -1,21 +1,16 @@
-"""Interpret a binary DAF file.
+"""Interpret a Double Precision Array File (DAF).
 
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
-http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
 import mmap
-import numpy as np
 import struct
 import sys
 from collections import namedtuple
-from jplephem.ephem import Ephemeris
 
 BFF = b'BIG-IEEE', b'LTL-IEEE', b'VAX-GFLT', b'VAX-DFLT'   # Binary file format
 FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
 RECORD_LENGTH = 1024
-S_PER_DAY = 86400.0
-T0 = 2451545.0
 
 Summary = namedtuple('Summary', 'source start_second stop_second target'
                      ' center frame data_type start_index stop_index')
@@ -23,8 +18,9 @@ Summary = namedtuple('Summary', 'source start_second stop_second target'
 class DAF(object):
     """Access to NASA SPICE Double Precision Array Files (DAF)."""
 
-    def __init__(self, open_file):
-        self.map = mmap.mmap(open_file.fileno(), 0, access=mmap.ACCESS_READ)
+    def __init__(self, path):
+        with open(path, 'rb') as f:
+            self.map = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         if sys.version_info > (3,):
             self.map = memoryview(self.map)
         self.read_file_record()
@@ -100,49 +96,3 @@ class DAF(object):
             return struct.unpack(format, self.map[8 * start - 8:8 * stop])
         return struct.unpack(self.endian + 'd', self.map[
             8 * index - 8, 8 * index])
-
-
-class SPK(Ephemeris):
-    """A JPL SPK-format ephemeris that computes positions and velocities."""
-
-    def __init__(self, path):
-        self.daf = DAF(open(path))
-        self.sets = {}
-        self.summaries = {s.target: s for s in self.daf.summaries()}
-
-    def load(self, target):
-        s = self.sets.get(target)
-        if s is None:
-            summary = self.summaries[target]
-            if summary.data_type == 2:
-                component_count = 3
-            elif summary.data_type == 3:
-                component_count = 6
-            else:
-                raise ValueError('only SPK data types 2 and 3 are supported')
-            stop = summary.stop_index
-            init, intlen, rsize, n = self.daf[stop-3:stop]
-            coefficient_count = (rsize - 2) // component_count
-            print(summary)
-            # TODO: use intlen directly to create days_per_set
-            self.jalpha = T0 + init / S_PER_DAY
-            self.jomega = self.jalpha + intlen * n / S_PER_DAY
-            print('omega:', init + intlen * n)
-            print(init, intlen, rsize, n)
-            data = self.daf.bytes(summary.start_index, stop)
-            s = np.ndarray((n, rsize), self.daf.endian + 'd', data)
-            s = s[:,2:]
-            s.shape = (n, component_count, coefficient_count)
-        return s
-
-
-def main2():
-    T0 = 2451545.0
-    s = SPK('jup310.bsp')
-    p = s.position(3, T0)
-    print(p)
-    p = s.position(502, T0)
-    print(p)
-
-
-main2()
