@@ -5,7 +5,7 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
 import mmap
-import numpy
+import numpy as np
 import struct
 import sys
 from collections import namedtuple
@@ -14,6 +14,8 @@ from jplephem.ephem import Ephemeris
 BFF = b'BIG-IEEE', b'LTL-IEEE', b'VAX-GFLT', b'VAX-DFLT'   # Binary file format
 FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
 RECORD_LENGTH = 1024
+S_PER_DAY = 86400.0
+T0 = 2451545.0
 
 Summary = namedtuple('Summary', 'source start_second stop_second target'
                      ' center frame data_type start_index stop_index')
@@ -86,15 +88,16 @@ class DAF(object):
             record_number = int(next_number)
 
     def bytes(self, start, stop):
-        return self.map[8 * start - 8 : 8 * stop - 8]
+        """Return data from double-precision word start to stop, inclusive."""
+        return self.map[8 * start - 8 : 8 * stop]
 
     def __getitem__(self, index):
         if isinstance(index, slice):
             start = index.start
             stop = index.stop
-            format = self.endian + 'd' * (stop - start)
+            format = self.endian + 'd' * (1 + stop - start)
             print(8 * start)
-            return struct.unpack(format, self.map[8 * start - 8:8 * stop - 8])
+            return struct.unpack(format, self.map[8 * start - 8:8 * stop])
         return struct.unpack(self.endian + 'd', self.map[
             8 * index - 8, 8 * index])
 
@@ -111,22 +114,33 @@ class SPK(Ephemeris):
         s = self.sets.get(target)
         if s is None:
             summary = self.summaries[target]
-            self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
-            a = numpy.ndarray(
-                (n, rsize),
-                daf.endian + 'd',
-                daf.bytes(start, end + 1),
-                )
-            g = a[:,2:]
-            g.shape = (n, 6, coefficient_count)
+            if summary.data_type == 2:
+                component_count = 3
+            elif summary.data_type == 3:
+                component_count = 6
+            else:
+                raise ValueError('only SPK data types 2 and 3 are supported')
+            stop = summary.stop_index
+            init, intlen, rsize, n = self.daf[stop-3:stop]
+            coefficient_count = (rsize - 2) // component_count
+            print(summary)
+            self.jalpha = T0 + summary.start_second / S_PER_DAY
+            self.jomega = T0 + summary.stop_second / S_PER_DAY
+            print(init, intlen, rsize, n)
+            data = self.daf.bytes(summary.start_index, stop)
+            s = np.ndarray((n, rsize), self.daf.endian + 'd', data)
+            s = s[:,2:]
+            s.shape = (n, component_count, coefficient_count)
         return s
 
 
 def main2():
     T0 = 2451545.0
     s = SPK('jup310.bsp')
-    s.position(399, T0)
-
+    p = s.position(3, T0)
+    print(p)
+    # p = s.position(502, T0)
+    # print(p)
 
 def main():
     with open('jup310.bsp', 'rb') as f:
@@ -204,4 +218,4 @@ def main():
     # print b.index('LTL-IEEE')
 
 #main()
-#main2()
+main2()
