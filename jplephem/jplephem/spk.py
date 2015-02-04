@@ -3,9 +3,13 @@
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
-import numpy as np
+from collections import namedtuple
+from numpy import ndarray
 from .ephem import Ephemeris
 from .daf import DAF
+
+Summary = namedtuple('Summary', 'source start_second stop_second target'
+                     ' center frame data_type start_index stop_index')
 
 S_PER_DAY = 86400.0
 T0 = 2451545.0
@@ -16,7 +20,14 @@ class SPK(Ephemeris):
     def __init__(self, path):
         self.daf = DAF(path)
         self.sets = {}
-        self.summaries = {s.target: s for s in self.daf.summaries()}
+        g = self.daf.summaries()
+        g = (Summary(source, *values) for source, values in g)
+        self.summaries = {s.target: s for s in g}
+
+    def array(self, start, stop):
+        """Return the array of floats at words `start` to `stop`, inclusive."""
+        data = self.daf.bytes(start, stop)
+        return ndarray(stop - start + 1, self.daf.endian + 'd', data)
 
     def load(self, target):
         s = self.sets.get(target)
@@ -29,16 +40,15 @@ class SPK(Ephemeris):
             else:
                 raise ValueError('only SPK data types 2 and 3 are supported')
             stop = summary.stop_index
-            init, intlen, rsize, n = self.daf[stop-3:stop]
+            init, intlen, rsize, n = self.array(stop - 3, stop)
             coefficient_count = (rsize - 2) // component_count
-            print(summary)
             # TODO: use intlen directly to create days_per_set
             self.jalpha = T0 + init / S_PER_DAY
             self.jomega = self.jalpha + intlen * n / S_PER_DAY
             print('omega:', init + intlen * n)
             print(init, intlen, rsize, n)
-            data = self.daf.bytes(summary.start_index, stop)
-            s = np.ndarray((n, rsize), self.daf.endian + 'd', data)
+            s = self.array(summary.start_index, stop-4)
+            s.shape = (n, rsize)
             s = s[:,2:]
             s.shape = (n, component_count, coefficient_count)
         return s
