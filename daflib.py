@@ -1,16 +1,22 @@
 """Interpret a binary DAF file.
 
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
+http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
 import mmap
 import numpy
 import struct
 import sys
+from collections import namedtuple
+from jplephem.ephem import Ephemeris
 
 BFF = b'BIG-IEEE', b'LTL-IEEE', b'VAX-GFLT', b'VAX-DFLT'   # Binary file format
 FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
 RECORD_LENGTH = 1024
+
+Summary = namedtuple('Summary', 'source start_second stop_second target'
+                     ' center frame data_type start_index stop_index')
 
 class DAF(object):
     """Access to NASA SPICE Double Precision Array Files (DAF)."""
@@ -71,11 +77,11 @@ class DAF(object):
                 self.endian + 'ddd', summary_record[:24])
 
             for i in range(0, int(n_summaries) * step, step):
-                name = bytes(name_record[i:i+step]).strip()
+                source = bytes(name_record[i:i+step]).strip()
                 j = 24 + i
                 data = summary_record[j:j+length]
                 values = struct.unpack(self.summary_format, data)
-                yield name, values
+                yield Summary(source, *values)
 
             record_number = int(next_number)
 
@@ -91,6 +97,36 @@ class DAF(object):
             return struct.unpack(format, self.map[8 * start - 8:8 * stop - 8])
         return struct.unpack(self.endian + 'd', self.map[
             8 * index - 8, 8 * index])
+
+
+class SPK(Ephemeris):
+    """A JPL SPK-format ephemeris that computes positions and velocities."""
+
+    def __init__(self, path):
+        self.daf = DAF(open(path))
+        self.sets = {}
+        self.summaries = {s.target: s for s in self.daf.summaries()}
+
+    def load(self, target):
+        s = self.sets.get(target)
+        if s is None:
+            summary = self.summaries[target]
+            self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
+            a = numpy.ndarray(
+                (n, rsize),
+                daf.endian + 'd',
+                daf.bytes(start, end + 1),
+                )
+            g = a[:,2:]
+            g.shape = (n, 6, coefficient_count)
+        return s
+
+
+def main2():
+    T0 = 2451545.0
+    s = SPK('jup310.bsp')
+    s.position(399, T0)
+
 
 def main():
     with open('jup310.bsp', 'rb') as f:
@@ -167,4 +203,5 @@ def main():
     # print repr(b[128:128+32])
     # print b.index('LTL-IEEE')
 
-main()
+#main()
+#main2()
