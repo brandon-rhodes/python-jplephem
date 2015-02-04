@@ -124,8 +124,10 @@ class SPK(Ephemeris):
             init, intlen, rsize, n = self.daf[stop-3:stop]
             coefficient_count = (rsize - 2) // component_count
             print(summary)
-            self.jalpha = T0 + summary.start_second / S_PER_DAY
-            self.jomega = T0 + summary.stop_second / S_PER_DAY
+            # TODO: use intlen directly to create days_per_set
+            self.jalpha = T0 + init / S_PER_DAY
+            self.jomega = self.jalpha + intlen * n / S_PER_DAY
+            print('omega:', init + intlen * n)
             print(init, intlen, rsize, n)
             data = self.daf.bytes(summary.start_index, stop)
             s = np.ndarray((n, rsize), self.daf.endian + 'd', data)
@@ -139,8 +141,8 @@ def main2():
     s = SPK('jup310.bsp')
     p = s.position(3, T0)
     print(p)
-    # p = s.position(502, T0)
-    # print(p)
+    p = s.position(502, T0)
+    print(p)
 
 def main():
     with open('jup310.bsp', 'rb') as f:
