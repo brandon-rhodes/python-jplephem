@@ -53,6 +53,7 @@ class DAF(object):
         return self.map[stop - K:stop]
 
     def comments(self):
+        """Return the text inside the comment area of the file."""
         record_numbers = range(2, self.fward)
         if not record_numbers:
             return ''
