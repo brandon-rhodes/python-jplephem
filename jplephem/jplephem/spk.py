@@ -3,19 +3,16 @@
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
-from collections import namedtuple
-from numpy import array, empty, empty_like, ndarray, rollaxis
+from numpy import array, empty, empty_like, rollaxis
 from .daf import DAF
 
 T0 = 2451545.0
 S_PER_DAY = 86400.0
 
+
 def jd(seconds):
     """Convert a number of seconds since J2000 to a Julian Date."""
     return T0 + seconds / S_PER_DAY
-
-Segment = namedtuple('Segment', 'start_second end_second target center frame'
-                     ' data_type start_index end_index source start_jd end_jd')
 
 
 class SPK(object):
@@ -23,42 +20,44 @@ class SPK(object):
 
     def __init__(self, path):
         self.daf = DAF(path)
-        self.segments = [
-            Segment(*t, source=source, start_jd=jd(t[0]), end_jd=jd(t[1]))
-            for source, t in self.daf.summaries()
-            ]
+        self.segments = [Segment(self.daf, *t) for t in self.daf.summaries()]
         self.targets = dict((s.target, s) for s in self.segments)  # Python 2.6
-        self._coefficients = {}
 
     def comments(self):
         return self.daf.comments()
 
-    def array(self, start, end):
-        """Return the array of floats from `start` to `end` inclusive."""
-        data = self.daf.bytes(start, end)
-        return ndarray(end - start + 1, self.daf.endian + 'd', data)
 
-    def _load(self, segment):
-        if segment.data_type == 2:
+class Segment(object):
+
+    def __init__(self, daf, source, descriptor):
+        self.daf = daf
+        self.source = source
+        (self.start_second, self.end_second, self.target, self.center,
+         self.frame, self.data_type, self.start_i, self.end_i) = descriptor
+        self.start_jd = jd(self.start_second)
+        self.end_jd = jd(self.end_second)
+
+    def _load(self):
+        """Map the coefficients into memory using a NumPy array."""
+
+        if self.data_type == 2:
             component_count = 3
-        elif segment.data_type == 3:
+        elif self.data_type == 3:
             component_count = 6
         else:
             raise ValueError('only SPK data types 2 and 3 are supported')
-        end = segment.end_index
-        init, intlen, rsize, n = self.array(end - 3, end)
+
+        init, intlen, rsize, n = self.daf.array(self.end_i - 3, self.end_i)
         initial_epoch = jd(init)
         interval_length = intlen / S_PER_DAY
         coefficient_count = (rsize - 2) // component_count
-        coefficients = self.array(segment.start_index, end-4)
+        coefficients = self.daf.array(self.start_i, self.end_i - 4)
+
         coefficients.shape = (n, rsize)
         coefficients = coefficients[:,2:]  # ignore MID and RADIUS elements
         coefficients.shape = (n, component_count, coefficient_count)
         coefficients = rollaxis(coefficients, 1)
         return initial_epoch, interval_length, coefficients
-
-    def unload(self, segment):
-        self._coefficients.pop(segment, None)
 
     def compute(self, segment, tdb, tdb2=0.0, differentiate=False):
         """Compute the component values for the time `tdb` plus `tdb2`.
@@ -71,15 +70,15 @@ class SPK(object):
         an array of rates at which the components are changing.
 
         """
-        is_scalar = getattr(tdb, 'shape', ()) == ()
-        if is_scalar:
+        if not getattr(tdb, 'shape', None):
             tdb = array((tdb,))
 
-        info = self._coefficients.get(segment)
-        if info is None:
-            self._coefficients[segment] = info = self._load(segment)
+        try:
+            initial_epoch, interval_length, coefficients = self._data
+        except AttributeError:
+            self._data = self._load()
+            initial_epoch, interval_length, coefficients = self._data
 
-        initial_epoch, interval_length, coefficients = info
         component_count, n, coefficient_count = coefficients.shape
 
         # Subtracting tdb before adding tdb2 affords greater precision.

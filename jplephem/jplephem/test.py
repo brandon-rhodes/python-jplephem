@@ -50,11 +50,11 @@ class SPKTests(TestCase):
 
     def position(self, name, tdb, tdb2=0.0):
         segment = self.spk.targets[target_names[name]]
-        return self.spk.compute(segment, tdb, tdb2)
+        return segment.compute(segment, tdb, tdb2)
 
     def position_and_velocity(self, name, tdb, tdb2=0.0):
         segment = self.spk.targets[target_names[name]]
-        return self.spk.compute(segment, tdb, tdb2, differentiate=True)
+        return segment.compute(segment, tdb, tdb2, differentiate=True)
 
     def check0(self, xyz, xyzdot=None):
         eq = partial(self.assertAlmostEqual, delta=epsilon_m)

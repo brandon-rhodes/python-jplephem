@@ -6,8 +6,10 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 import mmap
 import struct
 import sys
+from numpy import ndarray
 
 FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP' # FTP test string
+LOCFMT = {b'BIG-IEEE': '>', b'LTL-IEEE': '<'}
 K = 1024
 
 class DAF(object):
@@ -20,11 +22,8 @@ class DAF(object):
             self.map = memoryview(self.map)
 
         self.locfmt = self.map[88:96]
-        if self.locfmt == b'BIG-IEEE':
-            self.endian = '>'
-        elif self.locfmt == b'LTL-IEEE':
-            self.endian = '<'
-        else:
+        self.endian = LOCFMT.get(self.locfmt)
+        if self.endian is None:
             raise ValueError('unsupported format {0!r}'.format(self.locfmt))
 
         (locidw, nd, ni, locifn, self.fward, self.bward, self.free
@@ -43,9 +42,9 @@ class DAF(object):
         if bytes(self.map[500:1000]).strip(b'\0') != FTPSTR:
             raise ValueError('this SPK file has been damaged')
 
-    def bytes(self, start, stop):
-        """Return data of words `start` to `stop` inclusive; indexed from 1."""
-        return self.map[8 * start - 8 : 8 * stop]
+    def bytes(self, start, end):
+        """Return data of words `start` to `end` inclusive; indexed from 1."""
+        return self.map[8 * start - 8 : 8 * end]
 
     def record(self, n):
         """Return record `n` as bytes; records are indexed from 1."""
@@ -64,6 +63,11 @@ class DAF(object):
             raise ValueError('DAF file comment area is missing its EOT byte')
         except UnicodeDecodeError:
             raise ValueError('DAF file comment area is not ASCII text')
+
+    def array(self, start, end):
+        """Return floats from `start` to `end` inclusive; indexed from 1."""
+        data = self.bytes(start, end)
+        return ndarray(end - start + 1, self.endian + 'd', data)
 
     def summaries(self):
         """Yield (name, (value, value, ...)) for each summary in the file."""
