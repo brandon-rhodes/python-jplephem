@@ -74,7 +74,6 @@ class _CommonTests(object):
         self.check1(self.position('earthmoon', 2415110.0, 2.5))
 
     def test_scalar_tdb_keyword(self):
-        print(self.position('earthmoon', tdb=2414994.0))
         self.check0(self.position('earthmoon', tdb=2414994.0))
         self.check1(self.position('earthmoon', tdb=2415112.5))
 
