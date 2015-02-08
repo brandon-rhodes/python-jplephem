@@ -3,5 +3,6 @@
 /jplephem/.tox/
 /jplephem/MANIFEST
 ssd.jpl.nasa.gov/
+*.bsp
 *.pyc
 *.egg-info
