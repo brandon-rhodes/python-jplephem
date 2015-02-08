@@ -27,7 +27,7 @@ class SPK(object):
             Segment(*t, source=source, start_jd=jd(t[0]), end_jd=jd(t[1]))
             for source, t in self.daf.summaries()
             ]
-        self.targets = {s.target: s for s in self.segments}
+        self.targets = dict((s.target, s) for s in self.segments)  # Python 2.6
         self._coefficients = {}
 
     def comments(self):
