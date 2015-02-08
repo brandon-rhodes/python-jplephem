@@ -11,7 +11,10 @@ smaller and more feature-oriented suite can be run with::
 import numpy as np
 from functools import partial
 from jplephem import Ephemeris, DateError
-from unittest import SkipTest, TestCase
+try:
+    from unittest import SkipTest, TestCase
+except ImportError:
+    from unittest2 import SkipTest, TestCase
 
 class Tests(TestCase):
 
