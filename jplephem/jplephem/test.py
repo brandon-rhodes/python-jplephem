@@ -42,7 +42,7 @@ class SPKTests(TestCase):
     def setUp(self):
         try:
             self.spk = SPK('de421.bsp')
-        except ImportError:
+        except IOError:
             raise SkipTest('the "de421.bsp" SPK file is not available')
         segment = self.spk.targets[1]
         self.jalpha = segment.start_jd
