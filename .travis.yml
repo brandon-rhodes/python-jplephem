@@ -11,7 +11,7 @@ python:
 install:
   - "pip install de421"
   - "pip install unittest2"
-  - "pip install ./jplephem/"
+  - "pip install ."
   - "wget http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp"
 
 script:
