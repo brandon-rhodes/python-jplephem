@@ -1,3 +1,5 @@
+"""Compute positions from an ephemeris installed as a Python package."""
+
 import os
 import numpy as np
 
