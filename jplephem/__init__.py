@@ -1,16 +1,86 @@
 # -*- encoding: utf-8 -*-
 
-"""Use a JPL planetary ephemeris to predict planet positions.
+"""Use a JPL ephemeris to predict planet positions.
 
-This package lets you use a Jet Propulsion Laboratory (JPL) ephemeris to
-predict the position and velocity of a planet, or the magnitude and
-rate-of-change of the Earth's nutation, or of the angle of the Moon's
-libration.  Its only dependency is `NumPy <http://www.numpy.org/>`_.  To
-take the smallest and most convenient ephemeris as an example, you can
-install this package alongside the 27 MB ephemeris DE421 with two
-commands::
+This package can load a Jet Propulsion Laboratory (JPL) ephemeris to let
+you predict the position and velocity of a planet or other Solar System
+object.  Its only dependency is `NumPy <http://www.numpy.org/>`_ and you
+should be able to install this package using the standard Python package
+install tool::
 
-    pip install jplephem
+    $ pip install jplephem
+
+Note that ``jplephem`` offers only the logic necessary to produce plain
+three-dimensional vectors.  Most programmers interested in astronomy
+will want to look at `Skyfield <http://rhodesmill.org/skyfield/>`_
+instead, which converts the numbers returned by ``jplephem`` into more
+traditional measurements like right ascension and declination.
+
+Most users will use ``jplephem`` with the Satellite Planet Kernel (SPK)
+files that the NAIF facility at NASA JPL offers for use with their own
+SPICE toolkit.  They have collected their most useful kernels beneath
+the directory:
+
+http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/
+
+The recent DE430 ephemeris might provide a useful starting point.  It
+weighs in at 115 MB, but provides predictions across the generous range
+of years 1550–2650:
+
+http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp
+
+After the download is complete, you should be able to use ``jplephem``
+to load this SPK file and learn about the segments it offers:
+
+>>> from jplephem.spk import SPK
+>>> k = SPK.open('de430.bsp')
+>>> print(k)
+File type DAF/SPK and format LTL-IEEE with 14 segments:
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> MERCURY BARYCENTER (1)
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> VENUS BARYCENTER (2)
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> EARTH BARYCENTER (3)
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> MARS BARYCENTER (4)
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> JUPITER BARYCENTER (5)
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> SATURN BARYCENTER (6)
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> URANUS BARYCENTER (7)
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> NEPTUNE BARYCENTER (8)
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> PLUTO BARYCENTER (9)
+2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> SUN (10)
+2287184.50..2688976.50  EARTH BARYCENTER (3) -> MOON (301)
+2287184.50..2688976.50  EARTH BARYCENTER (3) -> EARTH (399)
+2287184.50..2688976.50  MERCURY BARYCENTER (1) -> MERCURY (199)
+2287184.50..2688976.50  VENUS BARYCENTER (2) -> VENUS (299)
+
+Each segment of the file lets you predict the position of an object with
+respect to some other reference point.  If you want the coordinates of
+Mars at 2457061.5 (2015 February 8) with respect to the center of the
+solar system, this ephemeris only requires you to take a single step:
+
+>>> mars = k.targets[4]
+>>> position = mars.compute(2457061.5)
+>>> print(position)
+[  2.05700211e+08   4.25141646e+07   1.39379183e+07]
+
+But learning the position of Mars with respect to the Earth takes three
+computations:
+
+>>> earthmoon = k.targets[3]
+>>> earth = k.targets[399]
+>>> position = mars.compute(2457061.5)
+>>> position -= earthmoon.compute(2457061.5) + earth.compute(2457061.5)
+>>> print(position)
+[  3.16065185e+08  -4.67929557e+07  -2.47554111e+07]
+
+You can see that the output of this ephemeris is in kilometers.  If you
+use another ephemeris, check its documentation to be sure of the units
+that it employs.
+
+
+Legacy Ephemeris Packages
+-------------------------
+
+
+
     pip install de421
 
 Loading DE421 and computing a position require one line of Python each,
@@ -175,6 +245,10 @@ https://github.com/brandon-rhodes/python-jplephem/
 
 Changelog
 ---------
+
+**2015 February 8 — Version 2.0**
+
+* Added support for SPICE SPK files downloaded directly from NASA.
 
 **2013 November 26 — Version 1.2**
 
