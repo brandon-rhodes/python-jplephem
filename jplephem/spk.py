@@ -17,8 +17,24 @@ def jd(seconds):
 
 
 class SPK(object):
-    """A JPL SPK ephemeris kernel for computing positions and velocities."""
+    """A JPL SPK ephemeris kernel for computing positions and velocities.
 
+    You can load an SPK using either a filename or an already opened
+    file object::
+
+        kernel = SPK(file_object)
+        kernel = SPK.open('de431.bsp')
+
+    Simply ``print(kernel)`` see which segments are inside.  You can
+    loop across all of the segments in the list ``kernel.segments`` or,
+    as a convenience, you can select a particular segment by providing a
+    center and target integer in square brackets.  So ``kernel[3,399]``
+    to select the segment that computes the distance between the
+    Earth-Moon barycenter (3) and the Earth itself (399).
+
+    To extract the text comments from the SPK use ``kernel.comments()``.
+
+    """
     def __init__(self, file_object):
         self.daf = DAF(file_object)
         self.segments = [Segment(self.daf, *t) for t in self.daf.summaries()]
@@ -47,7 +63,25 @@ class SPK(object):
 
 
 class Segment(object):
+    """A single segment of an SPK file.
 
+    There are several items of information about each segment that are
+    loaded from the underlying SPK file, and made available as object
+    attributes:
+
+    segment.source - official ephemeris name, like 'DE-0430LE-0430'
+    segment.start_second - initial epoch, as seconds from J2000
+    segment.end_second - final epoch, as seconds from J2000
+    segment.start_jd - start_second, converted to a Julian Date
+    segment.end_jd - end_second, converted to a Julian Date
+    segment.center - integer center identifier
+    segment.target - integer target identifier
+    segment.frame - integer frame identifier
+    segment.data_type - integer data type identifier
+    segment.start_i - index where segment starts
+    segment.end_i - index where segment ends
+
+    """
     def __init__(self, daf, source, descriptor):
         self.daf = daf
         self.source = source

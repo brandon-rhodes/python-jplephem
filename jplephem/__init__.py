@@ -28,6 +28,15 @@ the directory:
 
 http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/
 
+To learn more about SPK files, the official `SPK Required Reading
+<http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html>`_
+document is available from the NAIF facility’s web site under the NASA
+JPL domain.
+
+
+Getting Started With DE430
+--------------------------
+
 The recent DE430 ephemeris is a useful starting point.  It weighs in at
 115 MB, but provides predictions across the generous range of years
 1550–2650:
@@ -38,8 +47,8 @@ After the kernel has downloaded, you can use ``jplephem`` to load this
 SPK file and learn about the segments it offers:
 
 >>> from jplephem.spk import SPK
->>> k = SPK.open('de430.bsp')
->>> print(k)
+>>> kernel = SPK.open('de430.bsp')
+>>> print(kernel)
 File type DAF/SPK and format LTL-IEEE with 14 segments:
 2287184.50..2688976.50  Solar System Barycenter (0) -> Mercury Barycenter (1)
 2287184.50..2688976.50  Solar System Barycenter (0) -> Venus Barycenter (2)
@@ -61,8 +70,7 @@ respect to some other reference point.  If you want the coordinates of
 Mars at 2457061.5 (2015 February 8) with respect to the center of the
 solar system, this ephemeris only requires you to take a single step:
 
->>> mars = k[0,4]
->>> position = mars.compute(2457061.5)
+>>> position = kernel[0,4].compute(2457061.5)
 >>> print(position)
 [  2.05700211e+08   4.25141646e+07   1.39379183e+07]
 
@@ -70,10 +78,9 @@ But learning the position of Mars with respect to the Earth takes three
 steps, from Mars to the Solar System barycenter to the Earth-Moon
 barycenter and finally to Earth itself:
 
->>> earthmoon = k[0,3]
->>> earth = k[3,399]
->>> position = mars.compute(2457061.5)
->>> position -= earthmoon.compute(2457061.5) + earth.compute(2457061.5)
+>>> position = kernel[0,4].compute(2457061.5)
+>>> position -= kernel[0,3].compute(2457061.5)
+>>> position -= kernel[3,399].compute(2457061.5)
 >>> print(position)
 [  3.16065185e+08  -4.67929557e+07  -2.47554111e+07]
 
@@ -81,16 +88,140 @@ You can see that the output of this ephemeris is in kilometers.  If you
 use another ephemeris, check its documentation to be sure of the units
 that it employs.
 
+If you supply the date as a NumPy array, then a whole series of
+positions will come back:
+
+>>> import numpy as np
+>>> jd = np.array([2457061.5, 2457062.5, 2457063.5, 2457064.5])
+>>> position = kernel[0,4].compute(jd)
+>>> print(position)
+[[  2.05700211e+08   2.05325363e+08   2.04928663e+08   2.04510189e+08]
+ [  4.25141646e+07   4.45315179e+07   4.65441136e+07   4.85517457e+07]
+ [  1.39379183e+07   1.48733243e+07   1.58071381e+07   1.67392630e+07]]
+
+Some ephemerides include velocity inline by returning a 6-vector instead
+of a 3-vector.  For an ephemeris that does not, you can ask for the
+Chebyshev polynomial to be differentiated to produce a velocity, which
+is delivered as a second return value:
+
+>>> position, velocity = kernel[0,4].compute(2457061.5, differentiate=True)
+>>> print(position)
+[  2.05700211e+08   4.25141646e+07   1.39379183e+07]
+>>> print(velocity)
+[ -363896.06287889  2019662.99596519   936169.77271558]
+
+
+Details of the API
+------------------
+
+Here are a few details for people wanting to go beyond the high-level
+API provided above and read through the code to learn about the details.
+
+* Instead of reading an entire ephemeris into memory, ``jplephem``
+  memory-maps the underlying file so that the operating system can
+  efficiently page into RAM only the data that your code is using.
+
+* Once the metadata has been parsed from the binary SPK file, the
+  polynomial coefficients themselves are loaded by building a NumPy
+  array object that has access to the raw binary file contents.
+  Happily, NumPy already knows how to interpret a packed array of
+  double-precision floats.  You can learn about the underlying DAF
+  “Double Precision Array File” format, in case you ever need to open
+  other such array files in Python, through the ``DAF`` class in the
+  module ``jplephem.daf``.
+
+* An SPK file is made of segments.  When you first create an ``SPK``
+  kernel object ``k``, it examines the file and creates a list of
+  ``Segment`` objects that it keeps in a list under an attribute named
+  ``k.segments`` which you are free to examine in your own code by
+  looping over it.
+
+* There is more information about each segment beyond the one-line
+  summary that you get when you print out the SPK file, which you can
+  see by asking the segment to print itself verbosely:
+
+  >>> segment = kernel[3,399]
+  >>> print(segment.describe())
+  2287184.50..2688976.50  Earth Barycenter (3) -> Earth (399)
+    frame=1 data_type=2 source=DE-0430LE-0430
+
+* Each ``Segment`` loaded from the kernel has a number of attributes
+  that are loaded from the SPK file:
+
+  >>> help(segment)
+  Help on Segment in module jplephem.spk object:
+  ...
+   |  segment.source - official ephemeris name, like 'DE-0430LE-0430'
+   |  segment.start_second - initial epoch, as seconds from J2000
+   |  segment.end_second - final epoch, as seconds from J2000
+   |  segment.start_jd - start_second, converted to a Julian Date
+   |  segment.end_jd - end_second, converted to a Julian Date
+   |  segment.center - integer center identifier
+   |  segment.target - integer target identifier
+   |  segment.frame - integer frame identifier
+   |  segment.data_type - integer data type identifier
+   |  segment.start_i - index where segment starts
+   |  segment.end_i - index where segment ends
+  ...
+
+* The square-bracket lookup mechanism ``kernel[3,399]`` is a
+  non-standard convenience that returns only the last matching segment
+  in the file.  While the SPK standard does say that the last segment
+  takes precedence, it also says that earlier segments for a particular
+  center-target pair should be fallen back upon for dates that the last
+  segment does not cover.  So, if you ever tackle a complicated kernel,
+  you will need to implement fallback rules that send some dates to the
+  final segment for a given center and target, but that send other dates
+  to earlier segments that are qualified to cover them.
+
+
+High-Precision Dates
+--------------------
+
+Since all modern Julian dates are numbers larger than 2.4 million, a
+standard 64-bit Python or NumPy float necessarily leaves only a limited
+number of bits available for the fractional part.  *Technical Note
+2011-02* from the United States Naval Observatory's Astronomical
+Applications Department suggests that the `precision possible with a
+64-bit floating point Julian date is around 20.1 µs
+<http://jplephem.s3.amazonaws.com/JD_precision_test.pdf>`_.
+
+If you need to supply times and receive back planetary positions with
+greater precision than 20.1 µs, then you have two options.
+
+First, you can supply times using the special ``float96`` NumPy type,
+which is also aliased to the name ``longfloat``.  If you provide either
+a ``float96`` scalar or a ``float96`` array as your ``tdb`` parameter to
+any ``jplephem`` routine, you should get back a high-precision result.
+
+Second, you can split your date or dates into two pieces, and supply
+them as a pair of arguments two ``tdb`` and ``tdb2``.  One popular
+approach for how to split your date is to use the ``tdb`` float for the
+integer Julian date, and ``tdb2`` for the fraction that specifies the
+time of day.  Nearly all ``jplephem`` routines accept this optional
+``tdb2`` argument if you wish to provide it, thanks to the work of
+Marten van Kerkwijk!
 
 
 Legacy Ephemeris Packages
 -------------------------
 
+Back before the author of ``jplephem`` learned about SPICE and SPK
+files, he had run across the text-file formatted JPL ephemerides at:
 
+ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/
+
+The author laboriously assembled the data in these text files into
+native NumPy array files, wrapped them each in a Python package, and
+wrote this ``jplephem`` package so that users could install an ephemeris
+with a simple command::
 
     pip install de421
 
-Loading DE421 and computing a position require one line of Python each,
+If you want to use one of these pip-installable ephemerides, you will be
+using a slightly older API, and will lose the benefit of the efficient
+memory-mapping that the newer SPK code performs.  With the old API,
+loading DE421 and computing a position require one line of Python each,
 given a barycentric dynamical time expressed as a Julian date::
 
     import de421
@@ -155,48 +286,6 @@ links explain the differences between them) are:
 * `DE423 <http://pypi.python.org/pypi/de423>`_ (February 2010)
   — 36 MB covering years 1800 through 2200
 
-Earth and Moon
---------------
-
-The raw ephemerides provide one position for the Earth-Moon barycenter,
-and another for the position of the Moon relative to the geocenter.  The
-JPL expects you to combine these values yourself if you want the Solar
-System location of the Earth or Moon, which gives you the chance to be
-more efficient by asking the ephemeris for each position only once::
-
-    barycenter = eph.position('earthmoon', j)
-    moonvector = eph.position('moon', j)
-
-    earth = barycenter - moonvector * eph.earth_share
-    moon = barycenter + moonvector * eph.moon_share
-
-High-Precision Dates
---------------------
-
-Since all modern Julian dates are numbers larger than 2.4 million, a
-standard 64-bit Python or NumPy float necessarily leaves only a limited
-number of bits available for the fractional part.  Technical Note
-2011-02 from the United States Naval Observatory's Astronomical
-Applications Department suggests that the `precision possible with a
-64-bit floating point Julian date is around 20.1 µs
-<http://jplephem.s3.amazonaws.com/JD_precision_test.pdf>`_.
-
-If you need to supply times and receive back planetary positions with
-greater precision than 20.1 µs, then you have two options.
-
-First, you can supply times using the special ``float96`` NumPy type,
-which is also aliased to the name ``longfloat``.  If you provide either
-a ``float96`` scalar or a ``float96`` array as your ``tdb`` parameter to
-any ``jplephem`` routine, you should get back a high-precision result.
-
-Second, you can split your date or dates into two pieces, and supply
-them as a pair of arguments two ``tdb`` and ``tdb2``; one popular
-approach for how to split your date is to use the ``tdb`` float for the
-integer Julian date, and ``tdb2`` for the fraction that specifies the
-time of day.  Nearly all ``jplephem`` routines accept this optional
-``tdb2`` argument if you wish to provide it, thanks to the work of
-Marten van Kerkwijk!
-
 Waiting To Compute Velocity
 ---------------------------
 
@@ -243,6 +332,7 @@ large, since vector operations over thousands or millions of dates are
 going to take a noticeable amount of time, and every mass operation that
 can be avoided will help move your program toward completion.
 
+
 Reporting issues
 ----------------
 
@@ -250,12 +340,14 @@ You can report any issues, bugs, or problems at the GitHub repository:
 
 https://github.com/brandon-rhodes/python-jplephem/
 
+
 Changelog
 ---------
 
 **2015 February 8 — Version 2.0**
 
-* Added support for SPICE SPK files downloaded directly from NASA.
+* Added support for SPICE SPK files downloaded directly from NASA, and
+  designated old Python-packaged ephemerides as “legacy.”
 
 **2013 November 26 — Version 1.2**
 
@@ -277,6 +369,7 @@ Changelog
 **2013 January 18 — Version 1.0**
 
 * Initial release
+
 
 References
 ----------

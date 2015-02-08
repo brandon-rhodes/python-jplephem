@@ -2,4 +2,4 @@
 
 cd $(dirname "$0")
 cd ..
-python -m doctest /dev/stdin < jplephem/__init__.py
+python -m doctest -o ELLIPSIS /dev/stdin < jplephem/__init__.py
