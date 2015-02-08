@@ -160,9 +160,9 @@ class SPKTests(_CommonTests, TestCase):
         segment = self.spk.targets[4]
         self.assertEqual(str(segment), segment.describe(verbose=False))
         self.assertEqual(segment.describe(verbose=False),
-  '2414864.50..2471184.50  SOLAR SYSTEM BARYCENTER (0) -> MARS BARYCENTER (4)')
+  '2414864.50..2471184.50  Solar System Barycenter (0) -> Mars Barycenter (4)')
         self.assertEqual(segment.describe(verbose=True),
-  '2414864.50..2471184.50  SOLAR SYSTEM BARYCENTER (0) -> MARS BARYCENTER (4)'
+  '2414864.50..2471184.50  Solar System Barycenter (0) -> Mars Barycenter (4)'
   '\n  frame=1 data_type=2 source=DE-0421LE-0421')
 
 

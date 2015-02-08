@@ -56,8 +56,8 @@ class Segment(object):
         return self.describe(verbose=False)
 
     def describe(self, verbose=True):
-        center = target_names.get(self.center, 'Unknown center')
-        target = target_names.get(self.target, 'Unknown target')
+        center = titlecase(target_names.get(self.center, 'Unknown center'))
+        target = titlecase(target_names.get(self.target, 'Unknown target'))
         text = ('{0.start_jd:.2f}..{0.end_jd:.2f}  {1} ({0.center})'
                 ' -> {2} ({0.target})'.format(self, center, target))
         if verbose:
@@ -155,3 +155,8 @@ class Segment(object):
         if scalar:
             rates = rates[:,0]
         return components, rates
+
+
+def titlecase(name):
+    """Title-case target `name` if it looks safe to do so."""
+    return name if name.startswith(('1', 'C/', 'DSS-')) else name.title()
