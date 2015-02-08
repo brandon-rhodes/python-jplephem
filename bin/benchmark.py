@@ -9,9 +9,9 @@ from jplephem.spk import SPK
 def main():
     for size in 10, 1000, 100000:
         jd = np.linspace(2414992.5, 2471184.50, size)
-        spk = SPK.open('de421.bsp')
+        kernel = SPK.open('de421.bsp')
         ephem = Ephemeris(de421)
-        mars = spk.targets[4]
+        mars = kernel[0,4]
 
         print(size)
         print('-- old code (2 successive runs):')

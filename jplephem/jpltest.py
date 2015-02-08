@@ -59,21 +59,20 @@ def run_testpo(spk, testpo_file):
 def _position(spk, jed, target):
     """Compute position given a JPL test file target integer identifier."""
 
-
     if target == 3:
-        p1, v1 = spk[0,3].compute(jed, differentiate=True)
-        p2, v2 = spk[3,399].compute(jed, differentiate=True)
+        p1, v1 = spk[0,3].compute_and_differentiate(jed)
+        p2, v2 = spk[3,399].compute_and_differentiate(jed)
         p = p1 + p2
         v = v1 + v2
     elif target == 10:
-        p1, v1 = spk[0,3].compute(jed, differentiate=True)
-        p2, v2 = spk[3,301].compute(jed, differentiate=True)
+        p1, v1 = spk[0,3].compute_and_differentiate(jed)
+        p2, v2 = spk[3,301].compute_and_differentiate(jed)
         p = p1 + p2
         v = v1 + v2
     elif target == 12:
         return np.zeros((6, 1))  # solar system barycenter is the origin
     else:
-        p, v = spk[0,target].compute(jed, differentiate=True)
+        p, v = spk[0,target].compute_and_differentiate(jed)
 
     return np.concatenate((p, v))
 

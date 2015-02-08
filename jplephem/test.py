@@ -153,7 +153,7 @@ class SPKTests(_CommonTests, TestCase):
 
     def position_and_velocity(self, name, tdb, tdb2=0.0):
         segment = self.spk[0, target_names[name]]
-        return segment.compute(tdb, tdb2, differentiate=True)
+        return segment.compute_and_differentiate(tdb, tdb2)
 
     def test_str(self):
         str(self.spk)  # just to confirm it does not raise an exception

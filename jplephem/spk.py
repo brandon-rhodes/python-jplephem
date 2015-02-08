@@ -103,6 +103,15 @@ class Segment(object):
                      .format(self, self.source.decode('ascii')))
         return text
 
+    def compute(self, tdb, tdb2=0.0):
+        """Compute the component values for the time `tdb` plus `tdb2`."""
+        for position in self.generate(tdb, tdb2):
+            return position
+
+    def compute_and_differentiate(self, tdb, tdb2=0.0):
+        """Compute components and differentials for time `tdb` plus `tdb2`."""
+        return list(self.generate(tdb, tdb2))
+
     def _load(self):
         """Map the coefficients into memory using a NumPy array."""
 
@@ -125,15 +134,15 @@ class Segment(object):
         coefficients = rollaxis(coefficients, 1)
         return initial_epoch, interval_length, coefficients
 
-    def compute(self, tdb, tdb2=0.0, differentiate=False):
-        """Compute the component values for the time `tdb` plus `tdb2`.
+    def generate(self, tdb, tdb2):
+        """Generate components and differentials for time `tdb` plus `tdb2`.
 
-        If `differentiate` is false, then an array of components is
-        returned.
-
-        If `differentiate` is true, then a tuple is returned whose first
-        element is the array of components and whose second element is
-        an array of rates at which the components are changing.
+        Most uses will simply want to call the `compute()` method or the
+        `compute_differentials()` method, for convenience.  But in those
+        cases (see Skyfield) where you want to compute a position and
+        examine it before deciding whether to proceed with the velocity,
+        but without losing all of the work that it took to get to that
+        point, this generator lets you get them as two separate steps.
 
         """
         scalar = not getattr(tdb, 'shape', 0) and not getattr(tdb2, 'shape', 0)
@@ -175,8 +184,8 @@ class Segment(object):
         components = (T.T * coefficients).sum(axis=2)
         if scalar:
             components = components[:,0]
-        if not differentiate:
-            return components
+
+        yield components
 
         # Chebyshev differentiation.
 
@@ -192,7 +201,8 @@ class Segment(object):
         rates = (dT.T * coefficients).sum(axis=2)
         if scalar:
             rates = rates[:,0]
-        return components, rates
+
+        yield rates
 
 
 def titlecase(name):

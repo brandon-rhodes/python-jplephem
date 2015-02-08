@@ -104,7 +104,7 @@ of a 3-vector.  For an ephemeris that does not, you can ask for the
 Chebyshev polynomial to be differentiated to produce a velocity, which
 is delivered as a second return value:
 
->>> position, velocity = kernel[0,4].compute(2457061.5, differentiate=True)
+>>> position, velocity = kernel[0,4].compute_and_differentiate(2457061.5)
 >>> print(position)
 [  2.05700211e+08   4.25141646e+07   1.39379183e+07]
 >>> print(velocity)
@@ -114,8 +114,8 @@ is delivered as a second return value:
 Details of the API
 ------------------
 
-Here are a few details for people wanting to go beyond the high-level
-API provided above and read through the code to learn about the details.
+Here are a few details for people ready to go beyond the high-level API
+provided above and read through the code to learn more.
 
 * Instead of reading an entire ephemeris into memory, ``jplephem``
   memory-maps the underlying file so that the operating system can
