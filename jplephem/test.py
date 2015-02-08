@@ -143,21 +143,21 @@ class SPKTests(_CommonTests, TestCase):
             self.spk = SPK.open('de421.bsp')
         except IOError:
             raise SkipTest('the "de421.bsp" SPK file is not available')
-        segment = self.spk.targets[1]
+        segment = self.spk[0,1]
         self.jalpha = segment.start_jd
         self.jomega = segment.end_jd
 
     def position(self, name, tdb, tdb2=0.0):
-        segment = self.spk.targets[target_names[name]]
+        segment = self.spk[0, target_names[name]]
         return segment.compute(tdb, tdb2)
 
     def position_and_velocity(self, name, tdb, tdb2=0.0):
-        segment = self.spk.targets[target_names[name]]
+        segment = self.spk[0, target_names[name]]
         return segment.compute(tdb, tdb2, differentiate=True)
 
     def test_str(self):
         str(self.spk)  # just to confirm it does not raise an exception
-        segment = self.spk.targets[4]
+        segment = self.spk[0,4]
         self.assertEqual(str(segment), segment.describe(verbose=False))
         self.assertEqual(segment.describe(verbose=False),
   '2414864.50..2471184.50  Solar System Barycenter (0) -> Mars Barycenter (4)')

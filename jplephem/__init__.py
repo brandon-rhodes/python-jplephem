@@ -2,18 +2,23 @@
 
 """Use a JPL ephemeris to predict planet positions.
 
-This package can load a Jet Propulsion Laboratory (JPL) ephemeris to let
-you predict the position and velocity of a planet or other Solar System
-object.  Its only dependency is `NumPy <http://www.numpy.org/>`_ and you
-should be able to install this package using the standard Python package
-install tool::
+This package can load and use a Jet Propulsion Laboratory (JPL)
+ephemeris for predicting the position and velocity of a planet or other
+Solar System body.  Its only needs `NumPy <http://www.numpy.org/>`_,
+which ``pip`` will automatically attempt to install alongside
+``pyephem`` when you run::
 
     $ pip install jplephem
+
+If you see NumPy compilation errors, then try downloading and installing
+it directly from `its web site <http://www.numpy.org/>`_ or simply try
+using a distribution of Python with science tools already installed,
+like `Anaconda <http://continuum.io/downloads>_`.
 
 Note that ``jplephem`` offers only the logic necessary to produce plain
 three-dimensional vectors.  Most programmers interested in astronomy
 will want to look at `Skyfield <http://rhodesmill.org/skyfield/>`_
-instead, which converts the numbers returned by ``jplephem`` into more
+instead, which uses ``jplephem`` but converts the numbers into more
 traditional measurements like right ascension and declination.
 
 Most users will use ``jplephem`` with the Satellite Planet Kernel (SPK)
@@ -23,49 +28,50 @@ the directory:
 
 http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/
 
-The recent DE430 ephemeris might provide a useful starting point.  It
-weighs in at 115 MB, but provides predictions across the generous range
-of years 1550–2650:
+The recent DE430 ephemeris is a useful starting point.  It weighs in at
+115 MB, but provides predictions across the generous range of years
+1550–2650:
 
 http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp
 
-After the download is complete, you should be able to use ``jplephem``
-to load this SPK file and learn about the segments it offers:
+After the kernel has downloaded, you can use ``jplephem`` to load this
+SPK file and learn about the segments it offers:
 
 >>> from jplephem.spk import SPK
 >>> k = SPK.open('de430.bsp')
 >>> print(k)
 File type DAF/SPK and format LTL-IEEE with 14 segments:
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> MERCURY BARYCENTER (1)
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> VENUS BARYCENTER (2)
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> EARTH BARYCENTER (3)
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> MARS BARYCENTER (4)
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> JUPITER BARYCENTER (5)
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> SATURN BARYCENTER (6)
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> URANUS BARYCENTER (7)
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> NEPTUNE BARYCENTER (8)
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> PLUTO BARYCENTER (9)
-2287184.50..2688976.50  SOLAR SYSTEM BARYCENTER (0) -> SUN (10)
-2287184.50..2688976.50  EARTH BARYCENTER (3) -> MOON (301)
-2287184.50..2688976.50  EARTH BARYCENTER (3) -> EARTH (399)
-2287184.50..2688976.50  MERCURY BARYCENTER (1) -> MERCURY (199)
-2287184.50..2688976.50  VENUS BARYCENTER (2) -> VENUS (299)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Mercury Barycenter (1)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Venus Barycenter (2)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Earth Barycenter (3)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Mars Barycenter (4)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Jupiter Barycenter (5)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Saturn Barycenter (6)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Uranus Barycenter (7)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Neptune Barycenter (8)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Pluto Barycenter (9)
+2287184.50..2688976.50  Solar System Barycenter (0) -> Sun (10)
+2287184.50..2688976.50  Earth Barycenter (3) -> Moon (301)
+2287184.50..2688976.50  Earth Barycenter (3) -> Earth (399)
+2287184.50..2688976.50  Mercury Barycenter (1) -> Mercury (199)
+2287184.50..2688976.50  Venus Barycenter (2) -> Venus (299)
 
 Each segment of the file lets you predict the position of an object with
 respect to some other reference point.  If you want the coordinates of
 Mars at 2457061.5 (2015 February 8) with respect to the center of the
 solar system, this ephemeris only requires you to take a single step:
 
->>> mars = k.targets[4]
+>>> mars = k[0,4]
 >>> position = mars.compute(2457061.5)
 >>> print(position)
 [  2.05700211e+08   4.25141646e+07   1.39379183e+07]
 
 But learning the position of Mars with respect to the Earth takes three
-computations:
+steps, from Mars to the Solar System barycenter to the Earth-Moon
+barycenter and finally to Earth itself:
 
->>> earthmoon = k.targets[3]
->>> earth = k.targets[399]
+>>> earthmoon = k[0,3]
+>>> earth = k[3,399]
 >>> position = mars.compute(2457061.5)
 >>> position -= earthmoon.compute(2457061.5) + earth.compute(2457061.5)
 >>> print(position)
@@ -74,6 +80,7 @@ computations:
 You can see that the output of this ephemeris is in kilometers.  If you
 use another ephemeris, check its documentation to be sure of the units
 that it employs.
+
 
 
 Legacy Ephemeris Packages

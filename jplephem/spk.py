@@ -22,7 +22,7 @@ class SPK(object):
     def __init__(self, file_object):
         self.daf = DAF(file_object)
         self.segments = [Segment(self.daf, *t) for t in self.daf.summaries()]
-        self.targets = dict((s.target, s) for s in self.segments)  # Python 2.6
+        self.pairs = dict(((s.center, s.target), s) for s in self.segments)
 
     @classmethod
     def open(cls, path):
@@ -36,6 +36,10 @@ class SPK(object):
         lines = (str(segment) for segment in self.segments)
         return 'File type {0} and format {1} with {2} segments:\n{3}'.format(
             d(daf.locidw), d(daf.locfmt), len(self.segments), '\n'.join(lines))
+
+    def __getitem__(self, key):
+        """Given (center, target) integers, return the last matching segment."""
+        return self.pairs[key]
 
     def comments(self):
         """Return the file comments, as a string."""

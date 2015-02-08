@@ -22,12 +22,13 @@ def run_testpo(spk, testpo_file):
         continue
 
     successes = 0
+    targets = set([segment.target for segment in spk.segments])
 
     for line in lines:
         de, date, jed, target, center, number, value = [f(v) for f, v
             in zip((str, str, float, int, int, int, float), line.split())]
 
-        if (target not in spk.targets) or (center not in spk.targets):
+        if (target not in targets) or (center not in targets):
             continue
 
         if 14 <= target <= 15:
@@ -38,10 +39,10 @@ def run_testpo(spk, testpo_file):
             r = (tpos - cpos) / AU
 
         delta = r[number - 1] - value
-        if (target == 15 and number == 3):
-            delta = delta / (0.23 * (jed - 2451545.0))
-        elif (target == 15 and number == 6):
-            delta = delta * 0.01 / (1.0 + (jed - 2451545.0) / 365.25)
+        # if (target == 15 and number == 3):
+        #     delta = delta / (0.23 * (jed - 2451545.0))
+        # elif (target == 15 and number == 6):
+        #     delta = delta * 0.01 / (1.0 + (jed - 2451545.0) / 365.25)
 
         if abs(delta) >= epsilon:
             print('%s %s %s->%s field %d' % (date, jed, center, target, number))
@@ -60,19 +61,19 @@ def _position(spk, jed, target):
 
 
     if target == 3:
-        p1, v1 = spk.targets[3].compute(jed, differentiate=True)
-        p2, v2 = spk.targets[399].compute(jed, differentiate=True)
+        p1, v1 = spk[0,3].compute(jed, differentiate=True)
+        p2, v2 = spk[3,399].compute(jed, differentiate=True)
         p = p1 + p2
         v = v1 + v2
     elif target == 10:
-        p1, v1 = spk.targets[3].compute(jed, differentiate=True)
-        p2, v2 = spk.targets[301].compute(jed, differentiate=True)
+        p1, v1 = spk[0,3].compute(jed, differentiate=True)
+        p2, v2 = spk[3,301].compute(jed, differentiate=True)
         p = p1 + p2
         v = v1 + v2
     elif target == 12:
         return np.zeros((6, 1))  # solar system barycenter is the origin
     else:
-        p, v = spk.targets[target].compute(jed, differentiate=True)
+        p, v = spk[0,target].compute(jed, differentiate=True)
 
     return np.concatenate((p, v))
 
