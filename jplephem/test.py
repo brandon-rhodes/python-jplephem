@@ -158,8 +158,13 @@ class SPKTests(_CommonTests, TestCase):
 
     def test_str(self):
         str(self.spk)  # just to confirm it does not raise an exception
-        self.assertEqual(str(self.spk.targets[4]), '2414864.50..2471184.50 tar'
-                         'get=4   center=0 frame=1 data_type=2 DE-0421LE-0421')
+        segment = self.spk.targets[4]
+        self.assertEqual(str(segment), segment.describe(verbose=False))
+        self.assertEqual(segment.describe(verbose=False),
+  '2414864.50..2471184.50  SOLAR SYSTEM BARYCENTER (0) -> MARS BARYCENTER (4)')
+        self.assertEqual(segment.describe(verbose=True),
+  '2414864.50..2471184.50  SOLAR SYSTEM BARYCENTER (0) -> MARS BARYCENTER (4)'
+  '\n  frame=1 data_type=2 source=DE-0421LE-0421')
 
 
 class LegacyTests(_CommonTests, TestCase):

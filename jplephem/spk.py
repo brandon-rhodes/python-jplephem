@@ -5,6 +5,7 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 """
 from numpy import array, empty, empty_like, rollaxis
 from .daf import DAF
+from .names import target_names
 
 T0 = 2451545.0
 S_PER_DAY = 86400.0
@@ -31,6 +32,7 @@ class SPK(object):
             d(daf.locidw), d(daf.locfmt), len(self.segments), '\n'.join(lines))
 
     def comments(self):
+        """Return the file comments, as a string."""
         return self.daf.comments()
 
 
@@ -45,9 +47,17 @@ class Segment(object):
         self.end_jd = jd(self.end_second)
 
     def __str__(self):
-        return ('{0.start_jd:.2f}..{0.end_jd:.2f} target={0.target:<3}'
-                ' center={0.center} frame={0.frame} data_type={0.data_type}'
-                ' {1}'.format(self, self.source.decode('ascii')))
+        return self.describe(verbose=False)
+
+    def describe(self, verbose=True):
+        center = target_names.get(self.center, 'Unknown center')
+        target = target_names.get(self.target, 'Unknown target')
+        text = ('{0.start_jd:.2f}..{0.end_jd:.2f}  {1} ({0.center})'
+                ' -> {2} ({0.target})'.format(self, center, target))
+        if verbose:
+            text += ('\n  frame={0.frame} data_type={0.data_type} source={1}'
+                     .format(self, self.source.decode('ascii')))
+        return text
 
     def _load(self):
         """Map the coefficients into memory using a NumPy array."""
