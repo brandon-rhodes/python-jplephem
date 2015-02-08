@@ -37,6 +37,11 @@ class Segment(object):
         self.start_jd = jd(self.start_second)
         self.end_jd = jd(self.end_second)
 
+    def __str__(self):
+        return ('{0.start_jd:.2f}..{0.end_jd:.2f} target={0.target:<3}'
+                ' center={0.center} frame={0.frame} data_type={0.data_type}'
+                ' {1}'.format(self, self.source.decode('ascii')))
+
     def _load(self):
         """Map the coefficients into memory using a NumPy array."""
 

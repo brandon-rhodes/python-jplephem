@@ -37,24 +37,7 @@ target_names = {
     }
 
 
-class SPKTests(TestCase):
-
-    def setUp(self):
-        try:
-            self.spk = SPK('de421.bsp')
-        except IOError:
-            raise SkipTest('the "de421.bsp" SPK file is not available')
-        segment = self.spk.targets[1]
-        self.jalpha = segment.start_jd
-        self.jomega = segment.end_jd
-
-    def position(self, name, tdb, tdb2=0.0):
-        segment = self.spk.targets[target_names[name]]
-        return segment.compute(segment, tdb, tdb2)
-
-    def position_and_velocity(self, name, tdb, tdb2=0.0):
-        segment = self.spk.targets[target_names[name]]
-        return segment.compute(segment, tdb, tdb2, differentiate=True)
+class _CommonTests(object):
 
     def check0(self, xyz, xyzdot=None):
         eq = partial(self.assertAlmostEqual, delta=epsilon_m)
@@ -153,7 +136,31 @@ class SPKTests(TestCase):
         self.assertRaises(ValueError, self.position, 'earthmoon', tdb)
 
 
-class LegacyTests(SPKTests):
+class SPKTests(_CommonTests, TestCase):
+
+    def setUp(self):
+        try:
+            self.spk = SPK('de421.bsp')
+        except IOError:
+            raise SkipTest('the "de421.bsp" SPK file is not available')
+        segment = self.spk.targets[1]
+        self.jalpha = segment.start_jd
+        self.jomega = segment.end_jd
+
+    def position(self, name, tdb, tdb2=0.0):
+        segment = self.spk.targets[target_names[name]]
+        return segment.compute(segment, tdb, tdb2)
+
+    def position_and_velocity(self, name, tdb, tdb2=0.0):
+        segment = self.spk.targets[target_names[name]]
+        return segment.compute(segment, tdb, tdb2, differentiate=True)
+
+    def test_repr(self):
+        self.assertEqual(str(self.spk.targets[4]), '2414864.50..2471184.50 tar'
+                         'get=4   center=0 frame=1 data_type=2 DE-0421LE-0421')
+
+
+class LegacyTests(_CommonTests, TestCase):
 
     def setUp(self):
         try:
