@@ -15,9 +15,8 @@ K = 1024
 class DAF(object):
     """Access to NASA SPICE Double Precision Array Files (DAF)."""
 
-    def __init__(self, path):
-        with open(path, 'rb') as f:
-            self.map = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+    def __init__(self, file_object):
+        self.map = mmap.mmap(file_object.fileno(), 0, access=mmap.ACCESS_READ)
         if sys.version_info > (3,):
             self.map = memoryview(self.map)
 

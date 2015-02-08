@@ -86,7 +86,7 @@ def test_all():
         spk_path = 'de%d.bsp' % number
         testpo_path = 'testpo.%d' % number
         try:
-            spk = SPK(spk_path)
+            spk = SPK.open(spk_path)
             testpo_file = open(testpo_path)
         except IOError:
             raise MissingFile('cannot open: %s' % testpo_path)

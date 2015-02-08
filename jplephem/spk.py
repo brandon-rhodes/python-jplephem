@@ -19,10 +19,16 @@ def jd(seconds):
 class SPK(object):
     """A JPL SPK ephemeris kernel for computing positions and velocities."""
 
-    def __init__(self, path):
-        self.daf = DAF(path)
+    def __init__(self, file_object):
+        self.daf = DAF(file_object)
         self.segments = [Segment(self.daf, *t) for t in self.daf.summaries()]
         self.targets = dict((s.target, s) for s in self.segments)  # Python 2.6
+
+    @classmethod
+    def open(cls, path):
+        """Open the file at `path` and return an SPK instance."""
+        with open(path, 'rb') as f:
+            return cls(f)
 
     def __str__(self):
         daf = self.daf
