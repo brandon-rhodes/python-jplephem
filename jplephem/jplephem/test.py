@@ -16,6 +16,8 @@ try:
 except ImportError:
     from unittest2 import SkipTest, TestCase
 
+epsilon_m = 0.01
+
 class Tests(TestCase):
 
     def setUp(self):
@@ -26,7 +28,7 @@ class Tests(TestCase):
         self.e = Ephemeris(de421)
 
     def check0(self, xyz, xyzdot=None):
-        eq = partial(self.assertAlmostEqual, delta=1.0)
+        eq = partial(self.assertAlmostEqual, delta=epsilon_m)
         x, y, z = xyz
         eq(x, 39705023.28)
         eq(y, 131195345.65)
@@ -39,7 +41,7 @@ class Tests(TestCase):
         eq(dz, 268928.26)
 
     def check1(self, xyz, xyzdot=None):
-        eq = partial(self.assertAlmostEqual, delta=1.0)
+        eq = partial(self.assertAlmostEqual, delta=epsilon_m)
         x, y, z = xyz
         eq(x, -144692624.00)
         eq(y, -32707965.14)
@@ -121,9 +123,9 @@ class Tests(TestCase):
 
     def test_ephemeris_end_date(self):
         x, y, z = self.e.position('earthmoon', self.e.jomega)
-        self.assertAlmostEqual(x, -94189805.73967789, delta=1.0)
+        self.assertAlmostEqual(x, -94189805.73967789, delta=epsilon_m)
         self.assertAlmostEqual(y, 1.05103857e+08, delta=1.0)
-        self.assertAlmostEqual(z, 45550861.44383482, delta=1.0)
+        self.assertAlmostEqual(z, 45550861.44383482, delta=epsilon_m)
 
     def test_too_early_date(self):
         tdb = self.e.jalpha - 0.01
