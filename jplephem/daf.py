@@ -8,7 +8,7 @@ import struct
 import sys
 from numpy import ndarray
 
-FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP' # FTP test string
+FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
 LOCFMT = {b'BIG-IEEE': '>', b'LTL-IEEE': '<'}
 K = 1024
 
@@ -21,26 +21,27 @@ class DAF(object):
         if sys.version_info > (3,):
             self.map = memoryview(self.map)
 
-        self.locfmt = self.map[88:96]
+        self.locidw = bytes(self.map[:8]).upper().rstrip()
+        if not self.locidw.startswith(b'DAF/'):
+            raise ValueError('file starts with {0!r}, not the 4 bytes {0!r}'
+                             .format(self.locidw, b'DAF/'))
+
+        if bytes(self.map[500:1000]).strip(b'\0') != FTPSTR:
+            raise ValueError('this SPK file has been damaged')
+
+        self.locfmt = bytes(self.map[88:96])
         self.endian = LOCFMT.get(self.locfmt)
         if self.endian is None:
             raise ValueError('unsupported format {0!r}'.format(self.locfmt))
 
-        (locidw, nd, ni, locifn, self.fward, self.bward, self.free
-         ) = struct.unpack(self.endian + '8sII60sIII', self.map[:88])
+        (self.nd, self.ni, locifn, self.fward, self.bward, self.free
+         ) = struct.unpack(self.endian + 'II60sIII', self.map[8:88])
 
-        summary_size = nd + (ni + 1) // 2
+        summary_size = self.nd + (self.ni + 1) // 2
         self.summary_step = 8 * summary_size
-        self.summary_format = self.endian + 'd' * nd + 'i' * ni
+        self.summary_format = self.endian + 'd' * self.nd + 'i' * self.ni
         self.summary_length = struct.calcsize(self.summary_format)
-
-        self.locidw = locidw.upper().rstrip()
         self.locifn = locifn.upper().rstrip()
-        if not self.locidw.startswith(b'DAF/'):
-            raise ValueError('the file does not start with the 4 bytes "DAF/"')
-
-        if bytes(self.map[500:1000]).strip(b'\0') != FTPSTR:
-            raise ValueError('this SPK file has been damaged')
 
     def bytes(self, start, end):
         """Return data of words `start` to `end` inclusive; indexed from 1."""
