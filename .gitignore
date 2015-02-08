@@ -1,7 +1,3 @@
-/de*/de*/constants.npy
-/de*/de*/jpl-*.npy
-/jplephem/.tox/
-/jplephem/MANIFEST
 testpo.*
 *.bsp
 *.pyc
