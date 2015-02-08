@@ -2,7 +2,7 @@
 /de*/de*/jpl-*.npy
 /jplephem/.tox/
 /jplephem/MANIFEST
-ssd.jpl.nasa.gov/
+testpo.*
 *.bsp
 *.pyc
 *.egg-info
