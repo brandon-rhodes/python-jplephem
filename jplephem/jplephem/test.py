@@ -18,14 +18,21 @@ except ImportError:
 
 epsilon_m = 0.01
 
-class Tests(TestCase):
+
+class LegacyTests(TestCase):
 
     def setUp(self):
         try:
             import de421
         except ImportError:
             raise SkipTest('the "de421" ephemeris package is not installed')
-        self.e = Ephemeris(de421)
+        self.eph = Ephemeris(de421)
+
+    def position(self, name, tdb, tdb2=0.0):
+        return self.eph.position(name, tdb, tdb2)
+
+    def position_and_velocity(self, name, tdb, tdb2=0.0):
+        return self.eph.position_and_velocity(name, tdb, tdb2)
 
     def check0(self, xyz, xyzdot=None):
         eq = partial(self.assertAlmostEqual, delta=epsilon_m)
@@ -54,42 +61,42 @@ class Tests(TestCase):
         eq(dz, -996628.74)
 
     def test_names(self):
-        self.assertEqual(self.e.names,  (
+        self.assertEqual(self.eph.names,  (
             'earthmoon', 'jupiter', 'librations', 'mars', 'mercury',
             'moon', 'neptune', 'nutations', 'pluto', 'saturn', 'sun',
             'uranus', 'venus',
             ))
 
     def test_scalar_tdb(self):
-        self.check0(self.e.position('earthmoon', 2414994.0))
-        self.check1(self.e.position('earthmoon', 2415112.5))
+        self.check0(self.position('earthmoon', 2414994.0))
+        self.check1(self.position('earthmoon', 2415112.5))
 
     def test_scalar_tdb2(self):
-        self.check0(self.e.position('earthmoon', 2414990.0, 4.0))
-        self.check1(self.e.position('earthmoon', 2415110.0, 2.5))
+        self.check0(self.position('earthmoon', 2414990.0, 4.0))
+        self.check1(self.position('earthmoon', 2415110.0, 2.5))
 
     def test_scalar_tdb_keyword(self):
-        self.check0(self.e.position('earthmoon', tdb=2414994.0))
-        self.check1(self.e.position('earthmoon', tdb=2415112.5))
+        self.check0(self.position('earthmoon', tdb=2414994.0))
+        self.check1(self.position('earthmoon', tdb=2415112.5))
 
     def test_scalar_tdb2_keyword(self):
-        self.check0(self.e.position('earthmoon', tdb=2414990.0, tdb2=4.0))
-        self.check1(self.e.position('earthmoon', tdb=2415110.0, tdb2=2.5))
+        self.check0(self.position('earthmoon', tdb=2414990.0, tdb2=4.0))
+        self.check1(self.position('earthmoon', tdb=2415110.0, tdb2=2.5))
 
     def check_2d_result(self, name, tdb, tdb2):
-        p = self.e.position(name, tdb + tdb2)
+        p = self.position(name, tdb + tdb2)
         self.check0(p[:,0])
         self.check1(p[:,1])
 
-        p = self.e.position(name, tdb, tdb2)
+        p = self.position(name, tdb, tdb2)
         self.check0(p[:,0])
         self.check1(p[:,1])
 
-        p, v = self.e.position_and_velocity(name, tdb + tdb2)
+        p, v = self.position_and_velocity(name, tdb + tdb2)
         self.check0(p[:,0], v[:,0])
         self.check1(p[:,1], v[:,1])
 
-        p, v = self.e.position_and_velocity(name, tdb, tdb2)
+        p, v = self.position_and_velocity(name, tdb, tdb2)
         self.check0(p[:,0], v[:,0])
         self.check1(p[:,1], v[:,1])
 
@@ -115,22 +122,22 @@ class Tests(TestCase):
         self.check_2d_result('earthmoon', tdb, tdb2)
 
     def test_legacy_compute_method(self):
-        pv = self.e.compute('earthmoon', 2414994.0)
+        pv = self.eph.compute('earthmoon', 2414994.0)
         self.check0(pv[:3], pv[3:])
-        pv = self.e.compute('earthmoon', np.array([2414994.0, 2415112.5]))
+        pv = self.eph.compute('earthmoon', np.array([2414994.0, 2415112.5]))
         self.check0(pv[:3,0], pv[3:,0])
         self.check1(pv[:3,1], pv[3:,1])
 
     def test_ephemeris_end_date(self):
-        x, y, z = self.e.position('earthmoon', self.e.jomega)
+        x, y, z = self.position('earthmoon', self.eph.jomega)
         self.assertAlmostEqual(x, -94189805.73967789, delta=epsilon_m)
         self.assertAlmostEqual(y, 1.05103857e+08, delta=1.0)
         self.assertAlmostEqual(z, 45550861.44383482, delta=epsilon_m)
 
     def test_too_early_date(self):
-        tdb = self.e.jalpha - 0.01
-        self.assertRaises(DateError, self.e.position, 'earthmoon', tdb)
+        tdb = self.eph.jalpha - 0.01
+        self.assertRaises(DateError, self.position, 'earthmoon', tdb)
 
     def test_too_late_date(self):
-        tdb = self.e.jomega + 16.01
-        self.assertRaises(DateError, self.e.position, 'earthmoon', tdb)
+        tdb = self.eph.jomega + 16.01
+        self.assertRaises(DateError, self.position, 'earthmoon', tdb)
