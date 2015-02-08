@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 
-class DateError(Exception):
+class DateError(ValueError):
     """Date input is outside the range covered by the ephemeris."""
 
 

@@ -7,11 +7,15 @@ from collections import namedtuple
 from numpy import array, empty, empty_like, ndarray, rollaxis
 from .daf import DAF
 
-Segment = namedtuple('Segment', 'source start_second stop_second target'
-                     ' center frame data_type start_index stop_index')
-
-S_PER_DAY = 86400.0
 T0 = 2451545.0
+S_PER_DAY = 86400.0
+
+def jd(seconds):
+    """Convert a number of seconds since J2000 to a Julian Date."""
+    return T0 + seconds / S_PER_DAY
+
+Segment = namedtuple('Segment', 'start_second end_second target center frame'
+                     ' data_type start_index end_index source start_jd end_jd')
 
 
 class SPK(object):
@@ -19,15 +23,20 @@ class SPK(object):
 
     def __init__(self, path):
         self.daf = DAF(path)
-        g = self.daf.summaries()
-        self.segment_list = [Segment(source, *values) for source, values in g]
-        self.segments = {s.target: s for s in self.segment_list}
+        self.segments = [
+            Segment(*t, source=source, start_jd=jd(t[0]), end_jd=jd(t[1]))
+            for source, t in self.daf.summaries()
+            ]
+        self.targets = {s.target: s for s in self.segments}
         self._coefficients = {}
 
-    def array(self, start, stop):
-        """Return the array of floats from `start` to `stop` inclusive."""
-        data = self.daf.bytes(start, stop)
-        return ndarray(stop - start + 1, self.daf.endian + 'd', data)
+    def comments(self):
+        return self.daf.comments()
+
+    def array(self, start, end):
+        """Return the array of floats from `start` to `end` inclusive."""
+        data = self.daf.bytes(start, end)
+        return ndarray(end - start + 1, self.daf.endian + 'd', data)
 
     def _load(self, segment):
         if segment.data_type == 2:
@@ -36,12 +45,12 @@ class SPK(object):
             component_count = 6
         else:
             raise ValueError('only SPK data types 2 and 3 are supported')
-        stop = segment.stop_index
-        init, intlen, rsize, n = self.array(stop - 3, stop)
-        initial_epoch = T0 + init / S_PER_DAY
+        end = segment.end_index
+        init, intlen, rsize, n = self.array(end - 3, end)
+        initial_epoch = jd(init)
         interval_length = intlen / S_PER_DAY
         coefficient_count = (rsize - 2) // component_count
-        coefficients = self.array(segment.start_index, stop-4)
+        coefficients = self.array(segment.start_index, end-4)
         coefficients.shape = (n, rsize)
         coefficients = coefficients[:,2:]  # ignore MID and RADIUS elements
         coefficients.shape = (n, component_count, coefficient_count)
@@ -114,17 +123,3 @@ class SPK(object):
 
         rates = (dT.T * coefficients).sum(axis=2)
         return components, rates
-
-
-def main2():
-    T0 = 2451545.0
-    spk = SPK('jup310.bsp')
-    segment = spk.segments[3]
-    p = spk.compute(segment, T0)
-    print(p)
-    segment = spk.segments[502]
-    p = spk.compute(segment, T0)
-    print(p)
-
-
-main2()
