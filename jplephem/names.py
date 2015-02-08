@@ -422,7 +422,7 @@ target_name_pairs = [
     (1000014, 'CLARK'),
     (1000015, 'COMAS SOLA'),
     (1000016, 'CROMMELIN'),
-    (1000017, 'D''ARREST'),
+    (1000017, 'D\'ARREST'),
     (1000018, 'DANIEL'),
     (1000019, 'DE VICO-SWIFT'),
     (1000020, 'DENNING-FUJIKAWA'),
