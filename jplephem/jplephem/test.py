@@ -1,8 +1,8 @@
 """Tests for ``jplephem``.
 
 See the accompanying ``jpltest`` module for a more intense numerical
-test suite that can verify that ``jplephem`` delivers, in a large number
-of cases, the same results as when the ephemerides are run at JPL.  This
+test suite that can verify that ``jplephem`` delivers, over hundreds of
+examples, the same results as when the ephemerides are run at JPL.  This
 smaller and more feature-oriented suite can be run with::
 
     python -m unittest discover jplephem
@@ -11,12 +11,15 @@ smaller and more feature-oriented suite can be run with::
 import numpy as np
 from functools import partial
 from jplephem import Ephemeris, DateError
-from unittest import TestCase
+from unittest import SkipTest, TestCase
 
 class Tests(TestCase):
 
     def setUp(self):
-        import de421
+        try:
+            import de421
+        except ImportError:
+            raise SkipTest('the "de421" ephemeris package is not installed')
         self.e = Ephemeris(de421)
 
     def check0(self, xyz, xyzdot=None):
