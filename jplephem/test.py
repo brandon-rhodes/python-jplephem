@@ -74,6 +74,7 @@ class _CommonTests(object):
         self.check1(self.position('earthmoon', 2415110.0, 2.5))
 
     def test_scalar_tdb_keyword(self):
+        print(self.position('earthmoon', tdb=2414994.0))
         self.check0(self.position('earthmoon', tdb=2414994.0))
         self.check1(self.position('earthmoon', tdb=2415112.5))
 
@@ -155,7 +156,8 @@ class SPKTests(_CommonTests, TestCase):
         segment = self.spk.targets[target_names[name]]
         return segment.compute(segment, tdb, tdb2, differentiate=True)
 
-    def test_repr(self):
+    def test_str(self):
+        str(self.spk)  # just to confirm it does not raise an exception
         self.assertEqual(str(self.spk.targets[4]), '2414864.50..2471184.50 tar'
                          'get=4   center=0 frame=1 data_type=2 DE-0421LE-0421')
 

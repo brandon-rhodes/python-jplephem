@@ -23,6 +23,13 @@ class SPK(object):
         self.segments = [Segment(self.daf, *t) for t in self.daf.summaries()]
         self.targets = dict((s.target, s) for s in self.segments)  # Python 2.6
 
+    def __str__(self):
+        daf = self.daf
+        d = lambda b: b.decode('latin-1')
+        lines = (str(segment) for segment in self.segments)
+        return 'File type {0} and format {1} with {2} segments:\n{3}'.format(
+            d(daf.locidw), d(daf.locfmt), len(self.segments), '\n'.join(lines))
+
     def comments(self):
         return self.daf.comments()
 
@@ -75,7 +82,8 @@ class Segment(object):
         an array of rates at which the components are changing.
 
         """
-        if not getattr(tdb, 'shape', None):
+        scalar = not getattr(tdb, 'shape', 0) and not getattr(tdb2, 'shape', 0)
+        if scalar:
             tdb = array((tdb,))
 
         try:
@@ -111,6 +119,8 @@ class Segment(object):
             T[i] = twot1 * T[i-1] - T[i-2]
 
         components = (T.T * coefficients).sum(axis=2)
+        if scalar:
+            components = components[:,0]
         if not differentiate:
             return components
 
@@ -126,4 +136,6 @@ class Segment(object):
         dT /= interval_length
 
         rates = (dT.T * coefficients).sum(axis=2)
+        if scalar:
+            rates = rates[:,0]
         return components, rates
