@@ -60,19 +60,19 @@ def _position(spk, jed, target):
 
 
     if target == 3:
-        p1, v1 = spk.targets[3].compute(target, jed, differentiate=True)
-        p2, v2 = spk.targets[399].compute(target, jed, differentiate=True)
+        p1, v1 = spk.targets[3].compute(jed, differentiate=True)
+        p2, v2 = spk.targets[399].compute(jed, differentiate=True)
         p = p1 + p2
         v = v1 + v2
     elif target == 10:
-        p1, v1 = spk.targets[3].compute(target, jed, differentiate=True)
-        p2, v2 = spk.targets[301].compute(target, jed, differentiate=True)
+        p1, v1 = spk.targets[3].compute(jed, differentiate=True)
+        p2, v2 = spk.targets[301].compute(jed, differentiate=True)
         p = p1 + p2
         v = v1 + v2
     elif target == 12:
         return np.zeros((6, 1))  # solar system barycenter is the origin
     else:
-        p, v = spk.targets[target].compute(target, jed, differentiate=True)
+        p, v = spk.targets[target].compute(jed, differentiate=True)
 
     return np.concatenate((p, v))
 

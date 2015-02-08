@@ -149,11 +149,11 @@ class SPKTests(_CommonTests, TestCase):
 
     def position(self, name, tdb, tdb2=0.0):
         segment = self.spk.targets[target_names[name]]
-        return segment.compute(segment, tdb, tdb2)
+        return segment.compute(tdb, tdb2)
 
     def position_and_velocity(self, name, tdb, tdb2=0.0):
         segment = self.spk.targets[target_names[name]]
-        return segment.compute(segment, tdb, tdb2, differentiate=True)
+        return segment.compute(tdb, tdb2, differentiate=True)
 
     def test_str(self):
         str(self.spk)  # just to confirm it does not raise an exception

@@ -81,7 +81,7 @@ class Segment(object):
         coefficients = rollaxis(coefficients, 1)
         return initial_epoch, interval_length, coefficients
 
-    def compute(self, segment, tdb, tdb2=0.0, differentiate=False):
+    def compute(self, tdb, tdb2=0.0, differentiate=False):
         """Compute the component values for the time `tdb` plus `tdb2`.
 
         If `differentiate` is false, then an array of components is
