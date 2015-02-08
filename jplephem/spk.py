@@ -72,12 +72,12 @@ class Segment(object):
         init, intlen, rsize, n = self.daf.array(self.end_i - 3, self.end_i)
         initial_epoch = jd(init)
         interval_length = intlen / S_PER_DAY
-        coefficient_count = (rsize - 2) // component_count
+        coefficient_count = int(rsize - 2) // component_count
         coefficients = self.daf.array(self.start_i, self.end_i - 4)
 
-        coefficients.shape = (n, rsize)
+        coefficients.shape = (int(n), rsize)
         coefficients = coefficients[:,2:]  # ignore MID and RADIUS elements
-        coefficients.shape = (n, component_count, coefficient_count)
+        coefficients.shape = (int(n), component_count, coefficient_count)
         coefficients = rollaxis(coefficients, 1)
         return initial_epoch, interval_length, coefficients
 
