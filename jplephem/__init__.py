@@ -4,16 +4,16 @@
 
 This package can load and use a Jet Propulsion Laboratory (JPL)
 ephemeris for predicting the position and velocity of a planet or other
-Solar System body.  Its only needs `NumPy <http://www.numpy.org/>`_,
+Solar System body.  It only needs `NumPy <http://www.numpy.org/>`_,
 which ``pip`` will automatically attempt to install alongside
 ``pyephem`` when you run::
 
     $ pip install jplephem
 
 If you see NumPy compilation errors, then try downloading and installing
-it directly from `its web site <http://www.numpy.org/>`_ or simply try
-using a distribution of Python with science tools already installed,
-like `Anaconda <http://continuum.io/downloads>_`.
+NumPy directly from `its web site <http://www.numpy.org/>`_ or simply
+use a distribution of Python with science tools already installed, like
+`Anaconda <http://continuum.io/downloads>`_.
 
 Note that ``jplephem`` offers only the logic necessary to produce plain
 three-dimensional vectors.  Most programmers interested in astronomy
@@ -88,8 +88,8 @@ You can see that the output of this ephemeris is in kilometers.  If you
 use another ephemeris, check its documentation to be sure of the units
 that it employs.
 
-If you supply the date as a NumPy array, then a whole series of
-positions will come back:
+If you supply the date as a NumPy array, then each component that is
+returned will itself be a vector as long as your date:
 
 >>> import numpy as np
 >>> jd = np.array([2457061.5, 2457062.5, 2457063.5, 2457064.5])
@@ -174,6 +174,13 @@ provided above and read through the code to learn more.
   final segment for a given center and target, but that send other dates
   to earlier segments that are qualified to cover them.
 
+* If you are accounting for light travel time and require repeated
+  computation of the position, but then need the velocity at the end,
+  and want to avoid repeating the expensive position calculation, then
+  try out the ``segment.generate()`` method - it will let you ask for
+  the position, and then only proceed to the velocity once you are sure
+  that the light-time error is now small enough.
+
 
 High-Precision Dates
 --------------------
@@ -230,50 +237,13 @@ given a barycentric dynamical time expressed as a Julian date::
     eph = Ephemeris(de421)
     x, y, z = eph.position('mars', 2444391.5)  # 1980.06.01
 
-The result of calling ``position()`` is a 3-element NumPy array giving
-the planet's position in the solar system in kilometers along the three
-axes of the ICRF (a more precise reference frame than J2000 but oriented
-in the same direction).  If you also want to know the planet's velocity,
-call ``position_and_velocity()`` instead::
+For more information about the legacy API, consult the ``jplephem``
+entry on PyPI for the final release of the 1.x series:
 
-    position, velocity = eph.position_and_velocity('mars', 2444391.5)
-    x, y, z = position            # a NumPy array
-    xdot, ydot, zdot = velocity   # another array
+https://pypi.python.org/pypi/jplephem/1.2
 
-Velocities are returned as kilometers per day.
-
-Both of these methods will also accept a NumPy array, which is the most
-efficient way of computing a series of positions or velocities.  For
-example, the position of Mars at each midnight over an entire year can
-be computed with::
-
-    import numpy as np
-    t0 = 2444391.5
-    t = np.arange(t0, t0 + 366.0, 1.0)
-    x, y, z = eph.position('mars', 2444391.5)
-
-You will find that ``x``, ``y``, and ``z`` in this case are each a NumPy
-array of the same length as your input ``t``.
-
-The string that you provide to ``e.compute()``, like ``'mars'`` in the
-example above, actually names the data file that you want loaded from
-the ephemeris package.  To see the list of data files that an ephemeris
-provides, consult its ``names`` attribute.  Most of the JPL ephemerides
-provide thirteen data sets::
-
-    earthmoon   mercury    pluto   venus
-    jupiter     moon       saturn
-    librations  neptune    sun
-    mars        nutations  uranus
-
-Each ephemeris covers a specific range of dates, beyond which it cannot
-provide reliable predictions of each planet's position.  These limits
-are available as attributes of the ephemeris::
-
-    t0, t1 = eph.jalpha, eph.jomega
-
-The ephemerides currently available as Python packages (the following
-links explain the differences between them) are:
+The ephemerides that were made available as Python packages (the
+following links explain the differences between them) are:
 
 * `DE405 <http://pypi.python.org/pypi/de405>`_ (May 1997)
   — 54 MB covering years 1600 through 2200
@@ -285,52 +255,6 @@ links explain the differences between them) are:
   — 531 MB covering years -3000 through 3000
 * `DE423 <http://pypi.python.org/pypi/de423>`_ (February 2010)
   — 36 MB covering years 1800 through 2200
-
-Waiting To Compute Velocity
----------------------------
-
-When a high-level astronomy library computes the distance between an
-observer and a solar system body, it typically measures the light travel
-delay between the observer and the body, and then uses a loop to take
-the position several steps backwards in time until it has determined
-where the planet *was* back when the light left its surface (or cloud
-deck) that is reaching the eye or sensor of the observer right *now*.
-
-To make such a loop less computationally expensive — a loop that only
-needs to compute the planet position repeatedly, and can wait to compute
-the velocity until the loop's conclusion — ``jplephem`` provides a way
-to split the ``position_and_velocity()`` call into two pieces.  This
-lets you examine the position *before* deciding whether to also proceed
-with the expense of computing the velocity.
-
-The key is the special ``compute_bundle()`` method, which returns a
-tuple containing the coefficients and intermediate results that are
-needed by *both* the position and the velocity computations.  There is
-nothing wasted in calling ``compute_bundle()`` whether you are going to
-ask for the position, the velocity, or both as your next computing step!
-
-So your loop can look something like this::
-
-    while True:
-        bundle = eph.compute_bundle('mars', tdb)
-        position = eph.position_from_bundle(bundle)
-
-        # ...determine whether you are happy...
-
-        if you_are_happy:
-            break
-
-        # ...otherwise, adjust `tdb` and then let
-        # control return back to the top of the loop
-
-    # Now we can re-use the values in `bundle`, for free!
-
-    velocity = eph.velocity_from_bundle(bundle)
-
-This is especially important when the number of dates in ``tdb`` is
-large, since vector operations over thousands or millions of dates are
-going to take a noticeable amount of time, and every mass operation that
-can be avoided will help move your program toward completion.
 
 
 Reporting issues
@@ -346,8 +270,8 @@ Changelog
 
 **2015 February 8 — Version 2.0**
 
-* Added support for SPICE SPK files downloaded directly from NASA, and
-  designated old Python-packaged ephemerides as “legacy.”
+* Added support for SPICE SPK kernel files downloaded directly from
+  NASA, and designated old Python-packaged ephemerides as “legacy.”
 
 **2013 November 26 — Version 1.2**
 

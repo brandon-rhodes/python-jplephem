@@ -94,6 +94,7 @@ class Segment(object):
         return self.describe(verbose=False)
 
     def describe(self, verbose=True):
+        """Return a textual description of the segment."""
         center = titlecase(target_names.get(self.center, 'Unknown center'))
         target = titlecase(target_names.get(self.target, 'Unknown target'))
         text = ('{0.start_jd:.2f}..{0.end_jd:.2f}  {1} ({0.center})'
@@ -113,8 +114,9 @@ class Segment(object):
         return list(self.generate(tdb, tdb2))
 
     def _load(self):
-        """Map the coefficients into memory using a NumPy array."""
+        """Map the coefficients into memory using a NumPy array.
 
+        """
         if self.data_type == 2:
             component_count = 3
         elif self.data_type == 3:
