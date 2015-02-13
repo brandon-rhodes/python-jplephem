@@ -16,6 +16,9 @@ class DAF(object):
     """Access to NASA SPICE Double Precision Array Files (DAF)."""
 
     def __init__(self, file_object):
+        if getattr(file_object, 'encoding', None):
+            raise ValueError('file_object must be opened in binary "b" mode')
+
         self.file = file_object
         self.fileno = file_object.fileno()
 
