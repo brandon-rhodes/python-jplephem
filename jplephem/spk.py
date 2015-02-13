@@ -43,8 +43,7 @@ class SPK(object):
     @classmethod
     def open(cls, path):
         """Open the file at `path` and return an SPK instance."""
-        with open(path, 'rb') as f:
-            return cls(f)
+        return cls(open(path, 'rb'))
 
     def __str__(self):
         daf = self.daf
@@ -111,7 +110,7 @@ class Segment(object):
 
     def compute_and_differentiate(self, tdb, tdb2=0.0):
         """Compute components and differentials for time `tdb` plus `tdb2`."""
-        return list(self.generate(tdb, tdb2))
+        return tuple(self.generate(tdb, tdb2))
 
     def _load(self):
         """Map the coefficients into memory using a NumPy array.
@@ -124,11 +123,11 @@ class Segment(object):
         else:
             raise ValueError('only SPK data types 2 and 3 are supported')
 
-        init, intlen, rsize, n = self.daf.array(self.end_i - 3, self.end_i)
+        init, intlen, rsize, n = self.daf.map_array(self.end_i - 3, self.end_i)
         initial_epoch = jd(init)
         interval_length = intlen / S_PER_DAY
         coefficient_count = int(rsize - 2) // component_count
-        coefficients = self.daf.array(self.start_i, self.end_i - 4)
+        coefficients = self.daf.map_array(self.start_i, self.end_i - 4)
 
         coefficients.shape = (int(n), rsize)
         coefficients = coefficients[:,2:]  # ignore MID and RADIUS elements
