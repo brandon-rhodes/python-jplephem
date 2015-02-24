@@ -268,6 +268,11 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2015 February 24 — Version 2.1**
+
+* Switched from mapping an entire SPK file into memory at once to
+  memory-mapping each segment separately on demand.
+
 **2015 February 8 — Version 2.0**
 
 * Added support for SPICE SPK kernel files downloaded directly from
