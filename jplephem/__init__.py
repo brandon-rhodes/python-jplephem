@@ -34,6 +34,20 @@ document is available from the NAIF facility’s web site under the NASA
 JPL domain.
 
 
+Command Line Tool
+-----------------
+
+If you have downloaded a ``.bsp`` file and want to learn what ephemeris
+segments are stored inside of it, you can have ``jplephem`` print them
+out by invoking the module directly from the command line::
+
+    python -m jplephem de430.bsp
+
+This will print out a summary identical to the one shown in the
+following section, but without requiring that you type and run any
+Python code.
+
+
 Getting Started With DE430
 --------------------------
 
