@@ -282,6 +282,10 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2015 ? — Version 2.2**
+
+* Made it possible to invoke ``jplephem`` from the command line.
+
 **2015 February 24 — Version 2.1**
 
 * Switched from mapping an entire SPK file into memory at once to
