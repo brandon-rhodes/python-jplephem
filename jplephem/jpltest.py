@@ -6,7 +6,6 @@ This test can be invoked with a simple::
 
 """
 import numpy as np
-from functools import partial
 from .spk import SPK
 
 AU = eval('0.149597870700000000D+09'.replace('D', 'E'))  # km
