@@ -11,6 +11,7 @@ from .spk import SPK
 AU = eval('0.149597870700000000D+09'.replace('D', 'E'))  # km
 meter = 0.001 / AU
 epsilon = 0.01 * meter
+field_names = {1: 'x', 2: 'y', 3: 'z', 4: 'vx', 5: 'vy', 6: 'vz'}
 
 def run_testpo(spk, testpo_file):
     """Compare the positions we compute against those computed by the JPL."""
@@ -20,14 +21,23 @@ def run_testpo(spk, testpo_file):
     while next(lines).strip() != 'EOT':
         continue
 
+    skips = 0
     successes = 0
     targets = set([segment.target for segment in spk.segments])
+
+    # Old codes, special-cased in _position():
+    targets.add(11)
+    targets.add(12)
+    targets.add(13)
 
     for line in lines:
         de, date, jed, target, center, number, value = [f(v) for f, v
             in zip((str, str, float, int, int, int, float), line.split())]
 
         if (target not in targets) or (center not in targets):
+            assert target == 14 or target == 15
+            assert center == 0
+            skips += 1
             continue
 
         if 14 <= target <= 15:
@@ -44,7 +54,8 @@ def run_testpo(spk, testpo_file):
         #     delta = delta * 0.01 / (1.0 + (jed - 2451545.0) / 365.25)
 
         if abs(delta) >= epsilon:
-            print('%s %s %s->%s field %d' % (date, jed, center, target, number))
+            print('%s %s %s->%s field %d (%s)'
+                  % (date, jed, center, target, number, field_names[number]))
             print('  JPL result: %.15f' % value)
             print('  Our result: %.15f' % r[number - 1])
             print('    ERROR: difference = %s' % (delta,))
@@ -52,7 +63,7 @@ def run_testpo(spk, testpo_file):
 
         successes += 1
 
-    print('  %d tests successful' % successes)
+    print('  {} tests successful, {} skipped'.format(successes, skips))
 
 
 def _position(spk, jed, target):
@@ -68,8 +79,12 @@ def _position(spk, jed, target):
         p2, v2 = spk[3,301].compute_and_differentiate(jed)
         p = p1 + p2
         v = v1 + v2
+    elif target == 11:
+        p, v = spk[0,10].compute_and_differentiate(jed)
     elif target == 12:
-        return np.zeros((6, 1))  # solar system barycenter is the origin
+        return np.zeros((6,))  # solar system barycenter is the origin
+    elif target == 13:
+        p, v = spk[0,3].compute_and_differentiate(jed)
     else:
         p, v = spk[0,target].compute_and_differentiate(jed)
 
