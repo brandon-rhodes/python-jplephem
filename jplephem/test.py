@@ -19,10 +19,10 @@ except ImportError:
 
 epsilon_m = 0.01
 target_names = {
-    'mercury': 1,          # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
-    'venus': 2,            # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
+    'mercury barycenter': 1, # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
+    'venus barycenter': 2, # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
     'earthmoon': 3,        # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
-    'mars': 4,             # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
+    'mars barycenter': 4,  # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
     'jupiter': 5,          # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
     'saturn': 6,           # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
     'uranus': 7,           # BARYCENTER w.r.t. 0 SOLAR SYSTEM BARYCENTER
@@ -154,6 +154,12 @@ class SPKTests(_CommonTests, TestCase):
     def position_and_velocity(self, name, tdb, tdb2=0.0):
         segment = self.spk[0, target_names[name]]
         return segment.compute_and_differentiate(tdb, tdb2)
+
+    def test_segment_with_only_two_coefficients(self):
+        tdb = 2414990.0
+        tup = target_names['mercury barycenter'], target_names['mercury']
+        segment = self.spk[tup]
+        segment.compute_and_differentiate(tdb)
 
     def test_str(self):
         str(self.spk)  # just to confirm it does not raise an exception

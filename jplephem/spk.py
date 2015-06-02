@@ -193,9 +193,10 @@ class Segment(object):
         dT = empty_like(T)
         dT[0] = 0.0
         dT[1] = 1.0
-        dT[2] = twot1 + twot1
-        for i in range(3, coefficient_count):
-            dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
+        if coefficient_count > 2:
+            dT[2] = twot1 + twot1
+            for i in range(3, coefficient_count):
+                dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
         dT *= 2.0
         dT /= interval_length
 

@@ -286,6 +286,10 @@ Changelog
 
 * Made it possible to invoke ``jplephem`` from the command line.
 
+* Fixed an exception that was raised for SPK segments with a coefficient
+  count of only 2, like the DE421 and DE430 segments that provide the
+  offset of Mercury from the Mercury barycenter.
+
 **2015 February 24 — Version 2.1**
 
 * Switched from mapping an entire SPK file into memory at once to
