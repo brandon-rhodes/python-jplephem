@@ -63,7 +63,7 @@ def run_testpo(spk, testpo_file):
 
         successes += 1
 
-    print('  {} tests successful, {} skipped'.format(successes, skips))
+    print('  {0} tests successful, {1} skipped'.format(successes, skips))
 
 
 def _position(spk, jed, target):
