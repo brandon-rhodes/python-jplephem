@@ -26,7 +26,7 @@ class DAF(object):
 
         self.locidw = file_record[:8].upper().rstrip()
         if not self.locidw.startswith(b'DAF/'):
-            raise ValueError('file starts with {0!r}, not the 4 bytes {0!r}'
+            raise ValueError('file starts with {0!r}, not the 4 bytes {1!r}'
                              .format(self.locidw, b'DAF/'))
 
         if file_record[500:1000].strip(b'\0') != FTPSTR:
