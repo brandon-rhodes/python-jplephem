@@ -227,23 +227,30 @@ Marten van Kerkwijk!
 Legacy Ephemeris Packages
 -------------------------
 
-Back before the author of ``jplephem`` learned about SPICE and SPK
-files, he had run across the text-file formatted JPL ephemerides at:
+The use of old NASA ephemeris kernels like ``de405.bsp`` are supported
+through a special class, in case you ever need it::
+
+    from jplephem.spk import SPK
+    from jplephem.daf import NAIF_DAF
+    kernel = SPK(NAIF_DAF(open('de405.bsp', 'rb')))
+
+Another legacy ephemeris file format is available on the Python Package
+Index.  Back before I learned about SPICE and SPK files, I had run
+across the text-file formatted JPL ephemerides at:
 
 ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/
 
-The author laboriously assembled the data in these text files into
-native NumPy array files, wrapped them each in a Python package, and
-wrote this ``jplephem`` package so that users could install an ephemeris
-with a simple command::
+I laboriously assembled the data in these text files into native NumPy
+array files and wrapped them each in a Python package so that users
+could install an ephemeris with a simple command::
 
     pip install de421
 
 If you want to use one of these pip-installable ephemerides, you will be
 using a slightly older API, and will lose the benefit of the efficient
-memory-mapping that the newer SPK code performs.  With the old API,
-loading DE421 and computing a position require one line of Python each,
-given a barycentric dynamical time expressed as a Julian date::
+memory-mapping that the newer SPK code performs.  With the old API, here
+is how you would load DE421 and compute a position, given a barycentric
+dynamical time expressed as a Julian date::
 
     import de421
     from jplephem import Ephemeris
@@ -289,6 +296,9 @@ Changelog
 * Fixed an exception that was raised for SPK segments with a coefficient
   count of only 2, like the DE421 and DE430 segments that provide the
   offset of Mercury from the Mercury barycenter.
+
+* Added support for old NAIF/DAF kernel files, like ``de405.bsp``
+  (GitHub issue #12).
 
 **2015 February 24 — Version 2.1**
 

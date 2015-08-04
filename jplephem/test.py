@@ -11,6 +11,7 @@ smaller and more feature-oriented suite can be run with::
 import numpy as np
 from functools import partial
 from jplephem import Ephemeris
+from jplephem.daf import NAIF_DAF
 from jplephem.spk import SPK
 try:
     from unittest import SkipTest, TestCase
@@ -208,3 +209,14 @@ class LegacyTests(_CommonTests, TestCase):
         self.assertAlmostEqual(x, -94189805.73967789, delta=epsilon_m)
         self.assertAlmostEqual(y, 1.05103857e+08, delta=1.0)
         self.assertAlmostEqual(z, 45550861.44383482, delta=epsilon_m)
+
+
+class NAIF_DAF_Tests(TestCase):
+
+    def test_single_position(self):
+        kernel = SPK(NAIF_DAF(open('de405.bsp', 'rb')))
+        x, y, z = kernel[0,4].compute(2457061.5)
+        # Expect rough agreement with a DE430 position from our README:
+        self.assertAlmostEqual(x, 2.05700211e+08, delta=2.0)
+        self.assertAlmostEqual(y, 4.25141646e+07, delta=2.0)
+        self.assertAlmostEqual(z, 1.39379183e+07, delta=2.0)

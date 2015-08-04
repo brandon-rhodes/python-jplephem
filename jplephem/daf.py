@@ -110,3 +110,36 @@ class DAF(object):
                 yield name, values
 
             record_number = int(next_number)
+
+
+class NAIF_DAF(DAF):
+    """Access an ancient NAIF/DAF file, like the de405.bsp kernel."""
+
+    def __init__(self, file_object):
+        if getattr(file_object, 'encoding', None):
+            raise ValueError('file_object must be opened in binary "b" mode')
+
+        self.file = file_object
+        self.fileno = file_object.fileno()
+
+        file_record = self.read_record(1)
+
+        self.locidw = file_record[:8].upper().rstrip()
+        if not self.locidw == b'NAIF/DAF':
+            raise ValueError('file starts with {0!r}, not the 4 bytes {1!r}'
+                             .format(self.locidw, b'NAIF/DAF'))
+
+        for self.locfmt, self.endian in LOCFMT.items():
+            (self.nd, self.ni, locifn, self.fward, self.bward, self.free
+            ) = struct.unpack(self.endian + 'II60sIII', file_record[8:88])
+            if self.nd == 2:
+                break
+        else:
+            raise ValueError('neither a big-endian nor a little-endian scan'
+                             ' of this file produces the expected ND=2')
+
+        summary_size = self.nd + (self.ni + 1) // 2
+        self.summary_step = 8 * summary_size
+        self.summary_format = self.endian + 'd' * self.nd + 'i' * self.ni
+        self.summary_length = struct.calcsize(self.summary_format)
+        self.locifn = locifn.upper().rstrip()
