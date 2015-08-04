@@ -35,15 +35,15 @@ class SPK(object):
     To extract the text comments from the SPK use ``kernel.comments()``.
 
     """
-    def __init__(self, file_object):
-        self.daf = DAF(file_object)
+    def __init__(self, daf):
+        self.daf = daf
         self.segments = [Segment(self.daf, *t) for t in self.daf.summaries()]
         self.pairs = dict(((s.center, s.target), s) for s in self.segments)
 
     @classmethod
     def open(cls, path):
         """Open the file at `path` and return an SPK instance."""
-        return cls(open(path, 'rb'))
+        return cls(DAF(open(path, 'rb')))
 
     def __str__(self):
         daf = self.daf
