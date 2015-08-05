@@ -289,16 +289,19 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
-**2015 ? — Version 2.2**
+**2015 August 5 — Version 2.2**
 
-* Made it possible to invoke ``jplephem`` from the command line.
+* You can now invoke ``jplephem`` from the command line.
 
-* Fixed an exception that was raised for SPK segments with a coefficient
+* Fixes an exception that was raised for SPK segments with a coefficient
   count of only 2, like the DE421 and DE430 segments that provide the
   offset of Mercury from the Mercury barycenter.
 
-* Added support for old NAIF/DAF kernel files, like ``de405.bsp``
-  (GitHub issue #12).
+* Supports old NAIF/DAF kernels like ``de405.bsp``.
+
+* The ``SPK()`` constructor is now simpler, taking a ``DAF`` object
+  instead of an open file.  This is considered an internal API change —
+  the public API is the constructor ``SPK.open()``.
 
 **2015 February 24 — Version 2.1**
 
