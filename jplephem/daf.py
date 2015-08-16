@@ -24,27 +24,37 @@ class DAF(object):
 
         file_record = self.read_record(1)
 
+        def unpack():
+            (self.nd, self.ni, self.locifn, self.fward, self.bward, self.free
+            ) = struct.unpack(self.endian + 'II60sIII', file_record[8:88])
+
         self.locidw = file_record[:8].upper().rstrip()
-        if not self.locidw.startswith(b'DAF/'):
-            raise ValueError('file starts with {0!r}, not the 4 bytes {1!r}'
-                             .format(self.locidw, b'DAF/'))
 
-        if file_record[500:1000].strip(b'\0') != FTPSTR:
-            raise ValueError('this SPK file has been damaged')
-
-        self.locfmt = file_record[88:96]
-        self.endian = LOCFMT.get(self.locfmt)
-        if self.endian is None:
-            raise ValueError('unsupported format {0!r}'.format(self.locfmt))
-
-        (self.nd, self.ni, locifn, self.fward, self.bward, self.free
-         ) = struct.unpack(self.endian + 'II60sIII', file_record[8:88])
+        if self.locidw == b'NAIF/DAF':
+            for self.locfmt, self.endian in LOCFMT.items():
+                unpack()
+                if self.nd == 2:
+                    break
+            else:
+                raise ValueError('neither a big- nor a little-endian scan'
+                                 ' of this file produces the expected ND=2')
+        elif self.locidw.startswith(b'DAF/'):
+            if file_record[500:1000].strip(b'\0') != FTPSTR:
+                raise ValueError('this SPK file has been damaged')
+            self.locfmt = file_record[88:96]
+            self.endian = LOCFMT.get(self.locfmt)
+            if self.endian is None:
+                raise ValueError('unknown format {0!r}'.format(self.locfmt))
+            unpack()
+        else:
+            raise ValueError('file starts with {0!r}, not "NAIF/DAF" or "DAF/"'
+                             .format(self.locidw))
 
         summary_size = self.nd + (self.ni + 1) // 2
         self.summary_step = 8 * summary_size
         self.summary_format = self.endian + 'd' * self.nd + 'i' * self.ni
         self.summary_length = struct.calcsize(self.summary_format)
-        self.locifn = locifn.upper().rstrip()
+        self.locifn = self.locifn.upper().rstrip()
 
     def read_record(self, n):
         """Return record `n` as 1,024 bytes; records are indexed from 1."""
@@ -112,34 +122,4 @@ class DAF(object):
             record_number = int(next_number)
 
 
-class NAIF_DAF(DAF):
-    """Access an ancient NAIF/DAF file, like the de405.bsp kernel."""
-
-    def __init__(self, file_object):
-        if getattr(file_object, 'encoding', None):
-            raise ValueError('file_object must be opened in binary "b" mode')
-
-        self.file = file_object
-        self.fileno = file_object.fileno()
-
-        file_record = self.read_record(1)
-
-        self.locidw = file_record[:8].upper().rstrip()
-        if not self.locidw == b'NAIF/DAF':
-            raise ValueError('file starts with {0!r}, not the 4 bytes {1!r}'
-                             .format(self.locidw, b'NAIF/DAF'))
-
-        for self.locfmt, self.endian in LOCFMT.items():
-            (self.nd, self.ni, locifn, self.fward, self.bward, self.free
-            ) = struct.unpack(self.endian + 'II60sIII', file_record[8:88])
-            if self.nd == 2:
-                break
-        else:
-            raise ValueError('neither a big-endian nor a little-endian scan'
-                             ' of this file produces the expected ND=2')
-
-        summary_size = self.nd + (self.ni + 1) // 2
-        self.summary_step = 8 * summary_size
-        self.summary_format = self.endian + 'd' * self.nd + 'i' * self.ni
-        self.summary_length = struct.calcsize(self.summary_format)
-        self.locifn = locifn.upper().rstrip()
+NAIF_DAF = DAF  # a separate class supported NAIF/DAF format in jplephem 2.2
