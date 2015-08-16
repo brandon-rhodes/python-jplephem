@@ -19,17 +19,15 @@ def jd(seconds):
 class SPK(object):
     """A JPL SPK ephemeris kernel for computing positions and velocities.
 
-    You can load an SPK using either a filename or an already opened
-    file object::
+    You can load an SPK by specifying its filename::
 
-        kernel = SPK(file_object)
         kernel = SPK.open('de431.bsp')
 
-    Simply ``print(kernel)`` see which segments are inside.  You can
+    Run ``print(kernel)`` see which segments are inside.  You can also
     loop across all of the segments in the list ``kernel.segments`` or,
     as a convenience, you can select a particular segment by providing a
     center and target integer in square brackets.  So ``kernel[3,399]``
-    to select the segment that computes the distance between the
+    will select the segment that computes the distance between the
     Earth-Moon barycenter (3) and the Earth itself (399).
 
     To extract the text comments from the SPK use ``kernel.comments()``.
