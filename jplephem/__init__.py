@@ -227,16 +227,8 @@ Marten van Kerkwijk!
 Legacy Ephemeris Packages
 -------------------------
 
-The use of old NASA ephemeris kernels like ``de405.bsp`` are supported
-through a special class, in case you ever need it::
-
-    from jplephem.spk import SPK
-    from jplephem.daf import NAIF_DAF
-    kernel = SPK(NAIF_DAF(open('de405.bsp', 'rb')))
-
-Another legacy ephemeris file format is available on the Python Package
-Index.  Back before I learned about SPICE and SPK files, I had run
-across the text-file formatted JPL ephemerides at:
+Back before I learned about SPICE and SPK files, I had run across the
+text-file formatted JPL ephemerides at:
 
 ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/
 
@@ -288,6 +280,12 @@ https://github.com/brandon-rhodes/python-jplephem/
 
 Changelog
 ---------
+
+**2015 August 16 — Version 2.3**
+
+* Added auto-detection and support for old NAIF/DAF kernels like
+  ``de405.bsp`` to the main ``DAF`` class itself, instead of requiring
+  the awkward use of an entirely different alternative class.
 
 **2015 August 5 — Version 2.2**
 
