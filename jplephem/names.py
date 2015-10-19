@@ -593,6 +593,10 @@ target_name_pairs = [
     (399064, 'DSS-64'),
     (399065, 'DSS-65'),
     (399066, 'DSS-66'),
+
+    # ftp://ssd.jpl.nasa.gov/pub/eph/planets/bsp/README.txt
+    (1000000000, 'TDB'),
+    (1000000001, 'TT'),
     ]
 
 target_names = dict(target_name_pairs)
