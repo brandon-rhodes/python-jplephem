@@ -72,7 +72,7 @@ class DAF(object):
 
         """
         i, j = 8 * start - 8, 8 * end
-        skip = i % mmap.PAGESIZE
+        skip = i % mmap.ALLOCATIONGRANULARITY
         r = mmap.ACCESS_READ
         m = mmap.mmap(self.fileno, length=j-i+skip, access=r, offset=i-skip)
         if sys.version_info > (3,):
