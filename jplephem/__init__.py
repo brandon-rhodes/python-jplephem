@@ -281,6 +281,16 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2015 November 1 — Version 2.4**
+
+* Add Windows compatibility by switching ``mmap()`` from using
+  ``PAGESIZE`` to ``ALLOCATIONGRANULARITY``.
+
+* Avoid a new NumPy deprecation warning by being careful to use only
+  integers in the NumPy ``shape`` tuple.
+
+* Add names "TDB" and "TT" to the names database for DE430.
+
 **2015 August 16 — Version 2.3**
 
 * Added auto-detection and support for old NAIF/DAF kernels like
