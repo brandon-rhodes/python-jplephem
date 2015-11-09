@@ -281,6 +281,11 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2015 November 9 — Version 2.5**
+
+* Move ``fileno()`` call out of the ``DAF`` constructor to support
+  fetching at least summary information from ``StringIO`` objects.
+
 **2015 November 1 — Version 2.4**
 
 * Add Windows compatibility by switching ``mmap()`` from using

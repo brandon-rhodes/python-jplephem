@@ -13,14 +13,19 @@ LOCFMT = {b'BIG-IEEE': '>', b'LTL-IEEE': '<'}
 K = 1024
 
 class DAF(object):
-    """Access to NASA SPICE Double Precision Array Files (DAF)."""
+    """Access to NASA SPICE Double Precision Array Files (DAF).
 
+    Provide the constructor with a ``file_object`` for full access to
+    both the segment summaries and to the numeric arrays.  If you pass a
+    ``StringIO`` instead, then you can fetch the summary information but
+    not access the arrays.
+
+    """
     def __init__(self, file_object):
         if getattr(file_object, 'encoding', None):
             raise ValueError('file_object must be opened in binary "b" mode')
 
         self.file = file_object
-        self.fileno = file_object.fileno()
 
         file_record = self.read_record(1)
 
@@ -71,10 +76,11 @@ class DAF(object):
         number of extra bytes at the beginning of the return value.
 
         """
+        fileno = self.file.fileno() # requires a true file object
         i, j = 8 * start - 8, 8 * end
         skip = i % mmap.ALLOCATIONGRANULARITY
         r = mmap.ACCESS_READ
-        m = mmap.mmap(self.fileno, length=j-i+skip, access=r, offset=i-skip)
+        m = mmap.mmap(fileno, length=j-i+skip, access=r, offset=i-skip)
         if sys.version_info > (3,):
             m = memoryview(m)  # so further slicing can return views
         return m, skip
@@ -123,3 +129,4 @@ class DAF(object):
 
 
 NAIF_DAF = DAF  # a separate class supported NAIF/DAF format in jplephem 2.2
+
