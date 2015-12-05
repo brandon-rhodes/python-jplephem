@@ -1,11 +1,11 @@
 package:
   name: jplephem
-  version: "2.1"
+  version: "2.5"
 
 source:
-  fn: jplephem-2.1.tar.gz
-  url: https://pypi.python.org/packages/source/j/jplephem/jplephem-2.1.tar.gz
-  md5: d20989d5ea2fea493805a9d11ec02aae
+  fn: jplephem-2.5.tar.gz
+  url: https://pypi.python.org/packages/source/j/jplephem/jplephem-2.5.tar.gz
+  md5: 2880f4a443cbc3ec3c9d90a9bc8e7d22
 
 build:
   number: 1
@@ -13,7 +13,6 @@ build:
 requirements:
   build:
     - python
-    - numpy
 
   run:
     - python
