@@ -10,7 +10,7 @@ with respect to the position of Earth's Moon.
 :Sun/Moon: Yes
 :Nutations: Yes
 :Librations: Yes
-:Report: `Folkner, Williams, Boggs (2009) [PDF] <http://tmo.jpl.nasa.gov/progress_report/42-178/178C.pdf>`_
+:Report: `Folkner, Williams, Boggs (2009) [PDF] <http://ipnpr.jpl.nasa.gov/progress_report/42-178/178C.pdf>`_
 :Size: 27 MB
 
 The JPL called this ephemeris is a "significant advance" over

@@ -10,7 +10,7 @@ future.
 :Sun/Moon: Yes
 :Nutations: No
 :Librations: No
-:Report: `Standish (1998) [PDF] <http://iau-comm4.jpl.nasa.gov/de405iom/de405iom.pdf>`_
+:Report: `Standish (1998) [PDF] <ftp://ssd.jpl.nasa.gov/pub/eph/planets/ioms/de405.iom.pdf>`_
 :Size: 190 MB
 
 This ephemeris is like `DE405 <http://pypi.python.org/pypi/de405>`_ but

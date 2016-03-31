@@ -11,7 +11,7 @@ provided for the major planets, the Sun, and Earth's Moon.
 :Sun/Moon: Yes
 :Nutations: Yes
 :Librations: Yes
-:Report: `Standish (1998) [PDF] <http://iau-comm4.jpl.nasa.gov/de405iom/de405iom.pdf>`_
+:Report: `Standish (1998) [PDF] <ftp://ssd.jpl.nasa.gov/pub/eph/planets/ioms/de405.iom.pdf>`_
 :Size: 54 MB
 
 The accuracy of this ephemeris is good; the position of the Earth or

@@ -12,7 +12,7 @@ milliarcseconds.
 :Sun/Moon: Yes
 :Nutations: Yes
 :Librations: Yes
-:Report: `Folkner (2010) [PDF] <ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de423_for_mercury_and_venus/de423.iom.pdf>`_
+:Report: `Folkner (2010) [PDF] <ftp://ssd.jpl.nasa.gov/pub/eph/planets/ioms/de423.iom.pdf>`_
 :Size: 36 MB
 
 While lunar missions will want to use the slightly older ephemeris
