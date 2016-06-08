@@ -148,6 +148,9 @@ class SPKTests(_CommonTests, TestCase):
         self.jalpha = segment.start_jd
         self.jomega = segment.end_jd
 
+    def tearDown(self):
+        self.spk.close()
+
     def position(self, name, tdb, tdb2=0.0):
         segment = self.spk[0, target_names[name]]
         return segment.compute(tdb, tdb2)
@@ -220,3 +223,4 @@ class NAIF_DAF_Tests(TestCase):
         self.assertAlmostEqual(x, 2.05700211e+08, delta=2.0)
         self.assertAlmostEqual(y, 4.25141646e+07, delta=2.0)
         self.assertAlmostEqual(z, 1.39379183e+07, delta=2.0)
+        kernel.close()

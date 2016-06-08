@@ -43,6 +43,13 @@ class SPK(object):
         """Open the file at `path` and return an SPK instance."""
         return cls(DAF(open(path, 'rb')))
 
+    def close(self):
+        """Close this SPK file."""
+        self.daf.file.close()
+        for segment in self.segments:
+            if hasattr(segment, '_data'):
+                del segment._data  # TODO: explicitly close each memory map
+
     def __str__(self):
         daf = self.daf
         d = lambda b: b.decode('latin-1')
