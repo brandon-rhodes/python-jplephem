@@ -9,8 +9,9 @@ smaller and more feature-oriented suite can be run with::
 
 """
 import numpy as np
+import subprocess
 from functools import partial
-from jplephem import Ephemeris
+from jplephem import Ephemeris, commandline
 from jplephem.daf import NAIF_DAF
 from jplephem.spk import SPK
 try:
@@ -225,3 +226,26 @@ class NAIF_DAF_Tests(TestCase):
         self.assertAlmostEqual(y, 4.25141646e+07, delta=2.0)
         self.assertAlmostEqual(z, 1.39379183e+07, delta=2.0)
         kernel.close()
+
+
+class CommandLineTests(TestCase):
+    maxDiff = 9999
+
+    def test_command_line(self):
+        self.assertEqual(commandline.main(['de405.bsp']), """\
+File type NAIF/DAF and format BIG-IEEE with 15 segments:
+2305424.50..2525008.50  Solar System Barycenter (0) -> Mercury Barycenter (1)
+2305424.50..2525008.50  Solar System Barycenter (0) -> Venus Barycenter (2)
+2305424.50..2525008.50  Solar System Barycenter (0) -> Earth Barycenter (3)
+2305424.50..2525008.50  Solar System Barycenter (0) -> Mars Barycenter (4)
+2305424.50..2525008.50  Solar System Barycenter (0) -> Jupiter Barycenter (5)
+2305424.50..2525008.50  Solar System Barycenter (0) -> Saturn Barycenter (6)
+2305424.50..2525008.50  Solar System Barycenter (0) -> Uranus Barycenter (7)
+2305424.50..2525008.50  Solar System Barycenter (0) -> Neptune Barycenter (8)
+2305424.50..2525008.50  Solar System Barycenter (0) -> Pluto Barycenter (9)
+2305424.50..2525008.50  Solar System Barycenter (0) -> Sun (10)
+2305424.50..2525008.50  Earth Barycenter (3) -> Moon (301)
+2305424.50..2525008.50  Earth Barycenter (3) -> Earth (399)
+2305424.50..2525008.50  Mercury Barycenter (1) -> Mercury (199)
+2305424.50..2525008.50  Venus Barycenter (2) -> Venus (299)
+2305424.50..2525008.50  Mars Barycenter (4) -> Mars (499)""")

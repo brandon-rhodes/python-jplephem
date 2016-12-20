@@ -1,2 +1,3 @@
+from sys import argv
 from .commandline import main
-main()
+print(main(argv[1:]))
