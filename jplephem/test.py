@@ -182,7 +182,8 @@ class LegacyTests(_CommonTests, TestCase):
         try:
             import de421
         except ImportError:
-            raise SkipTest('the "de421" ephemeris package is not installed')
+            raise SkipTest('the "de421" ephemeris package has not been'
+                           ' installed with "pip install de421"')
         self.eph = Ephemeris(de421)
         self.jalpha = self.eph.jalpha
         self.jomega = self.eph.jomega
