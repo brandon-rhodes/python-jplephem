@@ -281,6 +281,11 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2016 December 19 — Version 2.6**
+
+* Fixed the ability to invoke the module from the command line with
+  ``python -m jplephem``, and added a test to keep it fixed.
+
 **2015 November 9 — Version 2.5**
 
 * Move ``fileno()`` call out of the ``DAF`` constructor to support
