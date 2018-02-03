@@ -21,6 +21,9 @@ This repository is where `jplephem` is maintained.  You will find its
 source code beneath the `jplephem` directory that sits alongside the
 `setup.py` file.  You can run its tests with:
 
+    wget https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp
+    wget https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp
+    pip install de421
     python -m unittest discover jplephem
 
 Enjoy!
