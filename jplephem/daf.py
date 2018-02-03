@@ -98,8 +98,30 @@ class DAF(object):
         except UnicodeDecodeError:
             raise ValueError('DAF file comment area is not ASCII text')
 
+    def read_array(self, start, end):
+        """Return floats from `start` to `end` inclusive, indexed from 1.
+
+        The entire range of floats is immediately read into memory from
+        the file, making this efficient for small sequences of floats
+        whose values are all needed immediately.
+
+        """
+        f = self.file
+        f.seek(8 * (start - 1))
+        length = 1 + end - start
+        data = f.read(8 * length)
+        return ndarray(length, self.endian + 'd', data)
+
     def map_array(self, start, end):
-        """Return floats from `start` to `end` inclusive, indexed from 1."""
+        """Return floats from `start` to `end` inclusive, indexed from 1.
+
+        Instead of pausing to load all of the floats into RAM, this
+        routine creates a memory map which will load data from the file
+        only as it is accessed, and then will let it expire back out to
+        disk later.  This is very efficient for large data sets to which
+        you need random access.
+
+        """
         data, skip = self.map_words(start, end)
         skip //= 8
         return ndarray(end - start + 1 + skip, self.endian + 'd', data)[skip:]

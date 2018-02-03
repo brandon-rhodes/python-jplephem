@@ -128,7 +128,7 @@ class Segment(object):
         else:
             raise ValueError('only SPK data types 2 and 3 are supported')
 
-        init, intlen, rsize, n = self.daf.map_array(self.end_i - 3, self.end_i)
+        init, intlen, rsize, n = self.daf.read_array(self.end_i - 3, self.end_i)
         initial_epoch = jd(init)
         interval_length = intlen / S_PER_DAY
         coefficient_count = int(rsize - 2) // component_count
