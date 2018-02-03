@@ -9,7 +9,6 @@ smaller and more feature-oriented suite can be run with::
 
 """
 import numpy as np
-import subprocess
 from functools import partial
 from jplephem import Ephemeris, commandline
 from jplephem.daf import NAIF_DAF
