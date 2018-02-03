@@ -1,5 +1,14 @@
-"""Compute positions from an ephemeris installed as a Python package."""
+"""Compute positions from an ephemeris installed as a Python package.
 
+Note: This entire module is DEPRECATED.  The idea of distributing JPL
+ephemerides as Python packages proved to be impractical (they were much
+too large for the Python Package Index to easily store and distribute),
+and it forced `jplephem` users get their ephemerides from a different
+source than mainline astronomers, who use SPICE files.  This package's
+documentation now recommends avoiding this old code, and using the
+features now build directly into the `SPK` class instead.
+
+"""
 import os
 import numpy as np
 
@@ -9,7 +18,7 @@ class DateError(ValueError):
 
 
 class Ephemeris(object):
-    """A JPL planetary ephemeris that, given dates, computes positions."""
+    """[DEPRECATED] JPL planetary ephemeris for computing positions on dates."""
 
     def __init__(self, module):
         self.name = module.__name__.upper()
@@ -26,18 +35,18 @@ class Ephemeris(object):
         self.sets = {}
 
     def path(self, filename):
-        """Compute the path to a particular file in the ephemeris."""
+        """[DEPRECATED] Compute the path to a particular file in the ephemeris."""
         return os.path.join(self.dirpath, filename)
 
     def load(self, name):
-        """Load the polynomial series for `name` and return it."""
+        """[DEPRECATED] Load the polynomial series for `name` and return it."""
         s = self.sets.get(name)
         if s is None:
             self.sets[name] = s = np.load(self.path('jpl-%s.npy' % name))
         return s
 
     def position(self, name, tdb, tdb2=0.0):
-        """Compute the position of `name` at time ``tdb [+ tdb2]``.
+        """[DEPRECATED] Compute the position of `name` at time ``tdb [+ tdb2]``.
 
         The position is returned as a NumPy array ``[x y z]``.
 
@@ -59,7 +68,7 @@ class Ephemeris(object):
         return self.position_from_bundle(bundle)
 
     def position_and_velocity(self, name, tdb, tdb2=0.0):
-        """Compute the position and velocity of `name` at ``tdb [+ tdb2]``.
+        """[DEPRECATED] Compute the position and velocity of `name` at ``tdb [+ tdb2]``.
 
         The position and velocity are returned in a 2-tuple::
 
@@ -85,7 +94,7 @@ class Ephemeris(object):
         return position, velocity
 
     def compute(self, name, tdb):
-        """Legacy routine that concatenates position and velocity vectors.
+        """[DEPRECATED] Legacy routine that concatenates position and velocity vectors.
 
         This routine is deprecated.  Use the methods `position()` and
         `position_and_velocity()` instead.  This method follows the same
@@ -101,7 +110,7 @@ class Ephemeris(object):
         return np.concatenate((position, velocity))
 
     def compute_bundle(self, name, tdb, tdb2=0.0):
-        """Return a tuple of coefficients and parameters for `tdb`.
+        """[DEPRECATED] Return a tuple of coefficients and parameters for `tdb`.
 
         The return value is a tuple that bundles together the
         coefficients and other Chebyshev intermediate values that are
@@ -162,13 +171,13 @@ class Ephemeris(object):
         return bundle
 
     def position_from_bundle(self, bundle):
-        """Return position, given the `coefficient_bundle()` return value."""
+        """[DEPRECATED] Return position, given the `coefficient_bundle()` return value."""
 
         coefficients, days_per_set, T, twot1 = bundle
         return (T.T * coefficients).sum(axis=2)
 
     def velocity_from_bundle(self, bundle):
-        """Return velocity, given the `coefficient_bundle()` return value."""
+        """[DEPRECATED] Return velocity, given the `coefficient_bundle()` return value."""
 
         coefficients, days_per_set, T, twot1 = bundle
         coefficient_count = coefficients.shape[2]
