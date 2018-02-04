@@ -4,8 +4,8 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 
 """
 import mmap
-import struct
 import sys
+from struct import Struct
 from numpy import ndarray
 
 FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
@@ -30,8 +30,11 @@ class DAF(object):
         file_record = self.read_record(1)
 
         def unpack():
-            (self.nd, self.ni, self.locifn, self.fward, self.bward, self.free
-            ) = struct.unpack(self.endian + 'II60sIII', file_record[8:88])
+            fmt = self.endian + '8sII60sIII8s603s28s297s'
+            self.file_record_struct = Struct(fmt)
+            (locidw, self.nd, self.ni, self.locifn, self.fward, self.bward,
+             self.free, locfmt, self.prenul, self.ftpstr, self.pstnul
+            ) = self.file_record_struct.unpack(file_record)
 
         self.locidw = file_record[:8].upper().rstrip()
 
@@ -55,16 +58,25 @@ class DAF(object):
             raise ValueError('file starts with {0!r}, not "NAIF/DAF" or "DAF/"'
                              .format(self.locidw))
 
-        summary_size = self.nd + (self.ni + 1) // 2
-        self.summary_step = 8 * summary_size
-        self.summary_format = self.endian + 'd' * self.nd + 'i' * self.ni
-        self.summary_length = struct.calcsize(self.summary_format)
-        self.locifn = self.locifn.upper().rstrip()
+        fmt = self.endian + 'd' * self.nd + 'i' * self.ni
+
+        self.summary_struct = struct = Struct(fmt)
+        self.summary_length = length = struct.size
+        self.summary_step = length + (-length % 8) # pad to 8 bytes
+        self.locifn_text = self.locifn.rstrip()
 
     def read_record(self, n):
         """Return record `n` as 1,024 bytes; records are indexed from 1."""
         self.file.seek(n * K - 1024)
         return self.file.read(K)
+
+    def write_file_record(self):
+        data = self.file_record_struct.pack(
+            self.locidw, self.nd, self.ni, self.locifn, self.fward, self.bward,
+            self.free, self.locfmt, self.prenul, self.ftpstr, self.pstnul,
+        )
+        self.file.seek(0)
+        self.file.write(data)
 
     def map_words(self, start, end):
         """Return a memory-map of the elements `start` through `end`.
@@ -126,29 +138,33 @@ class DAF(object):
         skip //= 8
         return ndarray(end - start + 1 + skip, self.endian + 'd', data)[skip:]
 
+    def summary_records(self):
+        """Yield (record_number, n_summaries, summary_data) for each record.
+
+        Readers will only use the second two values in each tuple.
+        Writers can update the record using the `record_number`.
+
+        """
+        record_number = self.fward
+        unpack = Struct(self.endian + 'ddd').unpack
+        while record_number:
+            data = self.read_record(record_number)
+            next_number, previous_number, n_summaries = unpack(data[:24])
+            yield record_number, n_summaries, data
+            record_number = int(next_number)
+
     def summaries(self):
         """Yield (name, (value, value, ...)) for each summary in the file."""
-
-        record_number = self.fward
         length = self.summary_length
         step = self.summary_step
-
-        while record_number:
-            summary_record = self.read_record(record_number)
-            name_record = self.read_record(record_number + 1)
-
-            next_number, previous_number, n_summaries = struct.unpack(
-                self.endian + 'ddd', summary_record[:24])
-
+        for record_number, n_summaries, summary_data in self.summary_records():
+            name_data = self.read_record(record_number + 1)
             for i in range(0, int(n_summaries) * step, step):
-                j = i + 24
-                name = name_record[i:i+step].strip()
-                data = summary_record[j:j+length]
-                values = struct.unpack(self.summary_format, data)
+                j = 8*3 + i
+                name = name_data[i:i+step].strip()
+                data = summary_data[j:j+length]
+                values = self.summary_struct.unpack(data)
                 yield name, values
-
-            record_number = int(next_number)
 
 
 NAIF_DAF = DAF  # a separate class supported NAIF/DAF format in jplephem 2.2
-
