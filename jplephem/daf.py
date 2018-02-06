@@ -58,12 +58,15 @@ class DAF(object):
             raise ValueError('file starts with {0!r}, not "NAIF/DAF" or "DAF/"'
                              .format(self.locidw))
 
-        fmt = self.endian + 'd' * self.nd + 'i' * self.ni
+        self.locifn_text = self.locifn.rstrip()
 
-        self.summary_struct = struct = Struct(fmt)
+        summary_format = 'd' * self.nd + 'i' * self.ni
+
+        self.summary_control_struct = Struct(self.endian + 'ddd')
+        self.summary_struct = struct = Struct(self.endian + summary_format)
         self.summary_length = length = struct.size
         self.summary_step = length + (-length % 8) # pad to 8 bytes
-        self.locifn_text = self.locifn.rstrip()
+        self.summaries_per_record = (1024 - 8 * 3) // self.summary_step
 
     def read_record(self, n):
         """Return record `n` as 1,024 bytes; records are indexed from 1."""
@@ -139,14 +142,14 @@ class DAF(object):
         return ndarray(end - start + 1 + skip, self.endian + 'd', data)[skip:]
 
     def summary_records(self):
-        """Yield (record_number, n_summaries, summary_data) for each record.
+        """Yield (record_number, n_summaries, record_data) for each record.
 
         Readers will only use the second two values in each tuple.
         Writers can update the record using the `record_number`.
 
         """
         record_number = self.fward
-        unpack = Struct(self.endian + 'ddd').unpack
+        unpack = self.summary_control_struct.unpack
         while record_number:
             data = self.read_record(record_number)
             next_number, previous_number, n_summaries = unpack(data[:24])
@@ -160,11 +163,31 @@ class DAF(object):
         for record_number, n_summaries, summary_data in self.summary_records():
             name_data = self.read_record(record_number + 1)
             for i in range(0, int(n_summaries) * step, step):
-                j = 8*3 + i
+                j = self.summary_control_struct.size + i
                 name = name_data[i:i+step].strip()
                 data = summary_data[j:j+length]
                 values = self.summary_struct.unpack(data)
                 yield name, values
+
+    def _add_summary(self, record_number, data, name):
+        base = 1024 * (record_number - 1)
+        f = self.file
+        scs = self.summary_control_struct
+
+        f.seek(base)
+        next_number, previous_number, n_summaries = scs.unpack(f.read(24))
+        if n_summaries >= self.summaries_per_record:
+            raise ValueError('record {} is already full, with {} summaries'
+                             .format(record_number, n_summaries))
+
+        f.seek(base)
+        f.write(scs.pack(next_number, previous_number, n_summaries + 1))
+
+        offset = int(n_summaries) * self.summary_length
+        f.seek(base + scs.size + offset)
+        f.write(data.ljust(self.summary_length, b'\0'))
+        f.seek(base + 1024 + offset)
+        f.write(name.ljust(self.summary_length, b'\0'))
 
 
 NAIF_DAF = DAF  # a separate class supported NAIF/DAF format in jplephem 2.2
