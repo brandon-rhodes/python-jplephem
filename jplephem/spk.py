@@ -93,6 +93,7 @@ class Segment(object):
          self.frame, self.data_type, self.start_i, self.end_i) = descriptor
         self.start_jd = jd(self.start_second)
         self.end_jd = jd(self.end_second)
+        self._data = None
 
     def __str__(self):
         return self.describe(verbose=False)
@@ -155,12 +156,11 @@ class Segment(object):
         if scalar:
             tdb = array((tdb,))
 
-        try:
-            initial_epoch, interval_length, coefficients = self._data
-        except AttributeError:
-            self._data = self._load()
-            initial_epoch, interval_length, coefficients = self._data
+        data = self._data
+        if data is None:
+            self._data = data = self._load()
 
+        initial_epoch, interval_length, coefficients = data
         component_count, n, coefficient_count = coefficients.shape
 
         # Subtracting tdb before adding tdb2 affords greater precision.
