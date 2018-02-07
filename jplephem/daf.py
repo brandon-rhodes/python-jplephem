@@ -169,7 +169,20 @@ class DAF(object):
                 values = self.summary_struct.unpack(data)
                 yield name, values
 
-    def _add_summary(self, record_number, data, name):
+    def map(self, summary_values):
+        """Return the array of floats described by a summary.
+
+        Instead of pausing to load all of the floats into RAM, this
+        routine creates a memory map which will load data from the file
+        only as it is accessed, and then will let it expire back out to
+        disk later.  This is very efficient for large data sets to which
+        you need random access.
+
+        """
+        return self.map_array(summary_values[-2], summary_values[-1])
+
+    def _add_summary(self, record_number, name, values):
+        data = self.summary_struct.pack(*values)
         base = 1024 * (record_number - 1)
         f = self.file
         scs = self.summary_control_struct
