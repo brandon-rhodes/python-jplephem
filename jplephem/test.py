@@ -10,8 +10,9 @@ smaller and more feature-oriented suite can be run with::
 """
 import numpy as np
 from functools import partial
+from io import BytesIO
 from jplephem import Ephemeris, commandline
-from jplephem.daf import NAIF_DAF
+from jplephem.daf import DAF, FTPSTR, NAIF_DAF
 from jplephem.spk import SPK
 try:
     from unittest import SkipTest, TestCase
@@ -37,6 +38,44 @@ target_names = {
     'mars': 499,           # w.r.t. 4 MARS BARYCENTER
     }
 
+
+class DAFTests(TestCase):
+    def sample_daf(self):
+        return BytesIO(b''.join([
+            # Record 1
+            b'DAF/SPK ',
+            b'\x01\x00\x00\x00', # ND
+            b'\x02\x00\x00\x00', # NI
+            b'Internal Name'.ljust(60, b' '), # LOCIFN
+            b'\x03\x00\x00\x00', # FWARD
+            b'\x06\x00\x00\x00', # BWARD
+            b'\x00\x03\x00\x00', # FREE
+            b'LTL-IEEE', # LOCFMT
+            b'\0' * 603, # PRENUL
+            FTPSTR,
+            b'\0' * 297, # PSTNUL
+
+            # Record 2
+            b'Comment Record'.ljust(1024, b'\0'),
+
+            # Record 3
+            # Record 4
+            # Record 5
+            # Record 6
+        ]))
+
+    def test_parsing(self):
+        f = self.sample_daf()
+        d = DAF(f)
+        eq = self.assertEqual
+        eq(d.locidw, b'DAF/SPK')
+        eq(d.nd, 1)
+        eq(d.ni, 2)
+        eq(d.locifn_text, b'Internal Name')
+        eq(d.fward, 3)
+        eq(d.bward, 6)
+        eq(d.free, 0x300)
+        eq(d.locfmt, b'LTL-IEEE')
 
 class _CommonTests(object):
 
