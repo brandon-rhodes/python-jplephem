@@ -9,11 +9,13 @@ smaller and more feature-oriented suite can be run with::
 
 """
 import numpy as np
+import tempfile
 from functools import partial
 from io import BytesIO
 from jplephem import Ephemeris, commandline
 from jplephem.daf import DAF, FTPSTR, NAIF_DAF
 from jplephem.spk import SPK
+from struct import Struct
 try:
     from unittest import SkipTest, TestCase
 except ImportError:
@@ -39,16 +41,18 @@ target_names = {
     }
 
 
-class DAFTests(TestCase):
+class TestDAFBytesIO(TestCase):
     def sample_daf(self):
+        word = Struct('d').pack
+        integer = Struct('i').pack
         return BytesIO(b''.join([
-            # Record 1
+            # Record 1 - File Record
             b'DAF/SPK ',
-            b'\x01\x00\x00\x00', # ND
-            b'\x02\x00\x00\x00', # NI
+            b'\x02\x00\x00\x00', # ND
+            b'\x03\x00\x00\x00', # NI
             b'Internal Name'.ljust(60, b' '), # LOCIFN
             b'\x03\x00\x00\x00', # FWARD
-            b'\x06\x00\x00\x00', # BWARD
+            b'\x07\x00\x00\x00', # BWARD
             b'\x00\x03\x00\x00', # FREE
             b'LTL-IEEE', # LOCFMT
             b'\0' * 603, # PRENUL
@@ -58,24 +62,81 @@ class DAFTests(TestCase):
             # Record 2
             b'Comment Record'.ljust(1024, b'\0'),
 
-            # Record 3
-            # Record 4
+            # Record 3 - first Summary Record
+            b''.join([
+                word(7), # next summary record
+                word(0), # previous summary record
+                word(1), # number of summaries
+                word(101),
+                word(202),
+                integer(303),
+                integer(1024 * 4 // 8 + 1), # Record 5 start
+                integer(1024 * 5 // 8),     # Record 5 end
+                integer(0),
+            ]).ljust(1024, b'\0'),
+
+            # Record 4 - first Name Record
+            b'Summary Name 1'.ljust(1024, b' '),
+
             # Record 5
+            word(1001) * 128,
+
             # Record 6
+            word(2002) * 128,
+
+            # Record 7 - second Summary Record
+            b''.join([
+                word(0), # next summary record
+                word(3), # previous summary record
+                word(1), # number of summaries
+                word(111),
+                word(222),
+                integer(333),
+                integer(1024 * 5 // 8 + 1), # Record 6 start
+                integer(1024 * 6 // 8),     # Record 6 end
+                integer(0),
+            ]).ljust(1024, b'\0'),
+
+            # Record 8 - second Name Record
+            b'Summary Name 2'.ljust(1024, b' '),
         ]))
 
-    def test_parsing(self):
+    def test_header(self):
         f = self.sample_daf()
         d = DAF(f)
         eq = self.assertEqual
         eq(d.locidw, b'DAF/SPK')
-        eq(d.nd, 1)
-        eq(d.ni, 2)
+        eq(d.nd, 2)
+        eq(d.ni, 3)
         eq(d.locifn_text, b'Internal Name')
         eq(d.fward, 3)
-        eq(d.bward, 6)
+        eq(d.bward, 7)
         eq(d.free, 0x300)
         eq(d.locfmt, b'LTL-IEEE')
+
+    def test_segments(self):
+        f = self.sample_daf()
+        d = DAF(f)
+
+        summaries = list(d.summaries())
+        eq = self.assertEqual
+        eq(len(summaries), 2)
+        eq(summaries[0], (b'Summary Name 1', (101.0, 202.0, 303, 513, 640)))
+        eq(summaries[1], (b'Summary Name 2', (111.0, 222.0, 333, 641, 768)))
+
+        eq = self.assertSequenceEqual
+        eq(list(d.map(summaries[0][1])), [1001.0] * 128)
+        eq(list(d.map(summaries[1][1])), [2002.0] * 128)
+
+
+class TestDAFRealFile(TestDAFBytesIO):
+    def sample_daf(self):
+        bytes_io = super(TestDAFRealFile, self).sample_daf()
+        f = tempfile.NamedTemporaryFile(mode='w+b', prefix='jplephem_test')
+        f.write(bytes_io.getvalue())
+        f.seek(0)
+        return f
+
 
 class _CommonTests(object):
 

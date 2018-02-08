@@ -3,6 +3,7 @@
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 
 """
+import io
 import mmap
 import sys
 from struct import Struct
@@ -91,11 +92,17 @@ class DAF(object):
         number of extra bytes at the beginning of the return value.
 
         """
-        fileno = self.file.fileno() # requires a true file object
         i, j = 8 * start - 8, 8 * end
-        skip = i % mmap.ALLOCATIONGRANULARITY
-        r = mmap.ACCESS_READ
-        m = mmap.mmap(fileno, length=j-i+skip, access=r, offset=i-skip)
+        try:
+            fileno = self.file.fileno()
+        except io.UnsupportedOperation:
+            skip = 0
+            self.file.seek(i)
+            m = self.file.read(j - i)
+        else:
+            skip = i % mmap.ALLOCATIONGRANULARITY
+            r = mmap.ACCESS_READ
+            m = mmap.mmap(fileno, length=j-i+skip, access=r, offset=i-skip)
         if sys.version_info > (3,):
             m = memoryview(m)  # so further slicing can return views
         return m, skip
