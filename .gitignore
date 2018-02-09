@@ -4,3 +4,4 @@ testpo.*
 *.bsp
 *.pyc
 *.egg-info
+tmp*.py
