@@ -7,7 +7,7 @@ import io
 import mmap
 import sys
 from struct import Struct
-from numpy import ndarray
+from numpy import array as numpy_array, ndarray
 
 FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
 LOCFMT = {b'BIG-IEEE': '>', b'LTL-IEEE': '<'}
@@ -71,16 +71,20 @@ class DAF(object):
 
     def read_record(self, n):
         """Return record `n` as 1,024 bytes; records are indexed from 1."""
-        self.file.seek(n * K - 1024)
+        self.file.seek(n * K - K)
         return self.file.read(K)
+
+    def write_record(self, n, data):
+        """Write `data` to file record `n`; records are indexed from 1."""
+        self.file.seek(n * K - K)
+        return self.file.write(data)
 
     def write_file_record(self):
         data = self.file_record_struct.pack(
             self.locidw, self.nd, self.ni, self.locifn, self.fward, self.bward,
             self.free, self.locfmt, self.prenul, self.ftpstr, self.pstnul,
         )
-        self.file.seek(0)
-        self.file.write(data)
+        self.write_record(1, data)
 
     def map_words(self, start, end):
         """Return a memory-map of the elements `start` through `end`.
@@ -188,26 +192,40 @@ class DAF(object):
         """
         return self.map_array(summary_values[-2], summary_values[-1])
 
-    def _add_summary(self, record_number, name, values):
-        data = self.summary_struct.pack(*values)
-        base = 1024 * (record_number - 1)
-        f = self.file
+    def add_array(self, name, values, array):
         scs = self.summary_control_struct
 
-        f.seek(base)
-        next_number, previous_number, n_summaries = scs.unpack(f.read(24))
+        record_number = self.bward
+        data = bytearray(self.read_record(record_number))
+        next_record, previous_record, n_summaries = scs.unpack(data[:24])
+
         if n_summaries >= self.summaries_per_record:
+            # TODO: add another summary block
             raise ValueError('record {} is already full, with {} summaries'
                              .format(record_number, n_summaries))
 
-        f.seek(base)
-        f.write(scs.pack(next_number, previous_number, n_summaries + 1))
+        start_word = self.free
 
-        offset = int(n_summaries) * self.summary_length
+        f = self.file
+        f.seek((start_word - 1) * 8)
+        array = numpy_array(array)  # TODO
+        f.write(array.view())
+        end_word = f.tell() // 8
+
+        self.free = end_word + 1
+        self.write_file_record()
+
+        data[:24] = scs.pack(next_record, previous_record, n_summaries + 1)
+        values = values + (start_word, end_word)
+
+        self.write_record(record_number, data)
+
+        base = 1024 * (record_number - 1)
+        offset = int(n_summaries) * self.summary_step
         f.seek(base + scs.size + offset)
-        f.write(data.ljust(self.summary_length, b'\0'))
+        f.write(self.summary_struct.pack(*values))
         f.seek(base + 1024 + offset)
-        f.write(name.ljust(self.summary_length, b'\0'))
+        f.write(name[:self.summary_length].ljust(self.summary_step, b' '))
 
 
 NAIF_DAF = DAF  # a separate class supported NAIF/DAF format in jplephem 2.2

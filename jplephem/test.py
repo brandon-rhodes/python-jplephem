@@ -53,7 +53,7 @@ class TestDAFBytesIO(TestCase):
             b'Internal Name'.ljust(60, b' '), # LOCIFN
             b'\x03\x00\x00\x00', # FWARD
             b'\x07\x00\x00\x00', # BWARD
-            b'\x00\x03\x00\x00', # FREE
+            b'\x01\x04\x00\x00', # FREE
             b'LTL-IEEE', # LOCFMT
             b'\0' * 603, # PRENUL
             FTPSTR,
@@ -111,7 +111,7 @@ class TestDAFBytesIO(TestCase):
         eq(d.locifn_text, b'Internal Name')
         eq(d.fward, 3)
         eq(d.bward, 7)
-        eq(d.free, 0x300)
+        eq(d.free, 0x401)
         eq(d.locfmt, b'LTL-IEEE')
 
     def test_segments(self):
@@ -128,8 +128,29 @@ class TestDAFBytesIO(TestCase):
         eq(list(d.map(summaries[0][1])), [1001.0] * 128)
         eq(list(d.map(summaries[1][1])), [2002.0] * 128)
 
+    def test_add_segment(self):
+        f = self.sample_daf()
+        d = DAF(f)
+
+        d.add_array(b'Summary Name 3', (121.0, 232.0, 343), [3003.0] * 128)
+
+        summaries = list(d.summaries())
+        eq = self.assertEqual
+        eq(len(summaries), 3)
+        eq(summaries[0], (b'Summary Name 1', (101.0, 202.0, 303, 513, 640)))
+        eq(summaries[1], (b'Summary Name 2', (111.0, 222.0, 333, 641, 768)))
+        eq(summaries[2], (b'Summary Name 3', (121.0, 232.0, 343, 1025, 1152)))
+
+        eq = self.assertSequenceEqual
+        eq(list(d.map(summaries[0][1])), [1001.0] * 128)
+        eq(list(d.map(summaries[1][1])), [2002.0] * 128)
+        eq(list(d.map(summaries[2][1])), [3003.0] * 128)
+
 
 class TestDAFRealFile(TestDAFBytesIO):
+    # Where "Real" = "written to disk with a real file descriptor
+    # instead of an in-memory BytesIO".
+
     def sample_daf(self):
         bytes_io = super(TestDAFRealFile, self).sample_daf()
         f = tempfile.NamedTemporaryFile(mode='w+b', prefix='jplephem_test')
