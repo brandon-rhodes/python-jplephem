@@ -154,7 +154,7 @@ class TestDAFBytesIO(TestCase):
         d.file.seek(6 * 1024 + 16)
         d.file.write(Struct('d').pack(d.summaries_per_record))
 
-        d.add_array(b'Summary Name 3', (121.0, 232.0, 343), [3003.0] * 128)
+        d.add_array(b'Summary Name 3', (121.0, 232.0, 343), [3003.0] * 200)
 
         # Reset n_summaries of that block back to its real value.
         d.file.seek(6 * 1024 + 16)
@@ -165,12 +165,12 @@ class TestDAFBytesIO(TestCase):
         eq(len(summaries), 3)
         eq(summaries[0], (b'Summary Name 1', (101.0, 202.0, 303, 513, 640)))
         eq(summaries[1], (b'Summary Name 2', (111.0, 222.0, 333, 641, 768)))
-        eq(summaries[2], (b'Summary Name 3', (121.0, 232.0, 343, 1281, 1408)))
+        eq(summaries[2], (b'Summary Name 3', (121.0, 232.0, 343, 1281, 1480)))
 
         eq = self.assertSequenceEqual
         eq(list(d.map(summaries[0][1])), [1001.0] * 128)
         eq(list(d.map(summaries[1][1])), [2002.0] * 128)
-        eq(list(d.map(summaries[2][1])), [3003.0] * 128)
+        eq(list(d.map(summaries[2][1])), [3003.0] * 200)
 
 
 class TestDAFRealFile(TestDAFBytesIO):
