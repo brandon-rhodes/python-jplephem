@@ -193,20 +193,44 @@ class DAF(object):
         return self.map_array(summary_values[-2], summary_values[-1])
 
     def add_array(self, name, values, array):
+        """Add a new array to the DAF file.
+
+        The summary will be initialized with the `name` and `values`,
+        and will have its start word and end word fields set to point to
+        where the `array` of floats has been appended to the file.
+
+        """
+        f = self.file
         scs = self.summary_control_struct
 
         record_number = self.bward
         data = bytearray(self.read_record(record_number))
         next_record, previous_record, n_summaries = scs.unpack(data[:24])
 
-        if n_summaries >= self.summaries_per_record:
-            # TODO: add another summary block
-            raise ValueError('record {} is already full, with {} summaries'
-                             .format(record_number, n_summaries))
+        if n_summaries < self.summaries_per_record:
+            summary_record = record_number
+            name_record = summary_record + 1
+            data[:24] = scs.pack(next_record, previous_record, n_summaries + 1)
+            self.write_record(summary_record, data)
+        else:
+            n_summaries = 0
+            summary_record = ((self.free - 1) * 8 + 1023) // 1024 + 1
+            name_record = summary_record + 1
+            free_record = summary_record + 2
+
+            data[:24] = scs.pack(summary_record, previous_record, n_summaries)
+            self.write_record(record_number, data)
+
+            summaries = scs.pack(0, record_number, 1).ljust(1024, b'\0')
+            names = b'\0' * 1024
+            self.write_record(summary_record, summaries)
+            self.write_record(name_record, names)
+
+            self.bward = summary_record
+            self.free = (free_record - 1) * 1024 // 8 + 1
 
         start_word = self.free
 
-        f = self.file
         f.seek((start_word - 1) * 8)
         array = numpy_array(array)  # TODO
         f.write(array.view())
@@ -215,12 +239,9 @@ class DAF(object):
         self.free = end_word + 1
         self.write_file_record()
 
-        data[:24] = scs.pack(next_record, previous_record, n_summaries + 1)
         values = values + (start_word, end_word)
 
-        self.write_record(record_number, data)
-
-        base = 1024 * (record_number - 1)
+        base = 1024 * (summary_record - 1)
         offset = int(n_summaries) * self.summary_step
         f.seek(base + scs.size + offset)
         f.write(self.summary_struct.pack(*values))

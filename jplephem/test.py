@@ -146,6 +146,32 @@ class TestDAFBytesIO(TestCase):
         eq(list(d.map(summaries[1][1])), [2002.0] * 128)
         eq(list(d.map(summaries[2][1])), [3003.0] * 128)
 
+    def test_add_segment_when_summary_block_is_full(self):
+        f = self.sample_daf()
+        d = DAF(f)
+
+        # Update n_summaries of final summary block to full.
+        d.file.seek(6 * 1024 + 16)
+        d.file.write(Struct('d').pack(d.summaries_per_record))
+
+        d.add_array(b'Summary Name 3', (121.0, 232.0, 343), [3003.0] * 128)
+
+        # Reset n_summaries of that block back to its real value.
+        d.file.seek(6 * 1024 + 16)
+        d.file.write(Struct('d').pack(1))
+
+        summaries = list(d.summaries())
+        eq = self.assertEqual
+        eq(len(summaries), 3)
+        eq(summaries[0], (b'Summary Name 1', (101.0, 202.0, 303, 513, 640)))
+        eq(summaries[1], (b'Summary Name 2', (111.0, 222.0, 333, 641, 768)))
+        eq(summaries[2], (b'Summary Name 3', (121.0, 232.0, 343, 1281, 1408)))
+
+        eq = self.assertSequenceEqual
+        eq(list(d.map(summaries[0][1])), [1001.0] * 128)
+        eq(list(d.map(summaries[1][1])), [2002.0] * 128)
+        eq(list(d.map(summaries[2][1])), [3003.0] * 128)
+
 
 class TestDAFRealFile(TestDAFBytesIO):
     # Where "Real" = "written to disk with a real file descriptor
