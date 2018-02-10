@@ -65,6 +65,30 @@ class SPK(object):
         """Return the file comments, as a string."""
         return self.daf.comments()
 
+    def excerpt(self, new_file):
+        # Copy the file record and the comments verbatim.
+        f = new_file
+        f.seek(0)
+        f.truncate()
+        for n in range(1, self.daf.fward):
+            data = self.daf.read_record(n)
+            f.write(data)
+
+        # Start an initial summary and name block.
+        summary_data = b'\0' * 1024
+        name_data = b' ' * 1024
+        f.write(summary_data)
+        f.write(name_data)
+
+        d = DAF(f)
+        d.fward = d.bward = self.daf.fward
+        d.free = (d.fward + 1) * (1024 // 8) + 1
+        d.write_file_record()
+
+        for name, values in self.daf.summaries():
+            array = self.daf.map(values)
+            d.add_array(b'X' + name[1:], values, array)
+
 
 class Segment(object):
     """A single segment of an SPK file.
