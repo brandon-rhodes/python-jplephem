@@ -81,8 +81,9 @@ class DAF(object):
 
     def write_file_record(self):
         data = self.file_record_struct.pack(
-            self.locidw, self.nd, self.ni, self.locifn, self.fward, self.bward,
-            self.free, self.locfmt, self.prenul, self.ftpstr, self.pstnul,
+            self.locidw.ljust(8, b' '), self.nd, self.ni, self.locifn,
+            self.fward, self.bward, self.free, self.locfmt,
+            self.prenul, self.ftpstr, self.pstnul,
         )
         self.write_record(1, data)
 
@@ -238,7 +239,7 @@ class DAF(object):
         self.free = end_word + 1
         self.write_file_record()
 
-        values = values + (start_word, end_word)
+        values = values[:self.nd + self.ni - 2] + (start_word, end_word)
 
         base = 1024 * (summary_record - 1)
         offset = int(n_summaries) * self.summary_step
