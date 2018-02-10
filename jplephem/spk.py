@@ -3,17 +3,22 @@
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
-from numpy import array, empty, empty_like, rollaxis
+from numpy import array, copy, empty, empty_like, rollaxis
 from .daf import DAF
 from .names import target_names
 
 T0 = 2451545.0
 S_PER_DAY = 86400.0
-
+clip_lower = max
+clip_upper = min
 
 def jd(seconds):
     """Convert a number of seconds since J2000 to a Julian Date."""
     return T0 + seconds / S_PER_DAY
+
+def _seconds(jd):
+    """Convert a Julian Date to a number of seconds since J2000."""
+    return (jd - T0) * S_PER_DAY
 
 
 class SPK(object):
@@ -65,7 +70,10 @@ class SPK(object):
         """Return the file comments, as a string."""
         return self.daf.comments()
 
-    def excerpt(self, new_file):
+    def excerpt(self, new_file, start_jd, end_jd):
+        start_seconds = _seconds(start_jd)
+        end_seconds = _seconds(end_jd)
+
         # Copy the file record and the comments verbatim.
         f = new_file
         f.seek(0)
@@ -85,9 +93,22 @@ class SPK(object):
         d.free = (d.fward + 1) * (1024 // 8) + 1
         d.write_file_record()
 
+        # Copy over an excerpt of each array.
         for name, values in self.daf.summaries():
             array = self.daf.map(values)
-            d.add_array(b'X' + name[1:], values, array)
+            init, intlen, rsize, n = array[-4:]
+            rsize = int(rsize)
+
+            i = int(clip_lower(0, (start_seconds - init) // intlen))
+            j = int(clip_upper(n, (end_seconds - init) // intlen + 1))
+            init = init + i * intlen
+            n = j - i
+
+            extra = 4     # enough room to rebuild [init intlen rsize n]
+            excerpt = copy(array[rsize * i : rsize * j + extra])
+            excerpt[-4:] = (init, intlen, rsize, n)
+            values = (init, init + n * intlen) + values[2:]
+            d.add_array(b'X' + name[1:], values, excerpt)
 
 
 class Segment(object):
