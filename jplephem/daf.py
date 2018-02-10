@@ -213,11 +213,11 @@ class DAF(object):
             data[:24] = scs.pack(next_record, previous_record, n_summaries + 1)
             self.write_record(summary_record, data)
         else:
-            n_summaries = 0
             summary_record = ((self.free - 1) * 8 + 1023) // 1024 + 1
             name_record = summary_record + 1
             free_record = summary_record + 2
 
+            n_summaries = 0
             data[:24] = scs.pack(summary_record, previous_record, n_summaries)
             self.write_record(record_number, data)
 
@@ -230,9 +230,8 @@ class DAF(object):
             self.free = (free_record - 1) * 1024 // 8 + 1
 
         start_word = self.free
-
         f.seek((start_word - 1) * 8)
-        array = numpy_array(array)  # TODO
+        array = numpy_array(array)  # TODO: force correct endian
         f.write(array.view())
         end_word = f.tell() // 8
 
