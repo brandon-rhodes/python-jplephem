@@ -100,7 +100,9 @@ class DAF(object):
         i, j = 8 * start - 8, 8 * end
         try:
             fileno = self.file.fileno()
-        except io.UnsupportedOperation:
+        except (AttributeError, io.UnsupportedOperation):
+            fileno = None
+        if fileno is None:
             skip = 0
             self.file.seek(i)
             m = self.file.read(j - i)

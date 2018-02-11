@@ -73,13 +73,14 @@ class SPK(object):
     def excerpt(self, new_file, start_jd, end_jd):
         start_seconds = _seconds(start_jd)
         end_seconds = _seconds(end_jd)
+        old = self.daf
 
         # Copy the file record and the comments verbatim.
         f = new_file
         f.seek(0)
         f.truncate()
-        for n in range(1, self.daf.fward):
-            data = self.daf.read_record(n)
+        for n in range(1, old.fward):
+            data = old.read_record(n)
             f.write(data)
 
         # Start an initial summary and name block.
@@ -89,14 +90,14 @@ class SPK(object):
         f.write(name_data)
 
         d = DAF(f)
-        d.fward = d.bward = self.daf.fward
+        d.fward = d.bward = old.fward
         d.free = (d.fward + 1) * (1024 // 8) + 1
         d.write_file_record()
 
         # Copy over an excerpt of each array.
-        for name, values in self.daf.summaries():
-            array = self.daf.map(values)
-            init, intlen, rsize, n = array[-4:]
+        for name, values in old.summaries():
+            start, end = values[-2], values[-1]
+            init, intlen, rsize, n = old.read_array(end - 3, end)
             rsize = int(rsize)
 
             i = int(clip_lower(0, (start_seconds - init) // intlen))
@@ -105,7 +106,10 @@ class SPK(object):
             n = j - i
 
             extra = 4     # enough room to rebuild [init intlen rsize n]
-            excerpt = copy(array[rsize * i : rsize * j + extra])
+            excerpt = copy(old.read_array(
+                start + rsize * i,
+                start + rsize * j + extra - 1,
+            ))
             excerpt[-4:] = (init, intlen, rsize, n)
             values = (init, init + n * intlen) + values[2:]
             d.add_array(b'X' + name[1:], values, excerpt)
