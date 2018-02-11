@@ -1,3 +1,3 @@
-from sys import argv
+from sys import argv, exit
 from .commandline import main
-print(main(argv[1:]))
+exit(main(argv[1:]) or 0)
