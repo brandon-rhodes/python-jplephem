@@ -1,5 +1,6 @@
 """Extract data for a specific date range from an SPK file."""
 
+from sys import stderr
 try:
     from urllib.request import URLopener
 except:
@@ -64,6 +65,7 @@ class RemoteFile(object):
     def __init__(self, url):
         self.opener = URLopener()
         self.url = url
+        self.filename = url.rstrip('/').rsplit('/', 1)[-1]
         self.offset = 0
 
     def seek(self, offset, whence=0):
@@ -75,6 +77,7 @@ class RemoteFile(object):
         end = start + size - 1
         assert end > start
         h = 'Range', 'bytes={}-{}'.format(start, end)
+        stderr.write('Fetching {} {}\n'.format(self.filename, h[1]))
         self.opener.addheaders.append(h)
         data = self.opener.open(self.url).read()
         return data
