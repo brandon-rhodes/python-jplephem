@@ -45,7 +45,7 @@ the command line to display the data inside of it::
     python -m jplephem spk de430.bsp
 
 You can also take a large ephemeris and produce a smaller excerpt by
-limiting the range of dates that it covers:
+limiting the range of dates that it covers::
 
     python -m jplephem excerpt 2018/1/1 2018/4/1 de421.bsp outjup.bsp
 
@@ -53,8 +53,8 @@ If the input ephemeris is a URL, then `jplephem` will try to save
 bandwidth by fetching only the blocks of the remote file that are
 necessary to cover the dates you have specified.  For example, the
 Jupiter satellite ephemeris `jup310.bsp` is famously large, weighing in
-a nearly a gigabyte in length.  But if all you need are Jupiter's
-satellites for one month, you can download considerably less data:
+a nearly a gigabyte.  But if all you need are Jupiter's satellites for a
+few months, you can download considerably less data::
 
     $ python -m jplephem excerpt 2018/1/1 2018/4/1 \
         https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/jup310.bsp \
@@ -63,7 +63,7 @@ satellites for one month, you can download considerably less data:
     -rw-r----- 1 brandon brandon 1.2M Feb 11 13:36 excerpt.bsp
 
 In this case only about one-thousandth of the ephemeris's data needed to
-be downloaded, which took less than one minute.
+be downloaded, a download which took less than one minute.
 
 Getting Started With DE430
 --------------------------
