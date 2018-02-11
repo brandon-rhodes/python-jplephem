@@ -377,6 +377,11 @@ class NAIF_DAF_Tests(TestCase):
 class CommandLineTests(TestCase):
     maxDiff = 9999
 
+    def test_comment_command(self):
+        output = commandline.main(['comment', 'de405.bsp'])
+        self.assertEqual(output[:30], '; de405.bsp LOG FILE\n;\n; Creat')
+        self.assertEqual(output[-30:], "rom Standish's DE405 memo <<<\n")
+
     def test_daf_command(self):
         self.assertEqual(commandline.main(['daf', 'de405.bsp']), """\
  1 DE-405 -1577879958.8160586 1577880064.1839132 1 0 1 2 1409 202316

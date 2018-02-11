@@ -15,6 +15,13 @@ def main(args):
     subparsers = parser.add_subparsers()
 
     p = subparsers.add_parser(
+        'comment',
+        help="Print a file's comment blocks",
+    )
+    p.set_defaults(func=comment)
+    p.add_argument('path', help='Path to a SPICE file')
+
+    p = subparsers.add_parser(
         'daf',
         help="List a file's raw segment descriptors",
     )
@@ -44,8 +51,14 @@ def main(args):
         sys.exit(2)
 
     lines = list(func(args))
-    lines.append('')
+    if lines and not lines[-1].endswith('\n'):
+        lines.append('')
     return '\n'.join(lines)
+
+def comment(args):
+    with open(args.path, 'rb') as f:
+        d = DAF(f)
+        yield d.comments()
 
 def daf_segments(args):
     with open(args.path, 'rb') as f:

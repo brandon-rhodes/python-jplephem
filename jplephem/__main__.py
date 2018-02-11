@@ -1,3 +1,4 @@
-from sys import argv, exit
+import sys
 from .commandline import main
-exit(main(argv[1:]) or 0)
+sys.stdout.write(main(sys.argv[1:]))
+sys.exit(0)
