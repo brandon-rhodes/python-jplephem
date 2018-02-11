@@ -37,16 +37,33 @@ JPL domain.
 Command Line Tool
 -----------------
 
-If you have downloaded a ``.bsp`` file and want to learn what ephemeris
-segments are stored inside of it, you can have ``jplephem`` print them
-out by invoking the module directly from the command line::
+If you have downloaded a ``.bsp`` file, you can run ``jplephem`` from
+the command line to display the data inside of it::
 
-    python -m jplephem de430.bsp
+    python -m jplephem comment de430.bsp
+    python -m jplephem dap de430.bsp
+    python -m jplephem spk de430.bsp
 
-This will print out a summary identical to the one shown in the
-following section, but without requiring that you type and run any
-Python code.
+You can also take a large ephemeris and produce a smaller excerpt by
+limiting the range of dates that it covers:
 
+    python -m jplephem excerpt 2018/1/1 2018/4/1 de421.bsp outjup.bsp
+
+If the input ephemeris is a URL, then `jplephem` will try to save
+bandwidth by fetching only the blocks of the remote file that are
+necessary to cover the dates you have specified.  For example, the
+Jupiter satellite ephemeris `jup310.bsp` is famously large, weighing in
+a nearly a gigabyte in length.  But if all you need are Jupiter's
+satellites for one month, you can download considerably less data:
+
+    $ python -m jplephem excerpt 2018/1/1 2018/4/1 \
+        https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/jup310.bsp \
+        excerpt.bsp
+    $ ls -lh excerpt.bsp
+    -rw-r----- 1 brandon brandon 1.2M Feb 11 13:36 excerpt.bsp
+
+In this case only about one-thousandth of the ephemeris's data needed to
+be downloaded, which took less than one minute.
 
 Getting Started With DE430
 --------------------------

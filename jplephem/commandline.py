@@ -5,6 +5,7 @@ from __future__ import print_function
 import argparse
 import sys
 from .daf import DAF
+from .excerpter import RemoteFile, write_excerpt
 from .spk import SPK
 
 def main(args):
@@ -33,9 +34,10 @@ def main(args):
         help="Create an SPK covering a narrower range of dates",
     )
     p.set_defaults(func=excerpt)
-    p.add_argument('start_date', help='Start date yyyy/mm/dd')
-    p.add_argument('end_date', help='End date yyyy/mm/dd')
-    p.add_argument('file', help='Local filename or remote URL')
+    p.add_argument('start_date', help='Start date yyyy/mm/dd', type=parse_date)
+    p.add_argument('end_date', help='End date yyyy/mm/dd', type=parse_date)
+    p.add_argument('path_or_url', help='Local filename or remote URL')
+    p.add_argument('output_path', help='Output file to create')
 
     p = subparsers.add_parser(
         'spk',
@@ -68,8 +70,39 @@ def daf_segments(args):
                                        ' '.join(repr(v) for v in values))
 
 def excerpt(args):
-    pass
+    if args.path_or_url.startswith(('http://', 'https://')):
+        url = args.path_or_url
+        f = RemoteFile(url)
+        spk = SPK(DAF(f))
+        with open(args.output_path, 'w+b') as output_file:
+            write_excerpt(spk, output_file, args.start_date, args.end_date)
+    else:
+        path = args.path_or_url
+        with open(path, 'rb') as f:
+            spk = SPK(DAF(f))
+            with open(args.output_path, 'w+b') as output_file:
+                write_excerpt(spk, output_file, args.start_date, args.end_date)
+    return ()
 
 def spk_segments(args):
     with open(args.path, 'rb') as f:
         yield str(SPK(DAF(f)))
+
+def parse_date(s):
+    try:
+        fields = [int(f) for f in s.split('/')]
+    except ValueError:
+        fields = []
+    if len(fields) < 1 or len(fields) > 3:
+        E = argparse.ArgumentTypeError
+        raise E('specify each date as YYYY or YYYY/MM or YYYY/MM/DD')
+    return julian_day(*fields)
+
+def julian_day(year, month=1, day=1):
+    """Given a proleptic Gregorian calendar date, return a Julian day int."""
+    janfeb = month < 3
+    return (day
+            + 1461 * (year + 4800 - janfeb) // 4
+            + 367 * (month - 2 + janfeb * 12) // 12
+            - 3 * ((year + 4900 - janfeb) // 100) // 4
+            - 32075)

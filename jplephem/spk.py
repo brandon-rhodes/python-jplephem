@@ -3,22 +3,17 @@
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
-from numpy import array, copy, empty, empty_like, rollaxis
+from numpy import array, empty, empty_like, rollaxis
 from .daf import DAF
 from .names import target_names
 
 T0 = 2451545.0
 S_PER_DAY = 86400.0
-clip_lower = max
-clip_upper = min
+
 
 def jd(seconds):
     """Convert a number of seconds since J2000 to a Julian Date."""
     return T0 + seconds / S_PER_DAY
-
-def _seconds(jd):
-    """Convert a Julian Date to a number of seconds since J2000."""
-    return (jd - T0) * S_PER_DAY
 
 
 class SPK(object):
@@ -69,50 +64,6 @@ class SPK(object):
     def comments(self):
         """Return the file comments, as a string."""
         return self.daf.comments()
-
-    def excerpt(self, new_file, start_jd, end_jd):
-        start_seconds = _seconds(start_jd)
-        end_seconds = _seconds(end_jd)
-        old = self.daf
-
-        # Copy the file record and the comments verbatim.
-        f = new_file
-        f.seek(0)
-        f.truncate()
-        for n in range(1, old.fward):
-            data = old.read_record(n)
-            f.write(data)
-
-        # Start an initial summary and name block.
-        summary_data = b'\0' * 1024
-        name_data = b' ' * 1024
-        f.write(summary_data)
-        f.write(name_data)
-
-        d = DAF(f)
-        d.fward = d.bward = old.fward
-        d.free = (d.fward + 1) * (1024 // 8) + 1
-        d.write_file_record()
-
-        # Copy over an excerpt of each array.
-        for name, values in old.summaries():
-            start, end = values[-2], values[-1]
-            init, intlen, rsize, n = old.read_array(end - 3, end)
-            rsize = int(rsize)
-
-            i = int(clip_lower(0, (start_seconds - init) // intlen))
-            j = int(clip_upper(n, (end_seconds - init) // intlen + 1))
-            init = init + i * intlen
-            n = j - i
-
-            extra = 4     # enough room to rebuild [init intlen rsize n]
-            excerpt = copy(old.read_array(
-                start + rsize * i,
-                start + rsize * j + extra - 1,
-            ))
-            excerpt[-4:] = (init, intlen, rsize, n)
-            values = (init, init + n * intlen) + values[2:]
-            d.add_array(b'X' + name[1:], values, excerpt)
 
 
 class Segment(object):
