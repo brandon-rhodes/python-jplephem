@@ -27,6 +27,8 @@ class DAF(object):
             raise ValueError('file_object must be opened in binary "b" mode')
 
         self.file = file_object
+        self._map = None
+        self._array = None
 
         file_record = self.read_record(1)
 
@@ -151,9 +153,11 @@ class DAF(object):
         you need random access.
 
         """
-        data, skip = self.map_words(start, end)
-        skip //= 8
-        return ndarray(end - start + 1 + skip, self.endian + 'd', data)[skip:]
+        if self._array is None:
+            self._map, skip = self.map_words(1, self.free - 1)
+            assert skip == 0
+            self._array = ndarray(self.free - 1, self.endian + 'd', self._map)
+        return self._array[start - 1 : end]
 
     def summary_records(self):
         """Yield (record_number, n_summaries, record_data) for each record.

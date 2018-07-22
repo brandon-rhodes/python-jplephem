@@ -298,6 +298,12 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2018 July 22 — Version 2.8**
+
+* Switched to a making a single memory map of the entire file, to avoid
+  running out of file descriptors when users load an ephemeris with
+  hundreds of segments.
+
 **2018 February 11 — Version 2.7**
 
 * Expanded the command line tool, most notably with the ability to fetch
