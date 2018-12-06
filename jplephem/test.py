@@ -365,13 +365,12 @@ class LegacyTests(_CommonTests, TestCase):
 class NAIF_DAF_Tests(TestCase):
 
     def test_single_position(self):
-        kernel = SPK(NAIF_DAF(open('de405.bsp', 'rb')))
-        x, y, z = kernel[0,4].compute(2457061.5)
-        # Expect rough agreement with a DE430 position from our README:
-        self.assertAlmostEqual(x, 2.05700211e+08, delta=2.0)
-        self.assertAlmostEqual(y, 4.25141646e+07, delta=2.0)
-        self.assertAlmostEqual(z, 1.39379183e+07, delta=2.0)
-        kernel.close()
+        with SPK(NAIF_DAF(open('de405.bsp', 'rb'))) as kernel:
+            x, y, z = kernel[0,4].compute(2457061.5)
+            # Expect rough agreement with a DE430 position from our README:
+            self.assertAlmostEqual(x, 2.05700211e+08, delta=2.0)
+            self.assertAlmostEqual(y, 4.25141646e+07, delta=2.0)
+            self.assertAlmostEqual(z, 1.39379183e+07, delta=2.0)
 
 
 class CommandLineTests(TestCase):
