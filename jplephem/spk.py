@@ -49,10 +49,8 @@ class SPK(object):
         for segment in self.segments:
             if hasattr(segment, '_data'):
                 del segment._data
-        if self.daf._array is not None:
-            del self.daf._array
-        if self.daf._map is not None:
-            del self.daf._map
+        self.daf._array = None
+        self.daf._map = None
 
     def __str__(self):
         daf = self.daf
