@@ -48,7 +48,9 @@ class SPK(object):
         self.daf.file.close()
         for segment in self.segments:
             if hasattr(segment, '_data'):
-                del segment._data  # TODO: explicitly close each memory map
+                del segment._data
+        self.daf._array = None
+        self.daf._map = None
 
     def __str__(self):
         daf = self.daf
@@ -64,6 +66,12 @@ class SPK(object):
     def comments(self):
         """Return the file comments, as a string."""
         return self.daf.comments()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
 
 class Segment(object):
