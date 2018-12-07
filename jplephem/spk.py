@@ -49,15 +49,10 @@ class SPK(object):
         for segment in self.segments:
             if hasattr(segment, '_data'):
                 del segment._data
-        try:
+        if self.daf._array is not None:
             del self.daf._array
-        except AttributeError:
-            pass
-        try:
+        if self.daf._map is not None:
             del self.daf._map
-        except AttributeError:
-            pass
-
 
     def __str__(self):
         daf = self.daf
@@ -74,11 +69,11 @@ class SPK(object):
         """Return the file comments, as a string."""
         return self.daf.comments()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
     def __enter__(self):
         return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
 
 class Segment(object):
