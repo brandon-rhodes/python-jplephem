@@ -149,6 +149,12 @@ class Segment(object):
         coefficients = rollaxis(coefficients, 1)
         return initial_epoch, interval_length, coefficients
 
+    def load_array(self):
+        data = self._data
+        if data is None:
+            self._data = data = self._load()
+        return data
+
     def generate(self, tdb, tdb2):
         """Generate components and differentials for time `tdb` plus `tdb2`.
 

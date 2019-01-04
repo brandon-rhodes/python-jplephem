@@ -322,6 +322,11 @@ class SPKTests(_CommonTests, TestCase):
   '2414864.50..2471184.50  Solar System Barycenter (0) -> Mars Barycenter (4)'
   '\n  frame=1 data_type=2 source=DE-0421LE-0421')
 
+    def test_loading_array(self):
+        segment = self.spk[0,4]
+        initial_epoch, interval_length, coefficients = segment.load_array()
+        self.assertEqual(coefficients.shape, (3, 1760, 11))
+
 
 class LegacyTests(_CommonTests, TestCase):
 

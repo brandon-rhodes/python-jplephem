@@ -195,6 +195,13 @@ provided above and read through the code to learn more.
    |  segment.end_i - index where segment ends
   ...
 
+* If you want to access the raw coefficients, use the segment
+  ``load_array()`` method.  It returns two floats and a NumPy array:
+
+  >>> initial_epoch, interval_length, coefficients = segment.load_array()
+  >>> print(coefficients.shape)
+  (3, 100448, 13)
+
 * The square-bracket lookup mechanism ``kernel[3,399]`` is a
   non-standard convenience that returns only the last matching segment
   in the file.  While the SPK standard does say that the last segment
@@ -211,7 +218,6 @@ provided above and read through the code to learn more.
   try out the ``segment.generate()`` method - it will let you ask for
   the position, and then only proceed to the velocity once you are sure
   that the light-time error is now small enough.
-
 
 High-Precision Dates
 --------------------
@@ -297,6 +303,10 @@ https://github.com/brandon-rhodes/python-jplephem/
 
 Changelog
 ---------
+
+**2019 January 3 — Version 2.9**
+
+* Added the ``load_array()`` method to the segment class.
 
 **2018 July 22 — Version 2.8**
 

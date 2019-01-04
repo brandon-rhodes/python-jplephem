@@ -8,7 +8,7 @@ import jplephem
 description, long_description = jplephem.__doc__.split('\n', 1)
 
 setup(name = 'jplephem',
-      version = '2.8',
+      version = '2.9',
       description = description,
       long_description = long_description,
       license = 'MIT',
