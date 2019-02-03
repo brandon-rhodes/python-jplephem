@@ -103,7 +103,7 @@ solar system, this ephemeris only requires you to take a single step:
 
 >>> position = kernel[0,4].compute(2457061.5)
 >>> print(position)
-[  2.05700211e+08   4.25141646e+07   1.39379183e+07]
+[2.05700211e+08 4.25141646e+07 1.39379183e+07]
 
 But learning the position of Mars with respect to the Earth takes three
 steps, from Mars to the Solar System barycenter to the Earth-Moon
@@ -113,7 +113,7 @@ barycenter and finally to Earth itself:
 >>> position -= kernel[0,3].compute(2457061.5)
 >>> position -= kernel[3,399].compute(2457061.5)
 >>> print(position)
-[  3.16065185e+08  -4.67929557e+07  -2.47554111e+07]
+[ 3.16065185e+08 -4.67929557e+07 -2.47554111e+07]
 
 You can see that the output of this ephemeris is in kilometers.  If you
 use another ephemeris, check its documentation to be sure of the units
@@ -126,9 +126,9 @@ returned will itself be a vector as long as your date:
 >>> jd = np.array([2457061.5, 2457062.5, 2457063.5, 2457064.5])
 >>> position = kernel[0,4].compute(jd)
 >>> print(position)
-[[  2.05700211e+08   2.05325363e+08   2.04928663e+08   2.04510189e+08]
- [  4.25141646e+07   4.45315179e+07   4.65441136e+07   4.85517457e+07]
- [  1.39379183e+07   1.48733243e+07   1.58071381e+07   1.67392630e+07]]
+[[2.05700211e+08 2.05325363e+08 2.04928663e+08 2.04510189e+08]
+ [4.25141646e+07 4.45315179e+07 4.65441136e+07 4.85517457e+07]
+ [1.39379183e+07 1.48733243e+07 1.58071381e+07 1.67392630e+07]]
 
 Some ephemerides include velocity inline by returning a 6-vector instead
 of a 3-vector.  For an ephemeris that does not, you can ask for the
@@ -137,10 +137,17 @@ is delivered as a second return value:
 
 >>> position, velocity = kernel[0,4].compute_and_differentiate(2457061.5)
 >>> print(position)
-[  2.05700211e+08   4.25141646e+07   1.39379183e+07]
+[2.05700211e+08 4.25141646e+07 1.39379183e+07]
 >>> print(velocity)
-[ -363896.06287889  2019662.99596519   936169.77271558]
+[-363896.06287889 2019662.99596519  936169.77271558]
 
+The velocity will by default be distance traveled per day, in whatever
+units for distance the ephemeris happens to use.  To get a velocity per
+second, simply divide by the number of seconds in a day:
+
+>>> velocity_per_second = velocity / 86400.0
+>>> print(velocity_per_second)
+[-4.21175999 23.37572912 10.8352983 ]
 
 Details of the API
 ------------------
