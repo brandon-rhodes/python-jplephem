@@ -74,6 +74,9 @@ class SPK(object):
         self.close()
 
 
+#def choose
+
+
 class Segment(object):
     """A single segment of an SPK file.
 

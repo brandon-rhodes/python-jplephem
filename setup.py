@@ -28,5 +28,5 @@ setup(name = 'jplephem',
         'Topic :: Scientific/Engineering :: Astronomy',
         ],
       packages = ['jplephem'],
-      requires = ['numpy'],
+      install_requires = ['numpy'],
       )
