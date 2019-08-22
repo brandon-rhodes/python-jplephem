@@ -35,7 +35,10 @@ class SPK(object):
     """
     def __init__(self, daf):
         self.daf = daf
-        self.segments = [Segment(self.daf, *t) for t in self.daf.summaries()]
+        self.segments = [
+            build_segment(self.daf, source, descriptor)
+            for source, descriptor in self.daf.summaries()
+        ]
         self.pairs = dict(((s.center, s.target), s) for s in self.segments)
 
     @classmethod
@@ -74,10 +77,18 @@ class SPK(object):
         self.close()
 
 
-#def choose
+def build_segment(daf, source, descriptor):
+    data_type = descriptor[5]
+    cls = _segment_classes.get(data_type, BaseSegment)
+    return cls(daf, source, descriptor)
+
+    data_types = ', '.join(str(n) for n in sorted(_segment_classes))
+    raise ValueError('SPK data type {0} is not currently supported;'
+                     ' the only data types supported are: {1}'
+                     .format(data_type, data_types))
 
 
-class Segment(object):
+class BaseSegment(object):
     """A single segment of an SPK file.
 
     There are several items of information about each segment that are
@@ -122,6 +133,26 @@ class Segment(object):
 
     def compute(self, tdb, tdb2=0.0):
         """Compute the component values for the time `tdb` plus `tdb2`."""
+        raise ValueError(
+            'jplephem has not yet learned how to compute positions'
+            ' from an ephemeris segment with data type {0}'
+            .format(self.data_type)
+        )
+
+    def compute_and_differentiate(self, tdb, tdb2=0.0):
+        """Compute components and differentials for time `tdb` plus `tdb2`."""
+        raise ValueError(
+            'jplephem has not yet learned how to compute positions and'
+            ' velocities from an ephemeris segment with data type {0}'
+            .format(self.data_type)
+        )
+
+
+class Segment(BaseSegment):
+    """Type 2 or type 3 segment."""
+
+    def compute(self, tdb, tdb2=0.0):
+        """Compute the component values for the time `tdb` plus `tdb2`."""
         for position in self.generate(tdb, tdb2):
             return position
 
@@ -138,7 +169,7 @@ class Segment(object):
         elif self.data_type == 3:
             component_count = 6
         else:
-            raise ValueError('only SPK data types 2 and 3 are supported')
+            raise ValueError('this class only supports SPK data types 2 and 3')
 
         init, intlen, rsize, n = self.daf.read_array(self.end_i - 3, self.end_i)
         initial_epoch = jd(init)
@@ -232,3 +263,9 @@ class Segment(object):
 def titlecase(name):
     """Title-case target `name` if it looks safe to do so."""
     return name if name.startswith(('1', 'C/', 'DSS-')) else name.title()
+
+
+_segment_classes = {
+    2: Segment,
+    3: Segment,
+}
