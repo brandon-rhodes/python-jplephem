@@ -3,8 +3,9 @@
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
-from numpy import array, empty, empty_like, rollaxis
+from numpy import array, empty, empty_like, interp, rollaxis
 from .daf import DAF
+from .descriptorlib import reify
 from .names import target_names
 
 T0 = 2451545.0
@@ -50,7 +51,7 @@ class SPK(object):
         """Close this SPK file."""
         self.daf.file.close()
         for segment in self.segments:
-            if hasattr(segment, '_data'):
+            if '_data' in segment.__dict__:
                 del segment._data
         self.daf._array = None
         self.daf._map = None
@@ -108,6 +109,8 @@ class BaseSegment(object):
     segment.end_i - index where segment ends
 
     """
+    _data = None
+
     def __init__(self, daf, source, descriptor):
         self.daf = daf
         self.source = source
@@ -115,7 +118,6 @@ class BaseSegment(object):
          self.frame, self.data_type, self.start_i, self.end_i) = descriptor
         self.start_jd = jd(self.start_second)
         self.end_jd = jd(self.end_second)
-        self._data = None
 
     def __str__(self):
         return self.describe(verbose=False)
@@ -260,6 +262,57 @@ class Segment(BaseSegment):
         yield rates
 
 
+class Type9Segment(BaseSegment):
+    """Lagrange Interpolation - Unequal Time Steps"""
+
+    def map_arrays(self):
+        """Raw coefficients and epochs as memory-mapped NumPy arrays."""
+        i = self.end_i
+        polynomial_degree, number_of_states = self.daf.read_array(i - 1, i)
+        if polynomial_degree != 1:
+            raise ValueError('jplephem does not yet support Type 9 segments'
+                             ' with a polynomial degree of {0}'
+                             .format(polynomial_degree))
+        number_of_states = int(number_of_states)
+        i = self.start_i
+        j = i + 6 * number_of_states - 1
+        coefficients = self.daf.map_array(i, j)
+        coefficients.shape = number_of_states, 6
+        coefficients = coefficients.T
+        epochs = self.daf.map_array(j + 1, j + number_of_states)
+        return coefficients, epochs
+
+    @reify
+    def _data(self):
+        """Cached arrays that are ready for interpolation."""
+        coefficients, epochs = self.map_arrays()
+
+        # Make iteration faster by pre-creating tuples of separate arrays.
+        positions = tuple(coefficients[:3])
+        and_velocities = tuple(coefficients)
+        epochs = jd(epochs)
+        return positions, and_velocities, epochs
+
+    def compute(self, tdb, tdb2=0.0):
+        """Interpolate [x y z] at time `tdb` plus `tdb2`.
+
+        A standard JPL Type 9 ephemerides will return kilometers.
+
+        """
+        positions, and_velocities, epochs = self._data
+        return array([interp(tdb, epochs, c) for c in positions])
+
+    def compute_and_differentiate(self, tdb, tdb2=0.0):
+        """Interpolate [x y z dx dy dz] at time `tdb` plus `tdb2`.
+
+        A standard JPL Type 9 ephemerides will return kilometers and
+        kilometers per second.
+
+        """
+        positions, and_velocities, epochs = self._data
+        return array([interp(tdb, epochs, c) for c in and_velocities])
+
+
 def titlecase(name):
     """Title-case target `name` if it looks safe to do so."""
     return name if name.startswith(('1', 'C/', 'DSS-')) else name.title()
@@ -268,4 +321,5 @@ def titlecase(name):
 _segment_classes = {
     2: Segment,
     3: Segment,
+    9: Type9Segment,
 }
