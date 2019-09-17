@@ -2,6 +2,9 @@
 
 """Use a JPL ephemeris to predict planet positions.
 
+Cite as: `Astrophysics Source Code Library, record ascl:1112.014
+<https://ascl.net/1112.014>`_
+
 This package can load and use a Jet Propulsion Laboratory (JPL)
 ephemeris for predicting the position and velocity of a planet or other
 Solar System body.  It only needs `NumPy <http://www.numpy.org/>`_,
@@ -252,7 +255,6 @@ integer Julian date, and ``tdb2`` for the fraction that specifies the
 time of day.  Nearly all ``jplephem`` routines accept this optional
 ``tdb2`` argument if you wish to provide it, thanks to the work of
 Marten van Kerkwijk!
-
 
 Legacy Ephemeris Packages
 -------------------------
