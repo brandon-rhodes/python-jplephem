@@ -16,5 +16,6 @@ install:
   - "pip install dist/jplephem-*.tar.gz"
 
 script:
-  - "cd ci && unit2 jplephem.test"
-  - "cd ci && python -m jplephem.jpltest"
+  - "cd ci"
+  - "unit2 jplephem.test"
+  - "python -m jplephem.jpltest"
