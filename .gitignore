@@ -1,7 +1,5 @@
 /MANIFEST
-/dist/
-testpo.*
-*.bsp
+/dist
 *.pyc
 *.egg-info
-tmp*.py
+tmp*.*

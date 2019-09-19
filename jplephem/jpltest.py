@@ -96,15 +96,18 @@ class MissingFile(Exception):
 
 
 def test_all():
-    for number in 430,:
-        spk_path = 'de%d.bsp' % number
-        testpo_path = 'testpo.%d' % number
-        try:
-            spk = SPK.open(spk_path)
-            testpo_file = open(testpo_path)
-        except IOError:
-            raise MissingFile('cannot open: %s' % testpo_path)
-        run_testpo(spk, testpo_file)
+    number = 430
+    spk_path = 'de%d_test_excerpt.bsp' % number
+    testpo_path = 'testpo.%d' % number
+    try:
+        spk = SPK.open(spk_path)
+    except IOError:
+        raise MissingFile('cannot open: %s' % spk_path)
+    try:
+        testpo_file = open(testpo_path)
+    except IOError:
+        raise MissingFile('cannot open: %s' % testpo_path)
+    run_testpo(spk, testpo_file)
 
 
 if __name__ == '__main__':

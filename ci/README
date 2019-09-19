@@ -1,0 +1,4 @@
+The DE430 ephemeris excerpt in this directory was produced with the
+command:
+
+python -m jplephem excerpt 1850/01/01 2150/01/02 ci/de430.bsp ci/de430_test_excerpt.bsp
