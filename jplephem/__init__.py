@@ -343,6 +343,11 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2019 December 11 — Version 2.10**
+
+* Document and release support for ``.bcp`` binary PCK kernel files
+  through the new ``jplephem.pck`` module.
+
 **2019 January 3 — Version 2.9**
 
 * Added the ``load_array()`` method to the segment class.
