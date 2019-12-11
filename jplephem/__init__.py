@@ -43,9 +43,9 @@ Command Line Tool
 If you have downloaded a ``.bsp`` file, you can run ``jplephem`` from
 the command line to display the data inside of it::
 
-    python -m jplephem comment de430.bsp
-    python -m jplephem dap de430.bsp
-    python -m jplephem spk de430.bsp
+    python -m jplephem comment de430t.bsp
+    python -m jplephem dap de430t.bsp
+    python -m jplephem spk de430t.bsp
 
 You can also take a large ephemeris and produce a smaller excerpt by
 limiting the range of dates that it covers::
@@ -75,7 +75,7 @@ The recent DE430 ephemeris is a useful starting point.  It weighs in at
 115 MB, but provides predictions across the generous range of years
 1550–2650:
 
-http://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp
+https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp
 
 After the kernel has downloaded, you can use ``jplephem`` to load this
 SPK file and learn about the segments it offers:
@@ -255,6 +255,32 @@ integer Julian date, and ``tdb2`` for the fraction that specifies the
 time of day.  Nearly all ``jplephem`` routines accept this optional
 ``tdb2`` argument if you wish to provide it, thanks to the work of
 Marten van Kerkwijk!
+
+Support for Binary PCKs
+-----------------------
+
+You can also load and produce rotation matrices from a binary PCK file.
+Its segments are available through the ``segments`` attributes of the
+returned object.
+
+>>> from jplephem.pck import PCK
+>>> p = PCK.open('moon_pa_de421_1900-2050.bpc')
+>>> p.segments[0].body
+31006
+>>> p.segments[0].frame
+1
+>>> p.segments[0].data_type
+2
+
+Given a solary system barycenter Julian date, the segment will return
+the three angles necessary to build a rotation matrix: right ascension
+of the pole, declination of the pole, and cumulative rotation of the
+body’s axis.  Typically these will all be in radians.
+
+>>> np.set_printoptions(precision=6, suppress=True)
+>>> tdb = 2454540.34103
+>>> print(p.segments[0].compute(tdb, 0.0, False))
+[   0.039279    0.387836 3253.013946]
 
 Legacy Ephemeris Packages
 -------------------------
