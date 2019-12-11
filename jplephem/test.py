@@ -9,7 +9,9 @@ smaller and more feature-oriented suite can be run with::
 
 """
 import numpy as np
+import sys
 import tempfile
+from doctest import DocTestSuite, ELLIPSIS
 from functools import partial
 from io import BytesIO
 from jplephem import Ephemeris, commandline
@@ -424,3 +426,14 @@ File type NAIF/DAF and format BIG-IEEE with 15 segments:
 2433282.50..2469807.50  Venus Barycenter (2) -> Venus (299)
 2433282.50..2469807.50  Mars Barycenter (4) -> Mars (499)
 """)
+
+
+def load_tests(loader, tests, ignore):
+    """Run our main documentation as a test."""
+
+    # Python 2.6 formats floating-point numbers a bit differently and
+    # breaks the doctest.
+    if sys.version_info >= (2, 7):
+        tests.addTests(DocTestSuite('jplephem', optionflags=ELLIPSIS))
+
+    return tests

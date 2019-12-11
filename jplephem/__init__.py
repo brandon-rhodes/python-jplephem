@@ -36,21 +36,20 @@ To learn more about SPK files, the official `SPK Required Reading
 document is available from the NAIF facility’s web site under the NASA
 JPL domain.
 
-
 Command Line Tool
 -----------------
 
 If you have downloaded a ``.bsp`` file, you can run ``jplephem`` from
 the command line to display the data inside of it::
 
-    python -m jplephem comment de430t.bsp
-    python -m jplephem dap de430t.bsp
-    python -m jplephem spk de430t.bsp
+    python -m jplephem comment de421.bsp
+    python -m jplephem dap de421.bsp
+    python -m jplephem spk de421.bsp
 
 You can also take a large ephemeris and produce a smaller excerpt by
 limiting the range of dates that it covers::
 
-    python -m jplephem excerpt 2018/1/1 2018/4/1 de421.bsp outjup.bsp
+    python -m jplephem excerpt 2018/1/1 2018/4/1 de421.bsp excerpt421.bsp
 
 If the input ephemeris is a URL, then `jplephem` will try to save
 bandwidth by fetching only the blocks of the remote file that are
@@ -66,38 +65,44 @@ few months, you can download considerably less data::
     -rw-r----- 1 brandon brandon 1.2M Feb 11 13:36 excerpt.bsp
 
 In this case only about one-thousandth of the ephemeris's data needed to
-be downloaded, a download which took less than one minute.
+be downloaded.
 
-Getting Started With DE430
+Getting Started With DE421
 --------------------------
 
-The recent DE430 ephemeris is a useful starting point.  It weighs in at
-115 MB, but provides predictions across the generous range of years
-1550–2650:
+The DE421 ephemeris is a useful starting point.  It weighs in at 17 MB,
+but provides predictions over the years 1900–2050:
 
-https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp
+https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de421.bsp
 
 After the kernel has downloaded, you can use ``jplephem`` to load this
 SPK file and learn about the segments it offers:
 
 >>> from jplephem.spk import SPK
->>> kernel = SPK.open('de430.bsp')
+>>> kernel = SPK.open('de421.bsp')
 >>> print(kernel)
-File type DAF/SPK and format LTL-IEEE with 14 segments:
-2287184.50..2688976.50  Solar System Barycenter (0) -> Mercury Barycenter (1)
-2287184.50..2688976.50  Solar System Barycenter (0) -> Venus Barycenter (2)
-2287184.50..2688976.50  Solar System Barycenter (0) -> Earth Barycenter (3)
-2287184.50..2688976.50  Solar System Barycenter (0) -> Mars Barycenter (4)
-2287184.50..2688976.50  Solar System Barycenter (0) -> Jupiter Barycenter (5)
-2287184.50..2688976.50  Solar System Barycenter (0) -> Saturn Barycenter (6)
-2287184.50..2688976.50  Solar System Barycenter (0) -> Uranus Barycenter (7)
-2287184.50..2688976.50  Solar System Barycenter (0) -> Neptune Barycenter (8)
-2287184.50..2688976.50  Solar System Barycenter (0) -> Pluto Barycenter (9)
-2287184.50..2688976.50  Solar System Barycenter (0) -> Sun (10)
-2287184.50..2688976.50  Earth Barycenter (3) -> Moon (301)
-2287184.50..2688976.50  Earth Barycenter (3) -> Earth (399)
-2287184.50..2688976.50  Mercury Barycenter (1) -> Mercury (199)
-2287184.50..2688976.50  Venus Barycenter (2) -> Venus (299)
+File type DAF/SPK and format LTL-IEEE with 15 segments:
+2414864.50..2471184.50  Solar System Barycenter (0) -> Mercury Barycenter (1)
+2414864.50..2471184.50  Solar System Barycenter (0) -> Venus Barycenter (2)
+2414864.50..2471184.50  Solar System Barycenter (0) -> Earth Barycenter (3)
+2414864.50..2471184.50  Solar System Barycenter (0) -> Mars Barycenter (4)
+2414864.50..2471184.50  Solar System Barycenter (0) -> Jupiter Barycenter (5)
+2414864.50..2471184.50  Solar System Barycenter (0) -> Saturn Barycenter (6)
+2414864.50..2471184.50  Solar System Barycenter (0) -> Uranus Barycenter (7)
+2414864.50..2471184.50  Solar System Barycenter (0) -> Neptune Barycenter (8)
+2414864.50..2471184.50  Solar System Barycenter (0) -> Pluto Barycenter (9)
+2414864.50..2471184.50  Solar System Barycenter (0) -> Sun (10)
+2414864.50..2471184.50  Earth Barycenter (3) -> Moon (301)
+2414864.50..2471184.50  Earth Barycenter (3) -> Earth (399)
+2414864.50..2471184.50  Mercury Barycenter (1) -> Mercury (199)
+2414864.50..2471184.50  Venus Barycenter (2) -> Venus (299)
+2414864.50..2471184.50  Mars Barycenter (4) -> Mars (499)
+
+Since the next few examples involve vector output, let’s tell NumPy to
+make vector output attractive.
+
+>>> import numpy as np
+>>> np.set_printoptions(precision=3)
 
 Each segment of the file lets you predict the position of an object with
 respect to some other reference point.  If you want the coordinates of
@@ -106,7 +111,7 @@ solar system, this ephemeris only requires you to take a single step:
 
 >>> position = kernel[0,4].compute(2457061.5)
 >>> print(position)
-[2.05700211e+08 4.25141646e+07 1.39379183e+07]
+[2.057e+08 4.251e+07 1.394e+07]
 
 But learning the position of Mars with respect to the Earth takes three
 steps, from Mars to the Solar System barycenter to the Earth-Moon
@@ -116,7 +121,7 @@ barycenter and finally to Earth itself:
 >>> position -= kernel[0,3].compute(2457061.5)
 >>> position -= kernel[3,399].compute(2457061.5)
 >>> print(position)
-[ 3.16065185e+08 -4.67929557e+07 -2.47554111e+07]
+[ 3.161e+08 -4.679e+07 -2.476e+07]
 
 You can see that the output of this ephemeris is in kilometers.  If you
 use another ephemeris, check its documentation to be sure of the units
@@ -129,9 +134,9 @@ returned will itself be a vector as long as your date:
 >>> jd = np.array([2457061.5, 2457062.5, 2457063.5, 2457064.5])
 >>> position = kernel[0,4].compute(jd)
 >>> print(position)
-[[2.05700211e+08 2.05325363e+08 2.04928663e+08 2.04510189e+08]
- [4.25141646e+07 4.45315179e+07 4.65441136e+07 4.85517457e+07]
- [1.39379183e+07 1.48733243e+07 1.58071381e+07 1.67392630e+07]]
+[[2.057e+08 2.053e+08 2.049e+08 2.045e+08]
+ [4.251e+07 4.453e+07 4.654e+07 4.855e+07]
+ [1.394e+07 1.487e+07 1.581e+07 1.674e+07]]
 
 Some ephemerides include velocity inline by returning a 6-vector instead
 of a 3-vector.  For an ephemeris that does not, you can ask for the
@@ -140,9 +145,9 @@ is delivered as a second return value:
 
 >>> position, velocity = kernel[0,4].compute_and_differentiate(2457061.5)
 >>> print(position)
-[2.05700211e+08 4.25141646e+07 1.39379183e+07]
+[2.057e+08 4.251e+07 1.394e+07]
 >>> print(velocity)
-[-363896.06287889 2019662.99596519  936169.77271558]
+[-363896.059 2019662.996  936169.773]
 
 The velocity will by default be distance traveled per day, in whatever
 units for distance the ephemeris happens to use.  To get a velocity per
@@ -150,7 +155,7 @@ second, simply divide by the number of seconds in a day:
 
 >>> velocity_per_second = velocity / 86400.0
 >>> print(velocity_per_second)
-[-4.21175999 23.37572912 10.8352983 ]
+[-4.212 23.376 10.835]
 
 Details of the API
 ------------------
@@ -183,8 +188,8 @@ provided above and read through the code to learn more.
 
   >>> segment = kernel[3,399]
   >>> print(segment.describe())
-  2287184.50..2688976.50  Earth Barycenter (3) -> Earth (399)
-    frame=1 data_type=2 source=DE-0430LE-0430
+  2414864.50..2471184.50  Earth Barycenter (3) -> Earth (399)
+    frame=1 data_type=2 source=DE-0421LE-0421
 
 * Each ``Segment`` loaded from the kernel has a number of attributes
   that are loaded from the SPK file:
@@ -210,7 +215,7 @@ provided above and read through the code to learn more.
 
   >>> initial_epoch, interval_length, coefficients = segment.load_array()
   >>> print(coefficients.shape)
-  (3, 100448, 13)
+  (3, 14080, 13)
 
 * The square-bracket lookup mechanism ``kernel[3,399]`` is a
   non-standard convenience that returns only the last matching segment
@@ -277,10 +282,9 @@ the three angles necessary to build a rotation matrix: right ascension
 of the pole, declination of the pole, and cumulative rotation of the
 body’s axis.  Typically these will all be in radians.
 
->>> np.set_printoptions(precision=6, suppress=True)
 >>> tdb = 2454540.34103
 >>> print(p.segments[0].compute(tdb, 0.0, False))
-[   0.039279    0.387836 3253.013946]
+[3.928e-02 3.878e-01 3.253e+03]
 
 Legacy Ephemeris Packages
 -------------------------

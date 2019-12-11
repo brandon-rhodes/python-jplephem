@@ -151,7 +151,7 @@ class BaseSegment(object):
 
 
 class Segment(BaseSegment):
-    """Type 2 or type 3 segment."""
+    # Type 2 or type 3 segment.
 
     def compute(self, tdb, tdb2=0.0):
         """Compute the component values for the time `tdb` plus `tdb2`."""
