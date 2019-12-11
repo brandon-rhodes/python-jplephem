@@ -130,7 +130,6 @@ that it employs.
 If you supply the date as a NumPy array, then each component that is
 returned will itself be a vector as long as your date:
 
->>> import numpy as np
 >>> jd = np.array([2457061.5, 2457062.5, 2457063.5, 2457064.5])
 >>> position = kernel[0,4].compute(jd)
 >>> print(position)
@@ -194,8 +193,9 @@ provided above and read through the code to learn more.
 * Each ``Segment`` loaded from the kernel has a number of attributes
   that are loaded from the SPK file:
 
-  >>> help(segment)
-  Help on Segment in module jplephem.spk object:
+  >>> from jplephem.spk import BaseSegment
+  >>> help(BaseSegment)
+  Help on class BaseSegment in module jplephem.spk:
   ...
    |  segment.source - official ephemeris name, like 'DE-0430LE-0430'
    |  segment.start_second - initial epoch, as seconds from J2000
