@@ -10,13 +10,11 @@ from .names import target_names
 T0 = 2451545.0
 S_PER_DAY = 86400.0
 
-
 def jd(seconds):
     """Convert a number of seconds since J2000 to a Julian Date."""
     return T0 + seconds / S_PER_DAY
 
-
-class BinaryPCK(object):
+class PCK(object):
     """A JPL binary PCK (extension ``.bcp``) kernel.
 
     You can load a binary PCK file by specifying its filename::
@@ -57,7 +55,6 @@ class BinaryPCK(object):
         """Return the file comments, as a string."""
         return self.daf.comments()
 
-
 class Segment(object):
     """A single segment of a binary PCK file.
 
@@ -66,10 +63,8 @@ class Segment(object):
     attributes:
 
     segment.source - official ephemeris name, like 'DE-0430LE-0430'
-    segment.start_second - initial epoch, as seconds from J2000
-    segment.end_second - final epoch, as seconds from J2000
-    segment.start_jd - start_second, converted to a Julian Date
-    segment.end_jd - end_second, converted to a Julian Date
+    segment.initial_second - initial epoch, as seconds from J2000
+    segment.final_second - final epoch, as seconds from J2000
     segment.body - integer body identifier
     segment.frame - integer frame identifier
     segment.data_type - integer data type identifier
@@ -80,10 +75,10 @@ class Segment(object):
     def __init__(self, daf, source, descriptor):
         self.daf = daf
         self.source = source
-        (self.start_second, self.end_second, self.body, self.frame,
+        (self.initial_second, self.final_second, self.body, self.frame,
          self.data_type, self.start_i, self.end_i) = descriptor
-        self.start_jd = jd(self.start_second)
-        self.end_jd = jd(self.end_second)
+        self.initial_jd = jd(self.initial_second)
+        self.final_jd = jd(self.final_second)
         self._data = None
 
     def __str__(self):
@@ -92,7 +87,7 @@ class Segment(object):
     def describe(self, verbose=True):
         """Return a textual description of the segment."""
         body = titlecase(target_names.get(self.body, 'Unknown body'))
-        text = ('{0.start_jd:.2f}..{0.end_jd:.2f} frame={0.frame}'
+        text = ('{0.initial_jd:.2f}..{0.final_jd:.2f} frame={0.frame}'
                 '  {1} ({0.body})'.format(self, body))
         if verbose:
             text += ('\n  data_type={0.data_type} source={1}'
@@ -186,7 +181,6 @@ class Segment(object):
             rates = rates[:,0]
 
         return components, rates
-
 
 def titlecase(name):
     """Title-case body `name` if it looks safe to do so."""
