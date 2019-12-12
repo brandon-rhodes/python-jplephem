@@ -104,8 +104,6 @@ class Segment(object):
             raise ValueError('only binary PCK data type 2 is supported')
 
         init, intlen, rsize, n = self.daf.read_array(self.end_i - 3, self.end_i)
-        initial_epoch = jd(init)
-        interval_length = intlen / S_PER_DAY
         coefficient_count = int(rsize - 2) // component_count
         coefficients = self.daf.map_array(self.start_i, self.end_i - 4)
 
@@ -113,7 +111,7 @@ class Segment(object):
         coefficients = coefficients[:,2:]  # ignore MID and RADIUS elements
         coefficients.shape = (int(n), component_count, coefficient_count)
         coefficients = rollaxis(coefficients, 1)
-        return initial_epoch, interval_length, coefficients
+        return init, intlen, coefficients
 
     def compute(self, tdb, tdb2, derivative=True):
         """Generate angles and derivatives for time `tdb` plus `tdb2`.
@@ -130,21 +128,21 @@ class Segment(object):
         if data is None:
             self._data = data = self._load()
 
-        initial_epoch, interval_length, coefficients = data
+        init, intlen, coefficients = data
         component_count, n, coefficient_count = coefficients.shape
 
-        # Subtracting tdb before adding tdb2 affords greater precision.
-        index, offset = divmod((tdb - initial_epoch) + tdb2, interval_length)
+        seconds = (tdb - T0) * S_PER_DAY - init + tdb2 * S_PER_DAY
+        index, offset = divmod(seconds, intlen)
         index = index.astype(int)
 
         if (index < 0).any() or (index > n).any():
-            final_epoch = initial_epoch + interval_length * n
+            final_epoch = init + intlen * n
             raise ValueError('segment only covers dates %.1f through %.1f'
-                            % (initial_epoch, final_epoch))
+                            % (init, final_epoch))
 
         omegas = (index == n)
         index[omegas] -= 1
-        offset[omegas] += interval_length
+        offset[omegas] += intlen
 
         coefficients = coefficients[:,index]
 
@@ -152,7 +150,7 @@ class Segment(object):
 
         T = empty((coefficient_count, len(index)))
         T[0] = 1.0
-        T[1] = t1 = 2.0 * offset / interval_length - 1.0
+        T[1] = t1 = 2.0 * offset / intlen - 1.0
         twot1 = t1 + t1
         for i in range(2, coefficient_count):
             T[i] = twot1 * T[i-1] - T[i-2]
@@ -174,7 +172,7 @@ class Segment(object):
             for i in range(3, coefficient_count):
                 dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
         dT *= 2.0
-        dT /= interval_length
+        dT /= intlen
 
         rates = (dT.T * coefficients).sum(axis=2)
         if scalar:
