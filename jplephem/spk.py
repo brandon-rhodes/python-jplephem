@@ -236,13 +236,12 @@ class Segment(BaseSegment):
 
         coefficients = coefficients[:,:,index]
 
-        # Chebyshev polynomial.  We accumulate results starting with the
-        # final coefficient to retain accuracy for as long as possible.
+        # Chebyshev polynomial.
 
         s = 2.0 * offset / intlen - 1.0
         s2 = 2.0 * s
 
-        w0 = w1 = dw0 = dw1 = 0.0
+        w0 = w1 = 0.0
         wlist = []
 
         for coefficient in coefficients[:-1]:
@@ -259,6 +258,8 @@ class Segment(BaseSegment):
         yield components
 
         # Chebyshev differentiation.
+
+        dw0 = dw1 = 0.0
 
         for coefficient, w1 in zip(coefficients[:-1], wlist):
             dw2 = dw1

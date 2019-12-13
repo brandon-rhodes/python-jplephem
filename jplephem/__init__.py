@@ -353,8 +353,10 @@ Changelog
 
 **2019 December 13 — Version 2.11**
 
-* Reverse the order in which the PCK Chebyshev polynomial is computed to
-  gain a partial digit of extra precision.
+* Reverse the order in which Chebyshev polynomials are computed to
+  slightly increase speed, to simplify the code, and in one case
+  (comparing PCK output to NASA) to gain a partial digit of extra
+  precision.
 
 **2019 December 11 — Version 2.10**
 

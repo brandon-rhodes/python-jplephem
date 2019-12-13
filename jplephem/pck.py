@@ -150,8 +150,7 @@ class Segment(object):
 
         coefficients = coefficients[:,:,index]
 
-        # Chebyshev polynomial.  We accumulate results starting with the
-        # final coefficient to retain accuracy for as long as possible.
+        # Chebyshev polynomial.
 
         s = 2.0 * offset / intlen - 1.0
         s2 = 2.0 * s
@@ -162,7 +161,7 @@ class Segment(object):
             w2 = w1
             w1 = w0
             w0 = coefficient + (s2 * w1 - w2)
-            if derivative:
+            if derivative:  # TODO: defer to a second loop
                 dw2 = dw1
                 dw1 = dw0
                 dw0 = 2.0 * w1 + dw1 * s2 - dw2
