@@ -292,7 +292,7 @@ You can ask for velocity as well.
 >>> print(r)
 [3.928e-02 3.878e-01 3.253e+03]
 >>> print(v)
-[2.318e-03 1.672e-04 9.177e-01]
+[6.707e-09 4.838e-10 2.655e-06]
 
 Legacy Ephemeris Packages
 -------------------------

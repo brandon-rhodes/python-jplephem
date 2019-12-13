@@ -216,6 +216,7 @@ class Segment(object):
 
         #rates = (dT.T * coefficients).sum(axis=2)
         rates = w0 + s * dw0 - dw1
+        rates /= intlen / 2.0
         if scalar:
             rates = rates[:,0]
 
