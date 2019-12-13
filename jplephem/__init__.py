@@ -351,6 +351,11 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2019 December 13 — Version 2.11**
+
+* Reverse the order in which the PCK Chebyshev polynomial is computed to
+  gain a partial digit of extra precision.
+
 **2019 December 11 — Version 2.10**
 
 * Document and release support for ``.bcp`` binary PCK kernel files
