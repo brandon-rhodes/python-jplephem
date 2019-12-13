@@ -3,7 +3,7 @@
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
-from numpy import array, empty, empty_like, interp, rollaxis
+from numpy import array, empty, empty_like, flip, interp, rollaxis
 from .daf import DAF
 from .descriptorlib import reify
 from .names import target_names
@@ -174,8 +174,6 @@ class Segment(BaseSegment):
             raise ValueError('this class only supports SPK data types 2 and 3')
 
         init, intlen, rsize, n = self.daf.read_array(self.end_i - 3, self.end_i)
-        initial_epoch = jd(init)
-        interval_length = intlen / S_PER_DAY
         coefficient_count = int(rsize - 2) // component_count
         coefficients = self.daf.map_array(self.start_i, self.end_i - 4)
 
@@ -183,13 +181,22 @@ class Segment(BaseSegment):
         coefficients = coefficients[:,2:]  # ignore MID and RADIUS elements
         coefficients.shape = (int(n), component_count, coefficient_count)
         coefficients = rollaxis(coefficients, 1)
-        return initial_epoch, interval_length, coefficients
+        coefficients = rollaxis(coefficients, 2)
+        coefficients = flip(coefficients, 0)
+        return init, intlen, coefficients
 
     def load_array(self):
         data = self._data
         if data is None:
             self._data = data = self._load()
-        return data
+
+        init, intlen, coefficients = data
+        initial_epoch = jd(init)
+        interval_length = intlen / S_PER_DAY
+        coefficients = flip(coefficients, 0)
+        coefficients = rollaxis(coefficients, 2)
+        coefficients = rollaxis(coefficients, 2)
+        return initial_epoch, interval_length, coefficients
 
     def generate(self, tdb, tdb2):
         """Generate components and differentials for time `tdb` plus `tdb2`.
@@ -210,34 +217,44 @@ class Segment(BaseSegment):
         if data is None:
             self._data = data = self._load()
 
-        initial_epoch, interval_length, coefficients = data
-        component_count, n, coefficient_count = coefficients.shape
+        init, intlen, coefficients = data
+        component_count, coefficient_count, n = coefficients.shape
 
-        # Subtracting tdb before adding tdb2 affords greater precision.
-        index, offset = divmod((tdb - initial_epoch) + tdb2, interval_length)
+        # Subtracting init before adding tdb2 affords greater precision.
+        seconds = (tdb - T0) * S_PER_DAY - init + tdb2 * S_PER_DAY
+        index, offset = divmod(seconds, intlen)
         index = index.astype(int)
 
         if (index < 0).any() or (index > n).any():
-            final_epoch = initial_epoch + interval_length * n
+            final_epoch = init + intlen * n
             raise ValueError('segment only covers dates %.1f through %.1f'
-                            % (initial_epoch, final_epoch))
+                            % (init, final_epoch))
 
         omegas = (index == n)
         index[omegas] -= 1
-        offset[omegas] += interval_length
+        offset[omegas] += intlen
 
-        coefficients = coefficients[:,index]
+        coefficients = coefficients[:,:,index]
 
-        # Chebyshev polynomial.
+        # Chebyshev polynomial.  We accumulate results starting with the
+        # final coefficient to retain accuracy for as long as possible.
 
-        T = empty((coefficient_count, len(index)))
-        T[0] = 1.0
-        T[1] = t1 = 2.0 * offset / interval_length - 1.0
-        twot1 = t1 + t1
-        for i in range(2, coefficient_count):
-            T[i] = twot1 * T[i-1] - T[i-2]
+        jmax = coefficients.shape[0]
 
-        components = (T.T * coefficients).sum(axis=2)
+        s = 2.0 * offset / intlen - 1.0
+        s2 = 2.0 * s
+
+        w0 = w1 = dw0 = dw1 = 0.0
+        wlist = []
+
+        for coefficient in coefficients[:-1]:
+            w2 = w1
+            w1 = w0
+            w0 = coefficient + (s2 * w1 - w2)
+            wlist.append(w1)
+
+        components = coefficients[-1] + (s * w0 - w1)
+
         if scalar:
             components = components[:,0]
 
@@ -245,17 +262,16 @@ class Segment(BaseSegment):
 
         # Chebyshev differentiation.
 
-        dT = empty_like(T)
-        dT[0] = 0.0
-        dT[1] = 1.0
-        if coefficient_count > 2:
-            dT[2] = twot1 + twot1
-            for i in range(3, coefficient_count):
-                dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
-        dT *= 2.0
-        dT /= interval_length
+        for coefficient, w1 in zip(coefficients[:-1], wlist):
+            dw2 = dw1
+            dw1 = dw0
+            dw0 = 2.0 * w1 + dw1 * s2 - dw2
 
-        rates = (dT.T * coefficients).sum(axis=2)
+        rates = w0 + s * dw0 - dw1
+        rates /= intlen
+        rates *= 2.0
+        rates *= S_PER_DAY
+
         if scalar:
             rates = rates[:,0]
 

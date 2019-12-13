@@ -134,6 +134,7 @@ class Segment(object):
         init, intlen, coefficients = data
         coefficient_count, component_count, n = coefficients.shape
 
+        # Subtracting init before adding tdb2 affords greater precision.
         seconds = (tdb - T0) * S_PER_DAY - init + tdb2 * S_PER_DAY
         index, offset = divmod(seconds, intlen)
         index = index.astype(int)
