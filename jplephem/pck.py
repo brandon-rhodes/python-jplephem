@@ -3,7 +3,7 @@
 ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html
 
 """
-from numpy import array, empty, empty_like, flip, rollaxis
+from numpy import array, empty, empty_like, rollaxis
 from .daf import DAF
 from .names import target_names
 
@@ -112,7 +112,7 @@ class Segment(object):
         coefficients.shape = (int(n), component_count, coefficient_count)
         coefficients = rollaxis(coefficients, 1)
         coefficients = rollaxis(coefficients, 2)
-        coefficients = flip(coefficients, 0)
+        coefficients = coefficients[::-1]
 
         return init, intlen, coefficients
 

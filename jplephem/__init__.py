@@ -351,6 +351,12 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2019 December 13 — Version 2.12**
+
+* Replaced use of NumPy ``flip()`` with a reverse slice ``[::-1]`` after
+  discovering the function was a recent addition that some user installs
+  of NumPy do not support.
+
 **2019 December 13 — Version 2.11**
 
 * Reverse the order in which Chebyshev polynomials are computed to

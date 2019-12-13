@@ -3,7 +3,7 @@
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
-from numpy import array, empty, empty_like, flip, interp, rollaxis
+from numpy import array, empty, empty_like, interp, rollaxis
 from .daf import DAF
 from .descriptorlib import reify
 from .names import target_names
@@ -182,7 +182,7 @@ class Segment(BaseSegment):
         coefficients.shape = (int(n), component_count, coefficient_count)
         coefficients = rollaxis(coefficients, 1)
         coefficients = rollaxis(coefficients, 2)
-        coefficients = flip(coefficients, 0)
+        coefficients = coefficients[::-1]
         return init, intlen, coefficients
 
     def load_array(self):
@@ -193,7 +193,7 @@ class Segment(BaseSegment):
         init, intlen, coefficients = data
         initial_epoch = jd(init)
         interval_length = intlen / S_PER_DAY
-        coefficients = flip(coefficients, 0)
+        coefficients = coefficients[::-1]
         coefficients = rollaxis(coefficients, 2)
         coefficients = rollaxis(coefficients, 2)
         return initial_epoch, interval_length, coefficients
