@@ -153,8 +153,6 @@ class Segment(object):
         # Chebyshev polynomial.  We accumulate results starting with the
         # final coefficient to retain accuracy for as long as possible.
 
-        jmax = coefficients.shape[0]
-
         s = 2.0 * offset / intlen - 1.0
         s2 = 2.0 * s
 
