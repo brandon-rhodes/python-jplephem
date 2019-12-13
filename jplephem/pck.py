@@ -132,6 +132,8 @@ class Segment(object):
         component_count, n, coefficient_count = coefficients.shape
 
         seconds = (tdb - T0) * S_PER_DAY - init + tdb2 * S_PER_DAY
+        # print('init:', init)
+        # print('seconds:', seconds[0])
         index, offset = divmod(seconds, intlen)
         index = index.astype(int)
 
@@ -143,19 +145,51 @@ class Segment(object):
         omegas = (index == n)
         index[omegas] -= 1
         offset[omegas] += intlen
+        # print('index/offset:', index[0], offset[0])
 
         coefficients = coefficients[:,index]
 
-        # Chebyshev polynomial.
+        # Chebyshev polynomial.  We accumulate results starting with the
+        # final coefficient to retain accuracy as long as possible.
 
-        T = empty((coefficient_count, len(index)))
-        T[0] = 1.0
-        T[1] = t1 = 2.0 * offset / intlen - 1.0
-        twot1 = t1 + t1
-        for i in range(2, coefficient_count):
-            T[i] = twot1 * T[i-1] - T[i-2]
+        # print('shape', coefficients.shape)
+        jmax = coefficients.shape[2]
+        s = 2.0 * offset / intlen - 1.0
+        # print('s =', s)
+        s2 = 2.0 * s
+        cp = coefficients
+        w0 = 0.0
+        w1 = 0.0
+        for j in range(jmax - 1, 0, -1):
+            #print('J', j)
+            w2 = w1
+            w1 = w0
+            w0 = cp[:,:,j] + (s2 * w1 - w2)
+            #print('w0 =', w0[0][0])
+        components = cp[:,:,0] + (s * w0 - w1)
+        #print('components final =', components[2][0])
 
-        components = (T.T * coefficients).sum(axis=2)
+        # T = empty((coefficient_count, len(index)))
+        # T[0] = 1.0
+        # T[1] = t1 = 2.0 * offset / intlen - 1.0
+        # print('T[1] =', T[1])
+        # twot1 = t1 + t1
+        # for i in range(2, coefficient_count):
+        #     T[i] = twot1 * T[i-1] - T[i-2]
+
+        # import numpy as np
+        # components = np.flip(T.T * coefficients, axis=2).sum(axis=2)
+        # T = empty((coefficient_count, len(index)))
+        # T[0] = 1.0
+        # T[1] = t1 = 2.0 * offset / intlen - 1.0
+        # print('T[1] =', T[1])
+        # twot1 = t1 + t1
+        # for i in range(2, coefficient_count):
+        #     T[i] = twot1 * T[i-1] - T[i-2]
+
+        # import numpy as np
+        # components = np.flip(T.T * coefficients, axis=2).sum(axis=2)
+        #components = (T.T * coefficients).sum(axis=2)
         if scalar:
             components = components[:,0]
 
