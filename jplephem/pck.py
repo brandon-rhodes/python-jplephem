@@ -3,7 +3,7 @@
 ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html
 
 """
-from numpy import array, empty, empty_like, rollaxis
+from numpy import array, empty, empty_like, flip, rollaxis
 from .daf import DAF
 from .names import target_names
 
@@ -111,6 +111,9 @@ class Segment(object):
         coefficients = coefficients[:,2:]  # ignore MID and RADIUS elements
         coefficients.shape = (int(n), component_count, coefficient_count)
         coefficients = rollaxis(coefficients, 1)
+        coefficients = rollaxis(coefficients, 2)
+        coefficients = flip(coefficients, 0)
+
         return init, intlen, coefficients
 
     def compute(self, tdb, tdb2, derivative=True):
@@ -129,11 +132,9 @@ class Segment(object):
             self._data = data = self._load()
 
         init, intlen, coefficients = data
-        component_count, n, coefficient_count = coefficients.shape
+        coefficient_count, component_count, n = coefficients.shape
 
         seconds = (tdb - T0) * S_PER_DAY - init + tdb2 * S_PER_DAY
-        # print('init:', init)
-        # print('seconds:', seconds[0])
         index, offset = divmod(seconds, intlen)
         index = index.astype(int)
 
@@ -146,29 +147,28 @@ class Segment(object):
         index[omegas] -= 1
         offset[omegas] += intlen
 
-        coefficients = coefficients[:,index]
+        coefficients = coefficients[:,:,index]
 
         # Chebyshev polynomial.  We accumulate results starting with the
-        # final coefficient to retain accuracy as long as possible.
+        # final coefficient to retain accuracy for as long as possible.
 
-        jmax = coefficients.shape[2]
+        jmax = coefficients.shape[0]
 
         s = 2.0 * offset / intlen - 1.0
         s2 = 2.0 * s
-        cp = coefficients
 
         w0 = w1 = dw0 = dw1 = 0.0
 
-        for j in range(jmax - 1, 0, -1):
+        for coefficient in coefficients[:-1]:
             w2 = w1
             w1 = w0
-            w0 = cp[:,:,j] + (s2 * w1 - w2)
+            w0 = coefficient + (s2 * w1 - w2)
             if derivative:
                 dw2 = dw1
                 dw1 = dw0
                 dw0 = 2.0 * w1 + dw1 * s2 - dw2
 
-        components = cp[:,:,0] + (s * w0 - w1)
+        components = coefficients[-1] + (s * w0 - w1)
 
         if scalar:
             components = components[:,0]
