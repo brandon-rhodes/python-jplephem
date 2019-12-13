@@ -145,25 +145,21 @@ class Segment(object):
         omegas = (index == n)
         index[omegas] -= 1
         offset[omegas] += intlen
-        # print('index/offset:', index[0], offset[0])
 
         coefficients = coefficients[:,index]
 
         # Chebyshev polynomial.  We accumulate results starting with the
         # final coefficient to retain accuracy as long as possible.
 
-        # print('shape', coefficients.shape)
         jmax = coefficients.shape[2]
+
         s = 2.0 * offset / intlen - 1.0
-        # print('s =', s)
         s2 = 2.0 * s
         cp = coefficients
-        w0 = 0.0
-        w1 = 0.0
-        dw0 = 0.0
-        dw1 = 0.0
+
+        w0 = w1 = dw0 = dw1 = 0.0
+
         for j in range(jmax - 1, 0, -1):
-            #print('J', j)
             w2 = w1
             w1 = w0
             w0 = cp[:,:,j] + (s2 * w1 - w2)
@@ -171,31 +167,9 @@ class Segment(object):
                 dw2 = dw1
                 dw1 = dw0
                 dw0 = 2.0 * w1 + dw1 * s2 - dw2
-            #print('w0 =', w0[0][0])
+
         components = cp[:,:,0] + (s * w0 - w1)
-        #print('components final =', components[2][0])
 
-        # T = empty((coefficient_count, len(index)))
-        # T[0] = 1.0
-        # T[1] = t1 = 2.0 * offset / intlen - 1.0
-        # print('T[1] =', T[1])
-        # twot1 = t1 + t1
-        # for i in range(2, coefficient_count):
-        #     T[i] = twot1 * T[i-1] - T[i-2]
-
-        # import numpy as np
-        # components = np.flip(T.T * coefficients, axis=2).sum(axis=2)
-        # T = empty((coefficient_count, len(index)))
-        # T[0] = 1.0
-        # T[1] = t1 = 2.0 * offset / intlen - 1.0
-        # print('T[1] =', T[1])
-        # twot1 = t1 + t1
-        # for i in range(2, coefficient_count):
-        #     T[i] = twot1 * T[i-1] - T[i-2]
-
-        # import numpy as np
-        # components = np.flip(T.T * coefficients, axis=2).sum(axis=2)
-        #components = (T.T * coefficients).sum(axis=2)
         if scalar:
             components = components[:,0]
 
@@ -204,19 +178,10 @@ class Segment(object):
 
         # Chebyshev differentiation.
 
-        # dT = empty_like(T)
-        # dT[0] = 0.0
-        # dT[1] = 1.0
-        # if coefficient_count > 2:
-        #     dT[2] = twot1 + twot1
-        #     for i in range(3, coefficient_count):
-        #         dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
-        # dT *= 2.0
-        # dT /= intlen
-
-        #rates = (dT.T * coefficients).sum(axis=2)
         rates = w0 + s * dw0 - dw1
-        rates /= intlen / 2.0
+        rates /= intlen
+        rates *= 2.0
+
         if scalar:
             rates = rates[:,0]
 
