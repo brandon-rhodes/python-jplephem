@@ -160,11 +160,17 @@ class Segment(object):
         cp = coefficients
         w0 = 0.0
         w1 = 0.0
+        dw0 = 0.0
+        dw1 = 0.0
         for j in range(jmax - 1, 0, -1):
             #print('J', j)
             w2 = w1
             w1 = w0
             w0 = cp[:,:,j] + (s2 * w1 - w2)
+            if derivative:
+                dw2 = dw1
+                dw1 = dw0
+                dw0 = 2.0 * w1 + dw1 * s2 - dw2
             #print('w0 =', w0[0][0])
         components = cp[:,:,0] + (s * w0 - w1)
         #print('components final =', components[2][0])
@@ -198,17 +204,18 @@ class Segment(object):
 
         # Chebyshev differentiation.
 
-        dT = empty_like(T)
-        dT[0] = 0.0
-        dT[1] = 1.0
-        if coefficient_count > 2:
-            dT[2] = twot1 + twot1
-            for i in range(3, coefficient_count):
-                dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
-        dT *= 2.0
-        dT /= intlen
+        # dT = empty_like(T)
+        # dT[0] = 0.0
+        # dT[1] = 1.0
+        # if coefficient_count > 2:
+        #     dT[2] = twot1 + twot1
+        #     for i in range(3, coefficient_count):
+        #         dT[i] = twot1 * dT[i-1] - dT[i-2] + T[i-1] + T[i-1]
+        # dT *= 2.0
+        # dT /= intlen
 
-        rates = (dT.T * coefficients).sum(axis=2)
+        #rates = (dT.T * coefficients).sum(axis=2)
+        rates = w0 + s * dw0 - dw1
         if scalar:
             rates = rates[:,0]
 

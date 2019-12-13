@@ -286,6 +286,14 @@ body’s axis.  Typically these will all be in radians.
 >>> print(p.segments[0].compute(tdb, 0.0, False))
 [3.928e-02 3.878e-01 3.253e+03]
 
+You can ask for velocity as well.
+
+>>> r, v = p.segments[0].compute(tdb, 0.0, True)
+>>> print(r)
+[3.928e-02 3.878e-01 3.253e+03]
+>>> print(v)
+[2.318e-03 1.672e-04 9.177e-01]
+
 Legacy Ephemeris Packages
 -------------------------
 
