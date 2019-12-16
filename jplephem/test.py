@@ -431,6 +431,13 @@ File type NAIF/DAF and format BIG-IEEE with 15 segments:
 def load_tests(loader, tests, ignore):
     """Run our main documentation as a test."""
 
+    # If we are running in CI, where we test against an old version of
+    # NumPy, skip the doctests since NumPy will print whitespace
+    # differently (and worse).
+    version = tuple(int(s) for s in np.__version__.split('.'))
+    if version < (1, 17):
+        return
+
     # Python 2.6 formats floating-point numbers a bit differently and
     # breaks the doctest.
     if sys.version_info >= (2, 7):
