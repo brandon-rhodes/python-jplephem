@@ -9,8 +9,12 @@ python:
   - "3.6"
   - "3.7"
 
+# The old version of NumPy installed here is in support of users who
+# cannot upgrade relentlessly.
+# https://github.com/brandon-rhodes/python-jplephem/issues/35
+
 install:
-  - "pip install unittest2"
+  - "pip install numpy==1.11.3 unittest2"
   - "python setup.py sdist"
   - "mv jplephem trash"
   - "pip install dist/jplephem-*.tar.gz"
