@@ -436,11 +436,12 @@ def load_tests(loader, tests, ignore):
     # differently (and worse).
     version = tuple(int(s) for s in np.__version__.split('.'))
     if version < (1, 17):
-        return
+        return tests
 
     # Python 2.6 formats floating-point numbers a bit differently and
     # breaks the doctest.
-    if sys.version_info >= (2, 7):
-        tests.addTests(DocTestSuite('jplephem', optionflags=ELLIPSIS))
+    if sys.version_info <= (2, 6):
+        return tests
 
+    tests.addTests(DocTestSuite('jplephem', optionflags=ELLIPSIS))
     return tests
