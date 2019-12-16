@@ -14,7 +14,8 @@ python:
 # https://github.com/brandon-rhodes/python-jplephem/issues/35
 
 install:
-  - "pip install numpy==1.11.3 unittest2"
+  - "if [[ $TRAVIS_PYTHON_VERSION < 3.7 ]] ; then pip install numpy==1.11.3 ; else pip install numpy ; fi"
+  - "pip install unittest2"
   - "python setup.py sdist"
   - "mv jplephem trash"
   - "pip install dist/jplephem-*.tar.gz"
