@@ -6,6 +6,7 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 from numpy import array, empty, empty_like, interp, rollaxis
 from .daf import DAF
 from .descriptorlib import reify
+from .exceptions import OutOfRangeTimestampError
 from .names import target_names
 
 T0 = 2451545.0
@@ -227,8 +228,13 @@ class Segment(BaseSegment):
 
         if (index < 0).any() or (index > n).any():
             final_epoch = init + intlen * n
-            raise ValueError('segment only covers dates %.1f through %.1f'
-                            % (init, final_epoch))
+            raise OutOfRangeTimestampError(
+                'segment only covers dates %.1f through %.1f' % (init,
+                                                                 final_epoch),
+                min_timestamp=init,
+                max_timestamp=final_epoch,
+                out_of_range_times=[True if i < 0 or i > n else False
+                                    for i in index])
 
         omegas = (index == n)
         index[omegas] -= 1
