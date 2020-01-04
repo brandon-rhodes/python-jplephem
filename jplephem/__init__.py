@@ -351,6 +351,14 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**(Next version)**
+
+* The ``ValueError`` thrown when a compute method is given a Julian date
+  outside the range it supports is now a subclass ``OutOfRangeError``
+  that reminds the caller of the acceptible range of dates of the SPK
+  segment, and carries an array attribute indicating which input dates
+  were at fault.
+
 **2019 December 13 — Version 2.12**
 
 * Replaced use of NumPy ``flip()`` with a reverse slice ``[::-1]`` after

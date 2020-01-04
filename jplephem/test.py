@@ -15,6 +15,7 @@ from doctest import DocTestSuite, ELLIPSIS
 from functools import partial
 from io import BytesIO
 from jplephem import Ephemeris, commandline
+from jplephem.exceptions import OutOfRangeError
 from jplephem.daf import DAF, FTPSTR, NAIF_DAF
 from jplephem.spk import SPK
 from struct import Struct
@@ -329,6 +330,16 @@ class SPKTests(_CommonTests, TestCase):
         initial_epoch, interval_length, coefficients = segment.load_array()
         self.assertEqual(coefficients.shape, (3, 1760, 11))
 
+    def test_out_of_range_dates(self):
+        segment = self.spk[0,4]
+        tdb = np.array([-1e3, 0, +1e5]) + 2414990.0
+        try:
+            segment.compute_and_differentiate(tdb)
+        except OutOfRangeError as e:
+            self.assertEqual(str(e), 'segment only covers dates'
+                             ' 2414864.5 through 2471184.5')
+            self.assertIs(type(e.out_of_range_times), np.ndarray)
+            self.assertEqual(list(e.out_of_range_times), [True, False, True])
 
 class LegacyTests(_CommonTests, TestCase):
 

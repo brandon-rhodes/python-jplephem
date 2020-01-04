@@ -1,20 +1,17 @@
 """A set of special exceptions that can be thrown by the jplephem library"""
 
-class OutOfRangeTimestampError(ValueError):
-    """
-    This exception is thrown if any input times are out of the range of
-    times jplephem can compute ephemeris for.
-    It has for properties:
+class OutOfRangeError(ValueError):
+    """One or more time values given were out of range for the ephemeris.
 
-    - `message` is a string explaining what happened,
-    - `min_timestamp` and `max_timestamp` are floats giving the minimum and
-      maximum supported times,
-    - `out_of_range_times` is an array of booleans where `True` means the
-      corresponding date in the input array is out of range and `False` means
-      it is correct.
+    This exception is thrown if any input times are out of the range of
+    times supported by an ephemeris.  It has two extra attributes:
+
+    - `message`: a string explaining what happened
+    - `out_of_range_times`: if the input `tdb` of times is an array,
+      this provides an array of booleans of the same length where `True`
+      means the corresponding date is out of range.
+
     """
-    def __init__(self, message, min_timestamp, max_timestamp, out_of_range_times):
+    def __init__(self, message, out_of_range_times):
         self.message = message
-        self.min_timestamp = min_timestamp
-        self.max_timestamp = max_timestamp
         self.out_of_range_times = out_of_range_times
