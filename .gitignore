@@ -1,5 +1,6 @@
 /MANIFEST
 /dist
+*.bsp
 *.pyc
 *.egg-info
 tmp*.*
