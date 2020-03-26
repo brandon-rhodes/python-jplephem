@@ -104,14 +104,18 @@ class DAF(object):
             fileno = self.file.fileno()
         except (AttributeError, io.UnsupportedOperation):
             fileno = None
-        if fileno is None:
+            m = None
+        if fileno is not None:
+            skip = i % mmap.ALLOCATIONGRANULARITY
+            r = mmap.ACCESS_READ
+            try:
+                m = mmap.mmap(fileno, length=j-i+skip, access=r, offset=i-skip)
+            except OSError:
+                m = None
+        if m is None:
             skip = 0
             self.file.seek(i)
             m = self.file.read(j - i)
-        else:
-            skip = i % mmap.ALLOCATIONGRANULARITY
-            r = mmap.ACCESS_READ
-            m = mmap.mmap(fileno, length=j-i+skip, access=r, offset=i-skip)
         if sys.version_info > (3,):
             m = memoryview(m)  # so further slicing can return views
         return m, skip
