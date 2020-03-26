@@ -351,6 +351,12 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2020 March 26 — Version 2.14**
+
+* Fall back to plain file I/O on platforms that support ``fileno()`` but
+  that don’t support ``mmap()``, like the `Pyodide platform
+  <https://github.com/iodide-project/pyodide>`_.
+
 **2020 February 22 — Version 2.13**
 
 * The exception raised when a segment is given a Julian date outside the
