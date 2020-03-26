@@ -8,6 +8,7 @@ smaller and more feature-oriented suite can be run with::
     python -m unittest discover jplephem
 
 """
+import mmap
 import numpy as np
 import sys
 import tempfile
@@ -186,6 +187,22 @@ class TestDAFRealFile(TestDAFBytesIO):
         f.write(bytes_io.getvalue())
         f.seek(0)
         return f
+
+
+def fake_mmap_that_raises_OSError(*args, **kw):
+    raise OSError('mmap() not supported on this platform')
+
+class TestDAFRealFileWithoutMMap(TestDAFRealFile):
+    # Where "Real" = "written to disk with a real file descriptor
+    # instead of an in-memory BytesIO".  And we turn off mmap() to
+    # simulate platforms like pyodide.
+
+    def setUp(self):
+        self.mmap = mmap.mmap
+        mmap.mmap = fake_mmap_that_raises_OSError
+
+    def tearDown(self):
+        mmap.mmap = self.mmap
 
 
 class _CommonTests(object):
