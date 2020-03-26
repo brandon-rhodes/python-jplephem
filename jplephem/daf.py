@@ -103,9 +103,8 @@ class DAF(object):
         try:
             fileno = self.file.fileno()
         except (AttributeError, io.UnsupportedOperation):
-            fileno = None
             m = None
-        if fileno is not None:
+        else:
             skip = i % mmap.ALLOCATIONGRANULARITY
             r = mmap.ACCESS_READ
             try:
