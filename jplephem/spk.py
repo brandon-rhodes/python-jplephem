@@ -227,7 +227,6 @@ class Segment(BaseSegment):
         index = index.astype(int)
 
         if (index < 0).any() or (index > n).any():
-            final_epoch = init + intlen * n
             raise OutOfRangeError(
                 'segment only covers dates %.1f through %.1f'
                 % (self.start_jd, self.end_jd),
