@@ -3,7 +3,7 @@
 ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html
 
 """
-from numpy import array, empty, empty_like, rollaxis
+from numpy import array, rollaxis
 from .daf import DAF
 from .names import target_names
 

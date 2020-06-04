@@ -3,7 +3,7 @@
 http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
-from numpy import array, empty, empty_like, interp, rollaxis
+from numpy import array, interp, rollaxis
 from .daf import DAF
 from .descriptorlib import reify
 from .exceptions import OutOfRangeError
