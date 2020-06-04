@@ -221,10 +221,13 @@ class Segment(BaseSegment):
         init, intlen, coefficients = data
         component_count, coefficient_count, n = coefficients.shape
 
-        # Subtracting init before adding tdb2 affords greater precision.
-        seconds = (tdb - T0) * S_PER_DAY - init + tdb2 * S_PER_DAY
-        index, offset = divmod(seconds, intlen)
-        index = index.astype(int)
+        # Keeping fractions strictly separate from whole numbers
+        # maintains the highest possible precision.
+
+        index1, offset1 = divmod((tdb - T0) * S_PER_DAY - init, intlen)
+        index2, offset2 = divmod(tdb2 * S_PER_DAY, intlen)
+        index3, offset = divmod(offset1 + offset2, intlen)
+        index = (index1 + index2 + index3).astype(int)
 
         if (index < 0).any() or (index > n).any():
             raise OutOfRangeError(

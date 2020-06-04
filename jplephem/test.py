@@ -287,6 +287,16 @@ class _CommonTests(object):
         tdb2 = np.array([4.0, 2.5])
         self.check_2d_result('earthmoon', tdb, tdb2)
 
+    def test_jitter(self):
+        usecond = 1e-6 / 24.0 / 3600.0
+        tdb = np.ones(12) * 2414990.0
+        tdb2 = np.linspace(1.0 * usecond, 2.0 * usecond, 12)
+        x, y, z = self.position('earthmoon', tdb, tdb2)
+        for component in x, y, z:
+            size = component[0]
+            relative_jitter = np.diff(np.diff(x)) / size
+            self.assertLess(max(abs(relative_jitter)), 3e-16)
+
     def test_ephemeris_end_date(self):
         x, y, z = self.position('earthmoon', self.jomega)
         # These positions are actually from HORIZONS and thus DE431,
