@@ -60,11 +60,12 @@ class SPK(object):
     def __str__(self):
         daf = self.daf
         d = lambda b: b.decode('latin-1')
-        lines = '\n'.join(str(segment) for segment in self.segments)
-        template = ('File type {0} and format {1} with {2} segments:\n'
-                    'INITIAL JD..FINAL JD   TYPE   CENTER -> TARGET\n{3}')
-        return template.format(
-            d(daf.locidw), d(daf.locfmt), len(self.segments), lines)
+        lines = [
+            'File type {0} and format {1} with {2} segments:'
+            .format(d(daf.locidw), d(daf.locfmt), len(self.segments))
+        ]
+        lines.extend(str(segment) for segment in self.segments)
+        return '\n'.join(lines)
 
     def __getitem__(self, key):
         """Given (center, target) integers, return the last matching segment."""
@@ -124,11 +125,11 @@ class BaseSegment(object):
         """Return a textual description of the segment."""
         center = titlecase(target_names.get(self.center, 'Unknown center'))
         target = titlecase(target_names.get(self.target, 'Unknown target'))
-        text = ('{0.start_jd:.2f}..{0.end_jd:.2f}  {0.data_type:2d}'
+        text = ('{0.start_jd:.2f}..{0.end_jd:.2f}  Type {0.data_type}'
                 '  {1} ({0.center}) -> {2} ({0.target})'
                 .format(self, center, target))
         if verbose:
-            text += ('\n  frame={0.frame} data_type={0.data_type} source={1}'
+            text += ('\n  frame={0.frame} source={1}'
                      .format(self, self.source.decode('ascii')))
         return text
 

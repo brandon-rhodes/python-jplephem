@@ -82,21 +82,21 @@ SPK file and learn about the segments it offers:
 >>> kernel = SPK.open('de421.bsp')
 >>> print(kernel)
 File type DAF/SPK and format LTL-IEEE with 15 segments:
-2414864.50..2471184.50  Solar System Barycenter (0) -> Mercury Barycenter (1)
-2414864.50..2471184.50  Solar System Barycenter (0) -> Venus Barycenter (2)
-2414864.50..2471184.50  Solar System Barycenter (0) -> Earth Barycenter (3)
-2414864.50..2471184.50  Solar System Barycenter (0) -> Mars Barycenter (4)
-2414864.50..2471184.50  Solar System Barycenter (0) -> Jupiter Barycenter (5)
-2414864.50..2471184.50  Solar System Barycenter (0) -> Saturn Barycenter (6)
-2414864.50..2471184.50  Solar System Barycenter (0) -> Uranus Barycenter (7)
-2414864.50..2471184.50  Solar System Barycenter (0) -> Neptune Barycenter (8)
-2414864.50..2471184.50  Solar System Barycenter (0) -> Pluto Barycenter (9)
-2414864.50..2471184.50  Solar System Barycenter (0) -> Sun (10)
-2414864.50..2471184.50  Earth Barycenter (3) -> Moon (301)
-2414864.50..2471184.50  Earth Barycenter (3) -> Earth (399)
-2414864.50..2471184.50  Mercury Barycenter (1) -> Mercury (199)
-2414864.50..2471184.50  Venus Barycenter (2) -> Venus (299)
-2414864.50..2471184.50  Mars Barycenter (4) -> Mars (499)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Venus Barycenter (2)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Earth Barycenter (3)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Jupiter Barycenter (5)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Saturn Barycenter (6)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Uranus Barycenter (7)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Neptune Barycenter (8)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Pluto Barycenter (9)
+2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Sun (10)
+2414864.50..2471184.50  Type 2  Earth Barycenter (3) -> Moon (301)
+2414864.50..2471184.50  Type 2  Earth Barycenter (3) -> Earth (399)
+2414864.50..2471184.50  Type 2  Mercury Barycenter (1) -> Mercury (199)
+2414864.50..2471184.50  Type 2  Venus Barycenter (2) -> Venus (299)
+2414864.50..2471184.50  Type 2  Mars Barycenter (4) -> Mars (499)
 
 Since the next few examples involve vector output, let’s tell NumPy to
 make vector output attractive.
@@ -187,8 +187,8 @@ provided above and read through the code to learn more.
 
   >>> segment = kernel[3,399]
   >>> print(segment.describe())
-  2414864.50..2471184.50  Earth Barycenter (3) -> Earth (399)
-    frame=1 data_type=2 source=DE-0421LE-0421
+  2414864.50..2471184.50  Type 2  Earth Barycenter (3) -> Earth (399)
+    frame=1 source=DE-0421LE-0421
 
 * Each ``Segment`` loaded from the kernel has a number of attributes
   that are loaded from the SPK file:
