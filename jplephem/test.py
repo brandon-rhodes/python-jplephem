@@ -289,7 +289,7 @@ class _CommonTests(object):
 
     def test_jitter(self):
         usecond = 1e-6 / 24.0 / 3600.0
-        tdb = np.ones(12) * 2414990.0
+        tdb = np.ones(12) * 2414998.0
         tdb2 = np.linspace(1.0 * usecond, 2.0 * usecond, 12)
         x, y, z = self.position('earthmoon', tdb, tdb2)
         for component in x, y, z:
