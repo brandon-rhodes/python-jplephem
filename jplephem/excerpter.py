@@ -17,7 +17,7 @@ def _seconds(jd):
     """Convert a Julian Date to a number of seconds since J2000."""
     return (jd - T0) * S_PER_DAY
 
-def write_excerpt(input_spk, output_file, start_jd, end_jd):
+def write_excerpt(input_spk, output_file, start_jd, end_jd, summaries):
     start_seconds = _seconds(start_jd)
     end_seconds = _seconds(end_jd)
     old = input_spk.daf
@@ -42,7 +42,7 @@ def write_excerpt(input_spk, output_file, start_jd, end_jd):
     d.write_file_record()
 
     # Copy over an excerpt of each array.
-    for name, values in old.summaries():
+    for name, values in summaries:
         start, end = values[-2], values[-1]
         init, intlen, rsize, n = old.read_array(end - 3, end)
         rsize = int(rsize)
@@ -81,3 +81,9 @@ class RemoteFile(object):
         self.opener.addheaders.append(h)
         data = self.opener.open(self.url).read()
         return data
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()

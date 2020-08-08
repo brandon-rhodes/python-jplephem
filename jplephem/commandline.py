@@ -34,6 +34,7 @@ def main(args):
         help="Create an SPK covering a narrower range of dates",
     )
     p.set_defaults(func=excerpt)
+    p.add_argument('--targets', help='Comma-separated targets to include')
     p.add_argument('start_date', help='Start date yyyy/mm/dd', type=parse_date)
     p.add_argument('end_date', help='End date yyyy/mm/dd', type=parse_date)
     p.add_argument('path_or_url', help='Local filename or remote URL')
@@ -73,15 +74,25 @@ def excerpt(args):
     if args.path_or_url.startswith(('http://', 'https://')):
         url = args.path_or_url
         f = RemoteFile(url)
-        spk = SPK(DAF(f))
-        with open(args.output_path, 'w+b') as output_file:
-            write_excerpt(spk, output_file, args.start_date, args.end_date)
     else:
         path = args.path_or_url
-        with open(path, 'rb') as f:
-            spk = SPK(DAF(f))
-            with open(args.output_path, 'w+b') as output_file:
-                write_excerpt(spk, output_file, args.start_date, args.end_date)
+        f = open(path, 'rb')
+
+    with f:
+        spk = SPK(DAF(f))
+        summaries = spk.daf.summaries()
+
+        if args.targets:
+            desired_targets = set(args.targets.split(','))
+            summaries = [
+                summary for summary, segment in zip(summaries, spk.segments)
+                if str(segment.target) in desired_targets
+            ]
+
+        with open(args.output_path, 'w+b') as output_file:
+            write_excerpt(spk, output_file, args.start_date, args.end_date,
+                          summaries)
+
     return ()
 
 def spk_segments(args):
@@ -97,6 +108,13 @@ def parse_date(s):
         E = argparse.ArgumentTypeError
         raise E('specify each date as YYYY or YYYY/MM or YYYY/MM/DD')
     return julian_day(*fields)
+
+def filter_segments(spk, segment_names):
+    segment_names = set(segment_names)
+    spk.segments = [
+        segment for segment in spk.segments
+        if str(segment.target) in segment_names
+    ]
 
 def julian_day(year, month=1, day=1):
     """Given a proleptic Gregorian calendar date, return a Julian day int."""

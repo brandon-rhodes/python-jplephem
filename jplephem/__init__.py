@@ -43,13 +43,20 @@ If you have downloaded a ``.bsp`` file, you can run ``jplephem`` from
 the command line to display the data inside of it::
 
     python -m jplephem comment de421.bsp
-    python -m jplephem dap de421.bsp
+    python -m jplephem daf de421.bsp
     python -m jplephem spk de421.bsp
 
 You can also take a large ephemeris and produce a smaller excerpt by
 limiting the range of dates that it covers::
 
     python -m jplephem excerpt 2018/1/1 2018/4/1 de421.bsp excerpt421.bsp
+
+You can also filter by the integer codes for the targets you need.
+Unrecognized targets will not raise an error, to let you apply a master
+list of targets to a whole series of SPK files that might or might not
+each have all of the targets::
+
+    python -m jplephem excerpt --targets 1,2,3 2018/1/1 2018/4/1 de421.bsp excerpt421.bsp
 
 If the input ephemeris is a URL, then `jplephem` will try to save
 bandwidth by fetching only the blocks of the remote file that are
@@ -350,6 +357,11 @@ https://github.com/brandon-rhodes/python-jplephem/
 
 Changelog
 ---------
+
+**2020 ? — Version 2.15 (unreleased)**
+
+* The ``excerpt`` subcommand now accepts a ``--targets`` option to save
+  space by copying only matching segments into the output SPK file.
 
 **2020 March 26 — Version 2.14**
 
