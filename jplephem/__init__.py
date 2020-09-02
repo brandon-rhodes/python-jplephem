@@ -358,7 +358,7 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
-**2020 ? — Version 2.15 (unreleased)**
+**2020 September 2 — Version 2.15**
 
 * The ``excerpt`` subcommand now accepts a ``--targets`` option to save
   space by copying only matching segments into the output SPK file.
