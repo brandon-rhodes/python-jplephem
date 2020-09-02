@@ -58,12 +58,12 @@ each have all of the targets::
 
     python -m jplephem excerpt --targets 1,2,3 2018/1/1 2018/4/1 de421.bsp excerpt421.bsp
 
-If the input ephemeris is a URL, then `jplephem` will try to save
+If the input ephemeris is a URL, then ``jplephem`` will try to save
 bandwidth by fetching only the blocks of the remote file that are
 necessary to cover the dates you have specified.  For example, the
-Jupiter satellite ephemeris `jup310.bsp` is famously large, weighing in
-a nearly a gigabyte.  But if all you need are Jupiter's satellites for a
-few months, you can download considerably less data::
+Jupiter satellite ephemeris ``jup310.bsp`` is famously large, weighing
+in a nearly a gigabyte.  But if all you need are Jupiter's satellites
+for a few months, you can download considerably less data::
 
     $ python -m jplephem excerpt 2018/1/1 2018/4/1 \\
         https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/jup310.bsp \\
