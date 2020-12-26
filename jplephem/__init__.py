@@ -113,7 +113,7 @@ make vector output attractive.
 
 Each segment of the file lets you predict the position of an object with
 respect to some other reference point.  If you want the coordinates of
-Mars at 2457061.5 (2015 February 8) with respect to the center of the
+Mars on 2015 February 8 (which corresponds to Julian date 2457061.5) with respect to the center of the
 solar system, this ephemeris only requires you to take a single step:
 
 >>> position = kernel[0,4].compute(2457061.5)
