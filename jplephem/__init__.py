@@ -363,6 +363,10 @@ Changelog
 * The ``excerpt`` subcommand now accepts a ``--targets`` option to save
   space by copying only matching segments into the output SPK file.
 
+* The Julian day fraction ``tdb2`` is handled even more carefully than
+  before, providing a smoother delta between successive positions when
+  the difference between successive times is down around 0.1 µs.
+
 **2020 March 26 — Version 2.14**
 
 * Fall back to plain file I/O on platforms that support ``fileno()`` but
