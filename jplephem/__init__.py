@@ -51,6 +51,13 @@ limiting the range of dates that it covers::
 
     python -m jplephem excerpt 2018/1/1 2018/4/1 de421.bsp excerpt421.bsp
 
+You will get an error if your starting year is negative, because Unix
+commands expect a list of options when they see a dash.  The fix is to
+provide a special argument ``--`` which says “I’m done passing options,
+even if the next argument stars with a dash”:
+
+    python -m jplephem excerpt -- -800/1/1 800/1/1 de422.bsp excerpt422.bsp
+
 You can also filter by the integer codes for the targets you need.
 Unrecognized targets will not raise an error, to let you apply a master
 list of targets to a whole series of SPK files that might or might not
