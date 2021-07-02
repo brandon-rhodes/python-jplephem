@@ -111,13 +111,6 @@ def parse_date(s):
     print(s, '= JD', jd)
     return jd
 
-def filter_segments(spk, segment_names):
-    segment_names = set(segment_names)
-    spk.segments = [
-        segment for segment in spk.segments
-        if str(segment.target) in segment_names
-    ]
-
 def julian_day(year, month=1, day=1):
     """Given a proleptic Gregorian calendar date, return a Julian day int."""
     janfeb = month < 3
