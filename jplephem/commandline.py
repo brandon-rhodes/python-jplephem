@@ -93,6 +93,12 @@ def excerpt(args):
             write_excerpt(spk, output_file, args.start_date, args.end_date,
                           summaries)
 
+    yield '\n{!r} written successfully with the following contents\n'.format(
+        args.output_path)
+
+    with open(args.output_path, 'rb') as f:
+        yield str(SPK(DAF(f)))
+
     return ()
 
 def spk_segments(args):
@@ -108,7 +114,7 @@ def parse_date(s):
         E = argparse.ArgumentTypeError
         raise E('specify each date as YYYY or YYYY/MM or YYYY/MM/DD')
     jd = julian_day(*fields)
-    print(s, '= JD', jd)
+    print('Date {:10} = JD {}'.format(s, jd))
     return jd
 
 def julian_day(year, month=1, day=1):

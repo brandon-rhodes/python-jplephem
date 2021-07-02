@@ -47,8 +47,11 @@ def write_excerpt(input_spk, output_file, start_jd, end_jd, summaries):
         init, intlen, rsize, n = old.read_array(end - 3, end)
         rsize = int(rsize)
 
-        i = int(clip_lower(0, (start_seconds - init) // intlen))
-        j = int(clip_upper(n, (end_seconds - init) // intlen + 1))
+        i = int(clip(0, n, (start_seconds - init) // intlen))
+        j = int(clip(0, n, (end_seconds - init) // intlen + 1))
+        if i == j:
+            continue  # Segment has no overlap with user's dates.
+
         init = init + i * intlen
         n = j - i
 
@@ -60,6 +63,9 @@ def write_excerpt(input_spk, output_file, start_jd, end_jd, summaries):
         excerpt[-4:] = (init, intlen, rsize, n)
         values = (init, init + n * intlen) + values[2:]
         d.add_array(b'X' + name[1:], values, excerpt)
+
+def clip(lower, upper, n):
+    return clip_lower(lower, clip_upper(upper, n))
 
 class RemoteFile(object):
     def __init__(self, url):
