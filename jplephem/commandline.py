@@ -107,7 +107,9 @@ def parse_date(s):
     if len(fields) < 1 or len(fields) > 3:
         E = argparse.ArgumentTypeError
         raise E('specify each date as YYYY or YYYY/MM or YYYY/MM/DD')
-    return julian_day(*fields)
+    jd = julian_day(*fields)
+    print(s, '= JD', jd)
+    return jd
 
 def filter_segments(spk, segment_names):
     segment_names = set(segment_names)
