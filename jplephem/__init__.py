@@ -365,9 +365,13 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
-**2021 ? — Version 2.16**
+**2021 July 3 — Version 2.16**
 
-* Added a `__version__` constant to the package’s top level.
+* Fixed a ``ValueError`` raised in the ``excerpt`` command when an
+  ephemeris segment needs to be entirely skipped because it has no
+  overlap with the user-specified range of dates.
+
+* Added a ``__version__`` constant to the package’s top level.
 
 **2020 September 2 — Version 2.15**
 
@@ -497,7 +501,6 @@ Changelog
 
 * Initial release
 
-
 References
 ----------
 
@@ -514,6 +517,6 @@ FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
 """
 from .ephem import Ephemeris, DateError
-__version__ = '2.15'
+__version__ = '2.16'
 
 __all__ = ['Ephemeris', 'DateError', '__version__']
