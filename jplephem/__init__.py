@@ -7,9 +7,31 @@ Cite as: `Astrophysics Source Code Library, record ascl:1112.014
 
 This package can load and use a Jet Propulsion Laboratory (JPL)
 ephemeris for predicting the position and velocity of a planet or other
-Solar System body.  It only needs `NumPy <http://www.numpy.org/>`_,
-which ``pip`` will automatically attempt to install alongside
-``pyephem`` when you run::
+Solar System body.  It currently supports binary SPK files (extension
+``.bsp``) like `those distributed by the Jet Propulsion Laboratory
+<https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/>`_ that are:
+
+* **Type 2** — positions stored as Chebyshev polynomials, with velocity
+  derived by computing their derivative.
+
+* **Type 3** — positions and velocities both stored explicitly as
+  Chebyshev polynomials.
+
+* **Type 9** — a series of discrete positions and velocities, with
+  separate timestamps that do not need to be equally spaced.  Currently
+  there is only support for linear interpolation: for Type 9 ephemerides
+  of polynomial degree 1, not of any higher degrees.
+
+Note that even if an ephemeris isn’t one of the above types, you can
+still use ``jplephem`` to read its text comment and list the segments
+inside, using the subcommands ``comment`` and ``daf`` described below.
+
+Installation
+------------
+
+The only third-party package that ``jplephem`` depends on is `NumPy
+<http://www.numpy.org/>`_, which ``pip`` will automatically attempt to
+install alongside ``pyephem`` when you run::
 
     $ pip install jplephem
 
