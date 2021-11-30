@@ -308,52 +308,6 @@ You can ask for velocity as well.
 >>> print(v)
 [6.707e-09 4.838e-10 2.655e-06]
 
-Legacy Ephemeris Packages
--------------------------
-
-Back before I learned about SPICE and SPK files, I had run across the
-text-file formatted JPL ephemerides at:
-
-ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/
-
-I laboriously assembled the data in these text files into native NumPy
-array files and wrapped them each in a Python package so that users
-could install an ephemeris with a simple command::
-
-    pip install de421
-
-If you want to use one of these pip-installable ephemerides, you will be
-using a slightly older API, and will lose the benefit of the efficient
-memory-mapping that the newer SPK code performs.  With the old API, here
-is how you would load DE421 and compute a position, given a barycentric
-dynamical time expressed as a Julian date::
-
-    import de421
-    from jplephem import Ephemeris
-
-    eph = Ephemeris(de421)
-    x, y, z = eph.position('mars', 2444391.5)  # 1980.06.01
-
-For more information about the legacy API, consult the ``jplephem``
-entry on PyPI for the final release of the 1.x series:
-
-https://pypi.python.org/pypi/jplephem/1.2
-
-The ephemerides that were made available as Python packages (the
-following links explain the differences between them) are:
-
-* `DE405 <http://pypi.python.org/pypi/de405>`_ (May 1997)
-  — 54 MB covering years 1600 through 2200
-* `DE406 <http://pypi.python.org/pypi/de406>`_ (May 1997)
-  — 190 MB covering years -3000 through 3000
-* `DE421 <http://pypi.python.org/pypi/de421>`_ (February 2008)
-  — 27 MB covering years 1900 through 2050
-* `DE422 <http://pypi.python.org/pypi/de422>`_ (September 2009)
-  — 531 MB covering years -3000 through 3000
-* `DE423 <http://pypi.python.org/pypi/de423>`_ (February 2010)
-  — 36 MB covering years 1800 through 2200
-
-
 Reporting issues
 ----------------
 
