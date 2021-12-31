@@ -337,9 +337,12 @@ You can report any issues, bugs, or problems at the GitHub repository:
 
 https://github.com/brandon-rhodes/python-jplephem/
 
-
 Changelog
 ---------
+
+**2021 December 31 — Version 2.17**
+
+* Fixed an ``AttributeError`` in the ``excerpt`` command.
 
 **2021 July 3 — Version 2.16**
 

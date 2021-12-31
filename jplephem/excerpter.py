@@ -92,4 +92,4 @@ class RemoteFile(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        pass
