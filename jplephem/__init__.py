@@ -496,6 +496,6 @@ FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
 """
 from .ephem import Ephemeris, DateError
-__version__ = '2.16'
+__version__ = '2.17'
 
 __all__ = ['Ephemeris', 'DateError', '__version__']
