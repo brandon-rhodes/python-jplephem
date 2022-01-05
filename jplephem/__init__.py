@@ -330,6 +330,15 @@ You can ask for velocity as well.
 >>> print(v)
 [6.707e-09 4.838e-10 2.655e-06]
 
+Closing an ephemeris
+--------------------
+
+To release all open files and memory maps associated with an ephemeris,
+call its ``close()`` method.
+
+>>> kernel.close()
+>>> p.close()
+
 Reporting issues
 ----------------
 

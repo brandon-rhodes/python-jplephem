@@ -8,10 +8,12 @@ smaller and more feature-oriented suite can be run with::
     python -m unittest discover jplephem
 
 """
+import gc
 import mmap
 import numpy as np
 import sys
 import tempfile
+import warnings
 from doctest import DocTestSuite, ELLIPSIS
 from functools import partial
 from io import BytesIO
@@ -327,6 +329,14 @@ class SPKTests(_CommonTests, TestCase):
 
     def tearDown(self):
         self.spk.close()
+
+        # With thanks for https://stackoverflow.com/questions/24717027/
+        with warnings.catch_warnings(record=True) as w:
+            warnings.resetwarnings()
+            warnings.simplefilter('always', ResourceWarning)
+            del self.spk
+            gc.collect()
+            self.assertFalse(w and str(w[-1]))
 
     def position(self, name, tdb, tdb2=0.0):
         segment = self.spk[0, target_names[name]]
