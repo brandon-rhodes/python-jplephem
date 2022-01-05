@@ -12,11 +12,9 @@ from .names import target_names
 T0 = 2451545.0
 S_PER_DAY = 86400.0
 
-
 def jd(seconds):
     """Convert a number of seconds since J2000 to a Julian Date."""
     return T0 + seconds / S_PER_DAY
-
 
 class SPK(object):
     """A JPL SPK ephemeris kernel for computing positions and velocities.
@@ -81,12 +79,10 @@ class SPK(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-
 def build_segment(daf, source, descriptor):
     data_type = descriptor[5]
     cls = _segment_classes.get(data_type, BaseSegment)
     return cls(daf, source, descriptor)
-
 
 class BaseSegment(object):
     """A single segment of an SPK file.
@@ -162,7 +158,8 @@ class Segment(BaseSegment):
         """Compute components and differentials for time `tdb` plus `tdb2`."""
         return tuple(self.generate(tdb, tdb2))
 
-    def _load(self):
+    @reify
+    def _data(self):
         """Map the coefficients into memory using a NumPy array.
 
         """
@@ -186,11 +183,7 @@ class Segment(BaseSegment):
         return init, intlen, coefficients
 
     def load_array(self):
-        data = self._data
-        if data is None:
-            self._data = data = self._load()
-
-        init, intlen, coefficients = data
+        init, intlen, coefficients = self._data
         initial_epoch = jd(init)
         interval_length = intlen / S_PER_DAY
         coefficients = coefficients[::-1]
@@ -213,11 +206,7 @@ class Segment(BaseSegment):
         if scalar:
             tdb = array((tdb,))
 
-        data = self._data
-        if data is None:
-            self._data = data = self._load()
-
-        init, intlen, coefficients = data
+        init, intlen, coefficients = self._data
         component_count, coefficient_count, n = coefficients.shape
 
         # Keeping fractions strictly separate from whole numbers
@@ -281,7 +270,6 @@ class Segment(BaseSegment):
 
         yield rates
 
-
 class Type9Segment(BaseSegment):
     """Lagrange Interpolation - Unequal Time Steps"""
 
@@ -332,11 +320,9 @@ class Type9Segment(BaseSegment):
         positions, and_velocities, epochs = self._data
         return array([interp(tdb, epochs, c) for c in and_velocities])
 
-
 def titlecase(name):
     """Title-case target `name` if it looks safe to do so."""
     return name if name.startswith(('1', 'C/', 'DSS-')) else name.title()
-
 
 _segment_classes = {
     2: Segment,
