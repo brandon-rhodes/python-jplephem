@@ -1,5 +1,6 @@
 /MANIFEST
-/dist
+/build/
+/dist/
 *.bsp
 *.pyc
 *.egg-info
