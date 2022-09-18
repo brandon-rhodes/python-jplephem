@@ -241,7 +241,14 @@ class DAF(object):
 
         start_word = self.free
         f.seek((start_word - 1) * 8)
-        array = numpy_array(array)  # TODO: force correct endian
+        array = numpy_array(array)
+        byteorders = [self.endian]
+        if sys.byteorder == 'little' and self.endian == LOCFMT[b'LTL-IEEE']:
+            byteorders.append('=')
+        elif sys.byteorder == 'big' and self.endian == LOCFMT[b'BIG-IEEE']:
+            byteorders.append('=')
+        if array.dtype.byteorder not in byteorders:
+            array = array.byteswap().newbyteorder()
         f.write(array.view())
         end_word = f.tell() // 8
 

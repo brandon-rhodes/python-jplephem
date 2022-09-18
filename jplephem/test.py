@@ -158,13 +158,13 @@ class TestDAFBytesIO(TestCase):
 
         # Update n_summaries of final summary block to full.
         d.file.seek(6 * 1024 + 16)
-        d.file.write(Struct('d').pack(d.summaries_per_record))
+        d.file.write(Struct('<d').pack(d.summaries_per_record))
 
         d.add_array(b'Summary Name 3', (121.0, 232.0, 343), [3003.0] * 200)
 
         # Reset n_summaries of that block back to its real value.
         d.file.seek(6 * 1024 + 16)
-        d.file.write(Struct('d').pack(1))
+        d.file.write(Struct('<d').pack(1))
 
         summaries = list(d.summaries())
         eq = self.assertEqual
