@@ -2,6 +2,8 @@
 
 set -e
 
+PYTHON=${PYTHON:-python}
+
 cd "$(dirname "${BASH_SOURCE[0]}")"
 cd ci
-unit2 jplephem.test "$@"
+PYTHONPATH=$(dirname $PWD) $PYTHON -m unittest test.py "$@"

@@ -99,8 +99,6 @@ def excerpt(args):
     with open(args.output_path, 'rb') as f:
         yield str(SPK(DAF(f)))
 
-    return ()
-
 def spk_segments(args):
     with open(args.path, 'rb') as f:
         yield str(SPK(DAF(f)))
