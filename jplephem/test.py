@@ -49,8 +49,8 @@ target_names = {
 
 class TestDAFBytesIO(TestCase):
     def sample_daf(self):
-        word = Struct('d').pack
-        integer = Struct('i').pack
+        word = Struct('<d').pack
+        integer = Struct('<i').pack
         return BytesIO(b''.join([
             # Record 1 - File Record
             b'DAF/SPK ',
