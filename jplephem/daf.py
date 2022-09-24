@@ -247,8 +247,8 @@ class DAF(object):
             byteorders.append('=')
         elif sys.byteorder == 'big' and self.endian == LOCFMT[b'BIG-IEEE']:
             byteorders.append('=')
-        if array.dtype.byteorder not in byteorders:
-            array = array.byteswap().newbyteorder()
+        # if array.dtype.byteorder not in byteorders:
+        #     array = array.byteswap().newbyteorder()
         f.write(array.view())
         end_word = f.tell() // 8
 

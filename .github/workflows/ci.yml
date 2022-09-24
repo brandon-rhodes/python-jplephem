@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - master
-      - actions
+      - tweaks
 
   pull_request:
     branches:
