@@ -7,7 +7,7 @@ import io
 import mmap
 import sys
 from struct import Struct
-from numpy import array as numpy_array, ndarray
+from numpy import array as numpy_array, ascontiguousarray, ndarray
 
 FTPSTR = b'FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP'  # FTP test string
 LOCFMT = {b'BIG-IEEE': '>', b'LTL-IEEE': '<'}
@@ -241,14 +241,8 @@ class DAF(object):
 
         start_word = self.free
         f.seek((start_word - 1) * 8)
-        array = numpy_array(array)
-        byteorders = [self.endian]
-        if sys.byteorder == 'little' and self.endian == LOCFMT[b'LTL-IEEE']:
-            byteorders.append('=')
-        elif sys.byteorder == 'big' and self.endian == LOCFMT[b'BIG-IEEE']:
-            byteorders.append('=')
-        # if array.dtype.byteorder not in byteorders:
-        #     array = array.byteswap().newbyteorder()
+        array = numpy_array(array, self.endian + 'f8')
+        #array = ascontiguousarray(array, self.endian + 'f8')
         f.write(array.view())
         end_word = f.tell() // 8
 
