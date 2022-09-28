@@ -140,10 +140,11 @@ make vector output attractive.
 >>> import numpy as np
 >>> np.set_printoptions(precision=3)
 
-Each segment of the file lets you predict the position of an object with
-respect to some other reference point.  If you want the coordinates of
-Mars on 2015 February 8 (which corresponds to Julian date 2457061.5) with respect to the center of the
-solar system, this ephemeris only requires you to take a single step:
+Each segment of the file lets you predict the position of one body with
+respect to another.  For example, here are the coordinates of Mars (4)
+with respect to the Solar System barycenter (0) at midnight 2015
+February 8 TDB (Barycentric Dynamical Time) which is Julian date
+2457061.5:
 
 >>> position = kernel[0,4].compute(2457061.5)
 >>> print(position)
@@ -159,9 +160,9 @@ barycenter and finally to Earth itself:
 >>> print(position)
 [ 3.161e+08 -4.679e+07 -2.476e+07]
 
-You can see that the output of this ephemeris is in kilometers.  If you
-use another ephemeris, check its documentation to be sure of the units
-that it employs.
+You can see that the output of this ephemeris DE421 is in kilometers.
+If you use another ephemeris, check its documentation to be sure of the
+units that it employs.
 
 If you supply the date as a NumPy array, then each component that is
 returned will itself be a vector as long as your date:
@@ -348,6 +349,11 @@ https://github.com/brandon-rhodes/python-jplephem/
 
 Changelog
 ---------
+
+**2022 September 28 — Version 2.18**
+
+* Added support for big-endian processors, and created a GitHub Actions
+  CI build that includes both a big- and a little-endian architecture.
 
 **2021 December 31 — Version 2.17**
 
