@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 # Fake the presence of numpy so import can succeed.
 import sys
