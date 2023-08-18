@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 name = 'de422'
 module = __import__(name)
