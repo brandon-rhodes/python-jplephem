@@ -227,10 +227,10 @@ class DAF(object):
             name_record = summary_record + 1
             free_record = summary_record + 2
 
-            n_summaries = 0
             data[:24] = scs.pack(summary_record, previous_record, n_summaries)
             self.write_record(record_number, data)
 
+            n_summaries = 0
             summaries = scs.pack(0, record_number, 1).ljust(1024, b'\0')
             names = b'\0' * 1024
             self.write_record(summary_record, summaries)
