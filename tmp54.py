@@ -66,7 +66,7 @@ def print_type2_segment(segment):
 
         i += 1
         d = initial_epoch + i * interval_length
-        print(_format_date(d).rjust(13))
+        print(_format_date(d).rjust(13), 'END')
 
 if __name__ == '__main__':
     kernel = SPK.open(argv[1])  # 'de441.bsp' or 'de441_partial.bsp'
