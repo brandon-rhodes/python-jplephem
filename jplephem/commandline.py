@@ -111,7 +111,7 @@ def parse_date(s):
     if len(fields) < 1 or len(fields) > 3:
         E = argparse.ArgumentTypeError
         raise E('specify each date as YYYY or YYYY/MM or YYYY/MM/DD')
-    jd = julian_day(*fields)
+    jd = julian_day(*fields) + 0.5
     print('Date {:10} = JD {}'.format(s, jd))
     return jd
 
