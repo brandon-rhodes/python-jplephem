@@ -207,7 +207,7 @@ class Segment(BaseSegment):
             tdb = array((tdb,))
 
         init, intlen, coefficients = self._data
-        component_count, coefficient_count, n = coefficients.shape
+        coefficient_count, component_count, n = coefficients.shape
 
         # Keeping fractions strictly separate from whole numbers
         # maintains the highest possible precision.
