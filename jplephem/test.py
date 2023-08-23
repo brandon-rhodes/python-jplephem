@@ -478,6 +478,32 @@ File type NAIF/DAF and format BIG-IEEE with 15 segments:
 2433282.50..2469807.50  Type 2  Mars Barycenter (4) -> Mars (499)
 """)
 
+    def test_excerpt_command(self):
+        output = commandline.main(['excerpt', '2023/8/23', '2023/8/24',
+                                   'de421.bsp', 'de421_excerpt.bsp'])
+        self.assertEqual(output, """\
+Date 2023/8/23  = JD 2460179.5
+Date 2023/8/24  = JD 2460180.5
+
+'de421_excerpt.bsp' written successfully with the following contents
+
+File type DAF/SPK and format LTL-IEEE with 15 segments:
+2460176.50..2460184.50  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
+2460176.50..2460192.50  Type 2  Solar System Barycenter (0) -> Venus Barycenter (2)
+2460176.50..2460192.50  Type 2  Solar System Barycenter (0) -> Earth Barycenter (3)
+2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)
+2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Jupiter Barycenter (5)
+2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Saturn Barycenter (6)
+2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Uranus Barycenter (7)
+2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Neptune Barycenter (8)
+2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Pluto Barycenter (9)
+2460176.50..2460192.50  Type 2  Solar System Barycenter (0) -> Sun (10)
+2460176.50..2460184.50  Type 2  Earth Barycenter (3) -> Moon (301)
+2460176.50..2460184.50  Type 2  Earth Barycenter (3) -> Earth (399)
+2414864.50..2471184.50  Type 2  Mercury Barycenter (1) -> Mercury (199)
+2414864.50..2471184.50  Type 2  Venus Barycenter (2) -> Venus (299)
+2414864.50..2471184.50  Type 2  Mars Barycenter (4) -> Mars (499)
+""")
 
 def load_tests(loader, tests, ignore):
     """Run our main documentation as a test."""

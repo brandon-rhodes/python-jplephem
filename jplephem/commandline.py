@@ -71,6 +71,9 @@ def daf_segments(args):
                                        ' '.join(repr(v) for v in values))
 
 def excerpt(args):
+    for string, jd in args.start_date, args.end_date:
+        yield 'Date {:10} = JD {}'.format(string, jd)
+
     if args.path_or_url.startswith(('http://', 'https://')):
         url = args.path_or_url
         f = RemoteFile(url)
@@ -90,8 +93,8 @@ def excerpt(args):
             ]
 
         with open(args.output_path, 'w+b') as output_file:
-            write_excerpt(spk, output_file, args.start_date, args.end_date,
-                          summaries)
+            write_excerpt(spk, output_file, args.start_date[1],
+                          args.end_date[1], summaries)
 
     yield '\n{!r} written successfully with the following contents\n'.format(
         args.output_path)
@@ -111,9 +114,8 @@ def parse_date(s):
     if len(fields) < 1 or len(fields) > 3:
         E = argparse.ArgumentTypeError
         raise E('specify each date as YYYY or YYYY/MM or YYYY/MM/DD')
-    jd = julian_day(*fields) + 0.5
-    print('Date {:10} = JD {}'.format(s, jd))
-    return jd
+    jd = julian_day(*fields) - 0.5
+    return s, jd
 
 def julian_day(year, month=1, day=1):
     """Given a proleptic Gregorian calendar date, return a Julian day int."""
