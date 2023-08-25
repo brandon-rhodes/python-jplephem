@@ -1,4 +1,7 @@
-from setuptools import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 name = 'de406'
 module = __import__(name)

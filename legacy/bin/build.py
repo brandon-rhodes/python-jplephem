@@ -191,7 +191,10 @@ def main():
                 pass
 
 SETUP_TEMPLATE = """\
-from setuptools import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 name = %r
 setup(name=name,
     version='1.0',

@@ -1,7 +1,11 @@
-from setuptools import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 # Fake the presence of numpy so import can succeed.
-import sys
+import sys, os
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 sys.modules['numpy'] = sys.modules['sys']
 
 import jplephem
