@@ -350,6 +350,17 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2022 September 6 — Version 2.19**
+
+* Fixed a bug in the ``excerpt`` command that was causing it to truncate
+  its output when the input ephemeris had more than about two dozen
+  segments.  The command’s output should now include all matching
+  segments from even a very large ephemeris.
+
+* Fixed the ``excerpt`` command so the calendar dates specified on the
+  command line produce Julian dates ending with the fraction ``.5``,
+  which makes excerpt endpoints more exact.
+
 **2022 September 28 — Version 2.18**
 
 * Added support for big-endian processors, and created a GitHub Actions
@@ -511,6 +522,6 @@ FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
 """
 from .ephem import Ephemeris, DateError
-__version__ = '2.18'
+__version__ = '2.19'
 
 __all__ = ['Ephemeris', 'DateError', '__version__']
