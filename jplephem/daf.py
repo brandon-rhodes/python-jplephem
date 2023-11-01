@@ -6,6 +6,7 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 import io
 import mmap
 import sys
+from _thread import allocate_lock  # avoid importing huge 'threading.py'
 from struct import Struct
 from numpy import array as numpy_array, ndarray
 
@@ -27,6 +28,7 @@ class DAF(object):
             raise ValueError('file_object must be opened in binary "b" mode')
 
         self.file = file_object
+        self.lock = allocate_lock()
         self._map = None
         self._array = None
 
@@ -73,13 +75,15 @@ class DAF(object):
 
     def read_record(self, n):
         """Return record `n` as 1,024 bytes; records are indexed from 1."""
-        self.file.seek(n * K - K)
-        return self.file.read(K)
+        with self.lock:
+            self.file.seek(n * K - K)
+            return self.file.read(K)
 
     def write_record(self, n, data):
         """Write `data` to file record `n`; records are indexed from 1."""
-        self.file.seek(n * K - K)
-        return self.file.write(data)
+        with self.lock:
+            self.file.seek(n * K - K)
+            return self.file.write(data)
 
     def write_file_record(self):
         data = self.file_record_struct.pack(
@@ -113,8 +117,9 @@ class DAF(object):
                 m = None
         if m is None:
             skip = 0
-            self.file.seek(i)
-            m = self.file.read(j - i)
+            with self.lock:
+                self.file.seek(i)
+                m = self.file.read(j - i)
         if sys.version_info > (3,):
             m = memoryview(m)  # so further slicing can return views
         return m, skip
@@ -141,9 +146,10 @@ class DAF(object):
 
         """
         f = self.file
-        f.seek(8 * (start - 1))
         length = 1 + end - start
-        data = f.read(8 * length)
+        with self.lock:
+            f.seek(8 * (start - 1))
+            data = f.read(8 * length)
         return ndarray(length, self.endian + 'd', data)
 
     def map_array(self, start, end):
