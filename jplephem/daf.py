@@ -215,6 +215,8 @@ class DAF(object):
         and will have its start word and end word fields set to point to
         where the `array` of floats has been appended to the file.
 
+        This method is not thread-safe.
+
         """
         f = self.file
         scs = self.summary_control_struct
