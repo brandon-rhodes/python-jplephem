@@ -102,6 +102,9 @@ class DAF(object):
         Memory maps must begin on a page boundary, so `skip` returns the
         number of extra bytes at the beginning of the return value.
 
+        If a memory map is not available on your operating system, then
+        the segment's bytes are simply read into an array instead.
+
         """
         i, j = 8 * start - 8, 8 * end
         try:

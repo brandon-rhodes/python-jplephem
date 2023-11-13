@@ -350,6 +350,13 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2023 November 13 — Version 2.20**
+
+* Each segment is now protected by a lock, in case two threads
+  simultaneously trigger the code that performs the initial load of the
+  segment’s data; the symptom was a rare exception ``ValueError: cannot
+  reshape array``.
+
 **2022 September 6 — Version 2.19**
 
 * Fixed a bug in the ``excerpt`` command that was causing it to truncate
@@ -522,6 +529,6 @@ FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
 """
 from .ephem import Ephemeris, DateError
-__version__ = '2.19'
+__version__ = '2.20'
 
 __all__ = ['Ephemeris', 'DateError', '__version__']
