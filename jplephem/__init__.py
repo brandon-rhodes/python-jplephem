@@ -357,7 +357,7 @@ Changelog
   segment’s data; the symptom was a rare exception ``ValueError: cannot
   reshape array``.
 
-**2022 September 6 — Version 2.19**
+**2023 September 6 — Version 2.19**
 
 * Fixed a bug in the ``excerpt`` command that was causing it to truncate
   its output when the input ephemeris had more than about two dozen
