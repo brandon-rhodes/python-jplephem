@@ -6,7 +6,10 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 import io
 import mmap
 import sys
-from _thread import allocate_lock  # avoid importing huge 'threading.py'
+try:  # Use low-level module to avoid importing huge 'threading.py'
+    from _thread import allocate_lock
+except:
+    from thread import allocate_lock
 from struct import Struct
 from numpy import array as numpy_array, ndarray
 

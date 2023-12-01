@@ -350,6 +350,11 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2023 December 1 — Version 2.21**
+
+* Tweaked an import to avoid a fatal exception under Python 2, in case
+  anyone is still using it.
+
 **2023 November 13 — Version 2.20**
 
 * Each segment is now protected by a lock, in case two threads
@@ -529,6 +534,6 @@ FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
 """
 from .ephem import Ephemeris, DateError
-__version__ = '2.20'
+__version__ = '2.21'
 
 __all__ = ['Ephemeris', 'DateError', '__version__']
