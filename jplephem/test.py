@@ -20,6 +20,7 @@ from io import BytesIO
 from jplephem import Ephemeris, commandline
 from jplephem.exceptions import OutOfRangeError
 from jplephem.daf import DAF, FTPSTR, NAIF_DAF
+from jplephem.pck import PCK
 from jplephem.spk import SPK
 from struct import Struct
 try:
@@ -419,6 +420,14 @@ class LegacyTests(_CommonTests, TestCase):
         self.assertAlmostEqual(y, 1.05103857e+08, delta=1.0)
         self.assertAlmostEqual(z, 45550861.44383482, delta=epsilon_m)
 
+class PCKTests(TestCase):
+    def test_out_of_range_date(self):
+        p = PCK.open('moon_pa_de421_1900-2050.bpc')
+        segment = p.segments[0]
+        expect = 'segment only covers Julian dates 2415020.5 - 2470172.5'
+        with self.assertRaisesRegex(ValueError, expect):
+            segment.compute(0.0, 0.0)
+        p.close()
 
 class NAIF_DAF_Tests(TestCase):
 
@@ -429,7 +438,6 @@ class NAIF_DAF_Tests(TestCase):
             self.assertAlmostEqual(x, 2.05700211e+08, delta=2.0)
             self.assertAlmostEqual(y, 4.25141646e+07, delta=2.0)
             self.assertAlmostEqual(z, 1.39379183e+07, delta=2.0)
-
 
 class CommandLineTests(TestCase):
     maxDiff = 9999

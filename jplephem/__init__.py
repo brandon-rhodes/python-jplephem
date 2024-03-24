@@ -350,6 +350,13 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**Next release**
+
+* Fixed the text of the ``ValueError`` that is raised when the PCK
+  segment ``compute()`` method is given an out-of-range date; it was
+  reporting incorrectly large numbers for the Julian date range, because
+  a PCK counts time using seconds before or after J2000, not years.
+
 **2023 December 1 — Version 2.21**
 
 * Tweaked an import to avoid a fatal exception under Python 2, in case

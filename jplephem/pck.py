@@ -140,9 +140,8 @@ class Segment(object):
         index = index.astype(int)
 
         if (index < 0).any() or (index > n).any():
-            final_epoch = init + intlen * n
-            raise ValueError('segment only covers dates %.1f through %.1f'
-                            % (init, final_epoch))
+            raise ValueError('segment only covers Julian dates %.1f - %.1f'
+                            % (self.initial_jd, self.final_jd))
 
         omegas = (index == n)
         index[omegas] -= 1
