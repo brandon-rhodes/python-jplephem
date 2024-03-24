@@ -5,5 +5,6 @@ set -e
 PYTHON=${PYTHON:-python}
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+projectdir=$PWD
 cd ci
-PYTHONPATH=$(dirname $PWD) $PYTHON -m unittest test "$@"
+PYTHONPATH=$projectdir $PYTHON -m unittest test "$@"
