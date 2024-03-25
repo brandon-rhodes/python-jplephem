@@ -23,7 +23,7 @@ class SPK(object):
 
         kernel = SPK.open('de431.bsp')
 
-    Run ``print(kernel)`` see which segments are inside.  You can also
+    Run ``print(kernel)`` to list the ephemeris segments.  You can also
     loop across all of the segments in the list ``kernel.segments`` or,
     as a convenience, you can select a particular segment by providing a
     center and target integer in square brackets.  So ``kernel[3,399]``
