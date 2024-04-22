@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import argparse
 import sys
+from .calendar import compute_julian_day as julian_day
 from .daf import DAF
 from .excerpter import RemoteFile, write_excerpt
 from .spk import SPK
@@ -116,12 +117,3 @@ def parse_date(s):
         raise E('specify each date as YYYY or YYYY/MM or YYYY/MM/DD')
     jd = julian_day(*fields) - 0.5
     return s, jd
-
-def julian_day(year, month=1, day=1):
-    """Given a proleptic Gregorian calendar date, return a Julian day int."""
-    janfeb = month < 3
-    return (day
-            + 1461 * (year + 4800 - janfeb) // 4
-            + 367 * (month - 2 + janfeb * 12) // 12
-            - 3 * ((year + 4900 - janfeb) // 100) // 4
-            - 32075)
