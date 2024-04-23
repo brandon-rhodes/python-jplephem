@@ -544,10 +544,6 @@ The Jet Propulsion Laboratory's “Solar System Dynamics” page introduces
 the various options for doing solar system position computations:
 http://ssd.jpl.nasa.gov/?ephemerides
 
-The plain ASCII format element sets from which the ``jplephem`` Python
-ephemeris packages are built, along with documentation, can be found at:
-ftp://ssd.jpl.nasa.gov/pub/eph/planets/ascii/
-
 Equivalent FORTRAN code for using the ephemerides be found at the same
 FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
