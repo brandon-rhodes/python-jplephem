@@ -141,18 +141,24 @@ make vector output attractive.
 >>> np.set_printoptions(precision=3)
 
 Each segment of the file lets you predict the position of one body with
-respect to another.  For example, here are the coordinates of Mars (4)
-with respect to the Solar System barycenter (0) at midnight 2015
-February 8 TDB (Barycentric Dynamical Time) which is Julian date
-2457061.5:
+respect to another for a given Julian date.  A small routine is provided
+to convert Gregorian calendar dates to Julian dates:
+
+>>> from jplephem.calendar import compute_julian_date
+>>> compute_julian_date(2015, 2, 8)
+2457061.5
+
+Here is how to compute the coordinates of Mars (target 4) relative to
+the Solar System barycenter (target 0) at midnight 2015 February 8 TDB
+(Barycentric Dynamical Time), using the Julian date we just computed:
 
 >>> position = kernel[0,4].compute(2457061.5)
 >>> print(position)
 [2.057e+08 4.251e+07 1.394e+07]
 
-But learning the position of Mars with respect to the Earth takes three
-steps, from Mars to the Solar System barycenter to the Earth-Moon
-barycenter and finally to Earth itself:
+By contrast, it takes three steps to learn the position of Mars with
+respect to the Earth: from Mars to the Solar System barycenter, to the
+Earth-Moon barycenter (3), and finally to Earth itself (399).
 
 >>> position = kernel[0,4].compute(2457061.5)
 >>> position -= kernel[0,3].compute(2457061.5)
@@ -354,6 +360,9 @@ Changelog
 
 * When printed, SPK kernel segments now display their start and end
   dates using the Gregorian calendar rather than Julian dates.
+
+* A small ``compute_julian_date`` routine is now provided for converting
+  calendar dates into Julian dates.
 
 * Fixed the text of the ``ValueError`` that is raised when the PCK
   segment ``compute()`` method is given an out-of-range date; it was

@@ -21,11 +21,15 @@ def compute_calendar_date(jd_integer, julian_before=None):
     year = e // 1461 - 4716 + (12 + 2 - month) // 12
     return year, month, day
 
+def compute_julian_date(year, month=1, day=1.0):
+    """Given a proleptic Gregorian date, return a Julian date float."""
+    return compute_julian_day(year, month, day) - 0.5
+
 def compute_julian_day(year, month=1, day=1):
-    """Given a proleptic Gregorian calendar date, return a Julian day int."""
+    """Given a proleptic Gregorian date, return a Julian day int."""
     janfeb = month < 3
-    return (day
-            + 1461 * (year + 4800 - janfeb) // 4
+    return (+ 1461 * (year + 4800 - janfeb) // 4
             + 367 * (month - 2 + janfeb * 12) // 12
             - 3 * ((year + 4900 - janfeb) // 100) // 4
-            - 32075)
+            - 32075
+            + day)

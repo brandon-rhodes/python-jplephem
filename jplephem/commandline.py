@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import argparse
 import sys
-from .calendar import compute_julian_day as julian_day
+from .calendar import compute_julian_date
 from .daf import DAF
 from .excerpter import RemoteFile, write_excerpt
 from .spk import SPK
@@ -115,5 +115,5 @@ def parse_date(s):
     if len(fields) < 1 or len(fields) > 3:
         E = argparse.ArgumentTypeError
         raise E('specify each date as YYYY or YYYY/MM or YYYY/MM/DD')
-    jd = julian_day(*fields) - 0.5
+    jd = compute_julian_date(*fields)
     return s, jd
