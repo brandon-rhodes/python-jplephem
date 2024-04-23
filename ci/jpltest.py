@@ -6,7 +6,7 @@ This test can be invoked with a simple::
 
 """
 import numpy as np
-from .spk import SPK
+from jplephem.spk import SPK
 
 AU = eval('0.149597870700000000D+09'.replace('D', 'E'))  # km
 meter = 0.001 / AU
