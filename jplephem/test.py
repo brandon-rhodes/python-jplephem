@@ -361,9 +361,9 @@ class SPKTests(_CommonTests, TestCase):
         segment = self.spk[0,4]
         self.assertEqual(str(segment), segment.describe(verbose=False))
         self.assertEqual(segment.describe(verbose=False),
-  '2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)')
+  '1899-07-29..2053-10-09  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)')
         self.assertEqual(segment.describe(verbose=True),
-  '2414864.50..2471184.50  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)'
+  '1899-07-29..2053-10-09  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)'
   '\n  frame=1 source=DE-0421LE-0421')
 
     def test_loading_array(self):
@@ -469,21 +469,21 @@ class CommandLineTests(TestCase):
     def test_spk_command(self):
         self.assertEqual(commandline.main(['spk', 'de405.bsp']), """\
 File type NAIF/DAF and format BIG-IEEE with 15 segments:
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Venus Barycenter (2)
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Earth Barycenter (3)
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Jupiter Barycenter (5)
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Saturn Barycenter (6)
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Uranus Barycenter (7)
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Neptune Barycenter (8)
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Pluto Barycenter (9)
-2433282.50..2469807.50  Type 2  Solar System Barycenter (0) -> Sun (10)
-2433282.50..2469807.50  Type 2  Earth Barycenter (3) -> Moon (301)
-2433282.50..2469807.50  Type 2  Earth Barycenter (3) -> Earth (399)
-2433282.50..2469807.50  Type 2  Mercury Barycenter (1) -> Mercury (199)
-2433282.50..2469807.50  Type 2  Venus Barycenter (2) -> Venus (299)
-2433282.50..2469807.50  Type 2  Mars Barycenter (4) -> Mars (499)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Venus Barycenter (2)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Earth Barycenter (3)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Jupiter Barycenter (5)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Saturn Barycenter (6)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Uranus Barycenter (7)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Neptune Barycenter (8)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Pluto Barycenter (9)
+1950-01-01..2050-01-01  Type 2  Solar System Barycenter (0) -> Sun (10)
+1950-01-01..2050-01-01  Type 2  Earth Barycenter (3) -> Moon (301)
+1950-01-01..2050-01-01  Type 2  Earth Barycenter (3) -> Earth (399)
+1950-01-01..2050-01-01  Type 2  Mercury Barycenter (1) -> Mercury (199)
+1950-01-01..2050-01-01  Type 2  Venus Barycenter (2) -> Venus (299)
+1950-01-01..2050-01-01  Type 2  Mars Barycenter (4) -> Mars (499)
 """)
 
     def test_excerpt_command(self):
@@ -496,21 +496,21 @@ Date 2023/8/24  = JD 2460180.5
 'de421_excerpt.bsp' written successfully with the following contents
 
 File type DAF/SPK and format LTL-IEEE with 15 segments:
-2460176.50..2460184.50  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
-2460176.50..2460192.50  Type 2  Solar System Barycenter (0) -> Venus Barycenter (2)
-2460176.50..2460192.50  Type 2  Solar System Barycenter (0) -> Earth Barycenter (3)
-2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)
-2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Jupiter Barycenter (5)
-2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Saturn Barycenter (6)
-2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Uranus Barycenter (7)
-2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Neptune Barycenter (8)
-2460176.50..2460208.50  Type 2  Solar System Barycenter (0) -> Pluto Barycenter (9)
-2460176.50..2460192.50  Type 2  Solar System Barycenter (0) -> Sun (10)
-2460176.50..2460184.50  Type 2  Earth Barycenter (3) -> Moon (301)
-2460176.50..2460184.50  Type 2  Earth Barycenter (3) -> Earth (399)
-2414864.50..2471184.50  Type 2  Mercury Barycenter (1) -> Mercury (199)
-2414864.50..2471184.50  Type 2  Venus Barycenter (2) -> Venus (299)
-2414864.50..2471184.50  Type 2  Mars Barycenter (4) -> Mars (499)
+2023-08-20..2023-08-28  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
+2023-08-20..2023-09-05  Type 2  Solar System Barycenter (0) -> Venus Barycenter (2)
+2023-08-20..2023-09-05  Type 2  Solar System Barycenter (0) -> Earth Barycenter (3)
+2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)
+2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Jupiter Barycenter (5)
+2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Saturn Barycenter (6)
+2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Uranus Barycenter (7)
+2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Neptune Barycenter (8)
+2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Pluto Barycenter (9)
+2023-08-20..2023-09-05  Type 2  Solar System Barycenter (0) -> Sun (10)
+2023-08-20..2023-08-28  Type 2  Earth Barycenter (3) -> Moon (301)
+2023-08-20..2023-08-28  Type 2  Earth Barycenter (3) -> Earth (399)
+1899-07-29..2053-10-09  Type 2  Mercury Barycenter (1) -> Mercury (199)
+1899-07-29..2053-10-09  Type 2  Venus Barycenter (2) -> Venus (299)
+1899-07-29..2053-10-09  Type 2  Mars Barycenter (4) -> Mars (499)
 """)
 
 def load_tests(loader, tests, ignore):

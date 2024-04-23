@@ -4,6 +4,7 @@ http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/spk.html
 
 """
 from numpy import array, interp, rollaxis
+from .calendar import compute_calendar_date
 from .daf import DAF
 from .descriptorlib import reify
 from .exceptions import OutOfRangeError
@@ -119,11 +120,13 @@ class BaseSegment(object):
 
     def describe(self, verbose=True):
         """Return a textual description of the segment."""
+        start = '%d-%02d-%02d' % compute_calendar_date(self.start_jd + 0.5)
+        end = '%d-%02d-%02d' % compute_calendar_date(self.end_jd + 0.5)
         center = titlecase(target_names.get(self.center, 'Unknown center'))
         target = titlecase(target_names.get(self.target, 'Unknown target'))
-        text = ('{0.start_jd:.2f}..{0.end_jd:.2f}  Type {0.data_type}'
-                '  {1} ({0.center}) -> {2} ({0.target})'
-                .format(self, center, target))
+        text = ('{1}..{2}  Type {0.data_type}'
+                '  {3} ({0.center}) -> {4} ({0.target})'
+                .format(self, start, end, center, target))
         if verbose:
             text += ('\n  frame={0.frame} source={1}'
                      .format(self, self.source.decode('ascii')))
