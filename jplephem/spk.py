@@ -222,8 +222,9 @@ class Segment(BaseSegment):
 
         if (index < 0).any() or (index > n).any():
             raise OutOfRangeError(
-                'segment only covers dates %.1f through %.1f'
-                % (self.start_jd, self.end_jd),
+                'segment only covers dates %d-%02d-%02d through %d-%02d-%02d'
+                % (compute_calendar_date(self.start_jd + 0.5) +
+                   compute_calendar_date(self.end_jd + 0.5)),
                 out_of_range_times=(index < 0) | (index > n),
             )
 

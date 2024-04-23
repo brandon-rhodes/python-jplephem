@@ -4,6 +4,7 @@ ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html
 
 """
 from numpy import array, rollaxis
+from .calendar import compute_calendar_date
 from .daf import DAF
 from .names import target_names
 
@@ -140,8 +141,11 @@ class Segment(object):
         index = index.astype(int)
 
         if (index < 0).any() or (index > n).any():
-            raise ValueError('segment only covers Julian dates %.1f - %.1f'
-                            % (self.initial_jd, self.final_jd))
+            raise ValueError(
+                'segment only covers dates %d-%02d-%02d through %d-%02d-%02d'
+                % (compute_calendar_date(self.initial_jd + 0.5) +
+                   compute_calendar_date(self.final_jd + 0.5))
+            )
 
         omegas = (index == n)
         index[omegas] -= 1

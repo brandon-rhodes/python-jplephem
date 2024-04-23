@@ -378,7 +378,7 @@ class SPKTests(_CommonTests, TestCase):
             segment.compute_and_differentiate(tdb)
         except OutOfRangeError as e:
             self.assertEqual(str(e), 'segment only covers dates'
-                             ' 2414864.5 through 2471184.5')
+                             ' 1899-07-29 through 2053-10-09')
             self.assertIs(type(e.out_of_range_times), np.ndarray)
             self.assertEqual(list(e.out_of_range_times), [True, False, True])
 
@@ -424,7 +424,7 @@ class PCKTests(TestCase):
     def test_out_of_range_date(self):
         p = PCK.open('moon_pa_de421_1900-2050.bpc')
         segment = p.segments[0]
-        expect = 'segment only covers Julian dates 2415020.5 - 2470172.5'
+        expect = 'segment only covers dates 1900-01-01 through 2051-01-01'
         with self.assertRaisesRegex(ValueError, expect):
             segment.compute(0.0, 0.0)
         p.close()
