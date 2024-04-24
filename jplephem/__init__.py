@@ -356,10 +356,10 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
-**Next release**
+**2024 April 24 — Version 2.22**
 
-* When printed, SPK kernel segments now display their start and end
-  dates using the Gregorian calendar rather than Julian dates.
+* When printed, segments now print their start and end dates using the
+  Gregorian calendar instead of printing raw Julian dates.
 
 * A small ``compute_julian_date`` routine is now provided for converting
   calendar dates into Julian dates.
@@ -549,6 +549,6 @@ FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
 """
 from .ephem import Ephemeris, DateError
-__version__ = '2.21'
+__version__ = '2.22'
 
 __all__ = ['Ephemeris', 'DateError', '__version__']
