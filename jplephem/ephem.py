@@ -4,18 +4,14 @@ Note: This entire module is DEPRECATED.  The idea of distributing JPL
 ephemerides as Python packages proved to be impractical (they were much
 too large for the Python Package Index to easily store and distribute),
 and it forced `jplephem` users get their ephemerides from a different
-source than mainline astronomers, who use SPICE files.  This package's
-documentation now recommends avoiding this old code, and using the
-features now build directly into the `SPK` class instead.
+source than mainline astronomers, who use SPICE files.
 
 """
 import os
 import numpy as np
 
-
 class DateError(ValueError):
-    """Date input is outside the range covered by the ephemeris."""
-
+    pass
 
 class Ephemeris(object):
     """[DEPRECATED] JPL planetary ephemeris for computing positions on dates."""
@@ -46,94 +42,26 @@ class Ephemeris(object):
         return s
 
     def position(self, name, tdb, tdb2=0.0):
-        """[DEPRECATED] Compute the position of `name` at time ``tdb [+ tdb2]``.
-
-        The position is returned as a NumPy array ``[x y z]``.
-
-        The barycentric dynamical time `tdb` argument should be a float.
-        If there are many dates you want computed, then make `tdb` an
-        array, which is more efficient than calling this method multiple
-        times; the return value will be a two-dimensional array giving a
-        row of values for each coordinate.
-
-        For extra precision, the time can be split into two floats; a
-        popular choice is to use `tdb` for the integer or half-integer
-        date, and `tdb2` to hold the remaining fraction.
-
-        Consult the `names` attribute of this ephemeris for the values
-        of `name` it supports, such as ``'mars'`` or ``'earthmoon'``.
-
-        """
+        """[DEPRECATED] Compute the position of `name` at ``tdb [+ tdb2]``."""
         bundle = self.compute_bundle(name, tdb, tdb2)
         return self.position_from_bundle(bundle)
 
     def position_and_velocity(self, name, tdb, tdb2=0.0):
-        """[DEPRECATED] Compute the position and velocity of `name` at ``tdb [+ tdb2]``.
-
-        The position and velocity are returned in a 2-tuple::
-
-            ([x y z], [xdot ydot zdot])
-
-        The barycentric dynamical time `tdb` argument should be a float.
-        If there are many dates you want computed, then make `tdb` an
-        array, which is more efficient than calling this method multiple
-        times; the return values will be two-dimensional arrays giving a
-        row of values for each coordinate.
-
-        For extra precision, the time can be split into two floats; a
-        popular choice is to use `tdb` for the integer or half-integer
-        date, and `tdb2` to hold the remaining fraction.
-
-        Consult the `names` attribute of this ephemeris for the values
-        of `name` it supports, such as ``'mars'`` or ``'earthmoon'``.
-
-        """
+        """[DEPRECATED] Compute the position and velocity of `name` at ``tdb [+ tdb2]``."""
         bundle = self.compute_bundle(name, tdb, tdb2)
         position = self.position_from_bundle(bundle)
         velocity = self.velocity_from_bundle(bundle)
         return position, velocity
 
     def compute(self, name, tdb):
-        """[DEPRECATED] Legacy routine that concatenates position and velocity vectors.
-
-        This routine is deprecated.  Use the methods `position()` and
-        `position_and_velocity()` instead.  This method follows the same
-        calling convention, but incurs extra copy operations in order to
-        return a single NumPy array::
-
-            [x y z xdot ydot zdot]
-
-        """
+        """[DEPRECATED] Legacy routine that concatenates position and velocity vectors."""
         bundle = self.compute_bundle(name, tdb, 0.0)
         position = self.position_from_bundle(bundle)
         velocity = self.velocity_from_bundle(bundle)
         return np.concatenate((position, velocity))
 
     def compute_bundle(self, name, tdb, tdb2=0.0):
-        """[DEPRECATED] Return a tuple of coefficients and parameters for `tdb`.
-
-        The return value is a tuple that bundles together the
-        coefficients and other Chebyshev intermediate values that are
-        needed for the computation of either the position or velocity.
-        The bundle can then be passed to either `position_from_bundle()`
-        or `velocity_from_bundle()` to finish the computation.  See the
-        package-level documentation for details; most users will simply
-        call `position()` or `position_and_velocity()` instead.
-
-        The barycentric dynamical time `tdb` argument should be a float.
-        If there are many dates you want computed, then make `tdb` an
-        array, which is more efficient than calling this method multiple
-        times; the return values will be arrays providing a value for
-        each time in `tdb`.
-
-        For extra precision, the time can be split into two floats; a
-        popular choice is to use `tdb` for the integer or half-integer
-        date, and `tdb2` to hold the remaining fraction.
-
-        Consult the `names` attribute of this ephemeris for the values
-        of `name` it supports, such as ``'mars'`` or ``'earthmoon'``.
-
-        """
+        """[DEPRECATED] Return a tuple of coefficients and parameters for `tdb`."""
         input_was_scalar = getattr(tdb, 'shape', ()) == ()
         if input_was_scalar:
             tdb = np.array((tdb,))
