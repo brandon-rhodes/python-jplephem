@@ -45,7 +45,12 @@ class SPK(object):
     @classmethod
     def open(cls, path):
         """Open the file at `path` and return an SPK instance."""
-        return cls(DAF(open(path, 'rb')))
+        f = open(path, 'rb')
+        try:
+            return cls(DAF(f))
+        except Exception:
+            f.close()
+            raise
 
     def close(self):
         """Close this SPK file."""

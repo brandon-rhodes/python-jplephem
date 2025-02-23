@@ -47,7 +47,6 @@ target_names = {
     'mars': 499,           # w.r.t. 4 MARS BARYCENTER
     }
 
-
 class TestDAFBytesIO(TestCase):
     def sample_daf(self):
         word = Struct('<d').pack
@@ -179,7 +178,6 @@ class TestDAFBytesIO(TestCase):
         eq(list(d.map(summaries[1][1])), [2002.0] * 128)
         eq(list(d.map(summaries[2][1])), [3003.0] * 200)
 
-
 class TestDAFRealFile(TestDAFBytesIO):
     # Where "Real" = "written to disk with a real file descriptor
     # instead of an in-memory BytesIO".
@@ -190,7 +188,6 @@ class TestDAFRealFile(TestDAFBytesIO):
         f.write(bytes_io.getvalue())
         f.seek(0)
         return f
-
 
 def fake_mmap_that_raises_OSError(*args, **kw):
     raise OSError('mmap() not supported on this platform')
@@ -206,7 +203,6 @@ class TestDAFRealFileWithoutMMap(TestDAFRealFile):
 
     def tearDown(self):
         mmap.mmap = self.mmap
-
 
 class _CommonTests(object):
 
@@ -316,7 +312,6 @@ class _CommonTests(object):
         tdb = self.jomega + 16.01
         self.assertRaises(ValueError, self.position, 'earthmoon', tdb)
 
-
 class SPKTests(_CommonTests, TestCase):
 
     def setUp(self):
@@ -381,6 +376,13 @@ class SPKTests(_CommonTests, TestCase):
                              ' 1899-07-29 through 2053-10-09')
             self.assertIs(type(e.out_of_range_times), np.ndarray)
             self.assertEqual(list(e.out_of_range_times), [True, False, True])
+
+    def test_whether_bad_ephemeris_leaves_file_open(self):
+        # This doesn't actually fail if the file object is left open,
+        # but should produce a ResourceWarning as a side effect.
+        non_spk_path = __file__
+        with self.assertRaises(ValueError):
+            SPK.open(non_spk_path)
 
 class LegacyTests(_CommonTests, TestCase):
 
