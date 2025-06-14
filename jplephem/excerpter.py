@@ -2,9 +2,9 @@
 
 from sys import stderr
 try:
-    from urllib.request import URLopener
+    from urllib.request import build_opener
 except:
-    from urllib import URLopener
+    from urllib2 import build_opener
 
 from numpy import copy
 from .daf import DAF
@@ -69,7 +69,7 @@ def clip(lower, upper, n):
 
 class RemoteFile(object):
     def __init__(self, url):
-        self.opener = URLopener()
+        self.opener = build_opener()
         self.url = url
         self.filename = url.rstrip('/').rsplit('/', 1)[-1]
         self.offset = 0
