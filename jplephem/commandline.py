@@ -4,10 +4,16 @@ from __future__ import print_function
 
 import argparse
 import sys
-from .calendar import compute_julian_date
+from .calendar import compute_calendar_date, compute_julian_date
 from .daf import DAF
 from .excerpter import RemoteFile, write_excerpt
-from .spk import SPK
+from .spk import S_PER_DAY, SPK, T0
+
+_DAY = 86400.0
+
+def _jd(seconds):
+    """Convert a number of seconds since J2000 to a Julian Date."""
+    return T0 + seconds / S_PER_DAY
 
 def main(args):
     parser = argparse.ArgumentParser(
@@ -47,6 +53,7 @@ def main(args):
     )
     p.set_defaults(func=spk_segments)
     p.add_argument('path', help='Path to a .bsp SPICE kernel file')
+    p.add_argument('-v', '--verbose', action='store_true')
 
     args = parser.parse_args(args)
     func = getattr(args, 'func', None)
@@ -105,7 +112,66 @@ def excerpt(args):
 
 def spk_segments(args):
     with open(args.path, 'rb') as f:
-        yield str(SPK(DAF(f)))
+        spk = SPK(DAF(f))
+
+        # Snag the first line from the normal str().
+
+        output = str(spk)
+        yield output.split('\n', 1)[0]
+
+        # But produce the rest of the lines ourselves, so we can
+        # optionally honor '-v' by providing more information.
+
+        for s in spk.segments:
+            yield str(s)
+            if not args.verbose:
+                continue
+            for line in _describe_segment_details(s):
+                yield line
+
+def _describe_segment_details(s):
+    if s.data_type not in (2, 3):
+        return
+
+    init, intlen, coefficients = s._data
+    degree, dimensions, record_count = coefficients.shape
+    days_per = intlen / _DAY
+
+    plural = '' if record_count == 1 else 's'
+    each = '' if record_count == 1 else ' each'
+    yield '   {} polynomial{} covering {} days{}'.format(
+        record_count, plural, days_per, each,
+    )
+    yield '      x {} coefficients per polynomial'.format(degree)
+    yield '      x {} coordinates'.format(dimensions)
+    yield '      = {} floating point numbers'.format(coefficients.size)
+
+    polynomial_start = init
+    polynomial_end = init + intlen * record_count
+    if s.start_second == polynomial_start:
+        yield '   Polynomial start date matches segment start date'
+    else:
+        days = (s.start_second - polynomial_start) / _DAY
+        jd = _jd(polynomial_start)
+        y, m, d = compute_calendar_date(int(jd + 0.5))
+        yield (
+            '   First polynomial starts {:.1f} days earlier'
+             ' than segment start date, on {}-{:02}-{:02}'
+             .format(days, y, m, d)
+        )
+    if s.end_second == polynomial_end:
+        yield '   Polynomial end date matches segment end date'
+    else:
+        days = (polynomial_end - s.end_second) / _DAY
+        jd = _jd(polynomial_end)
+        y, m, d = compute_calendar_date(int(jd + 0.5))
+        yield (
+            '   Final polynomial ends {:.1f} days later'
+            ' than segment end date, on {}-{:02}-{:02}'
+            .format(days, y, m, d)
+        )
+
+    yield ''
 
 def parse_date(s):
     try:

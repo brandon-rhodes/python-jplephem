@@ -488,6 +488,60 @@ File type NAIF/DAF and format BIG-IEEE with 15 segments:
 1950-01-01..2050-01-01  Type 2  Mars Barycenter (4) -> Mars (499)
 """)
 
+    def test_verbose_spk_command_with_tidy_ephemeris(self):
+        output = commandline.main(['spk', '-v', 'de421.bsp'])
+        pieces = output.split('\n\n')
+        pieces[1:-2] = ['...']
+        output = '\n\n'.join(pieces)
+        self.assertEqual(output, """\
+File type DAF/SPK and format LTL-IEEE with 15 segments:
+1899-07-29..2053-10-09  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
+   7040 polynomials covering 8.0 days each
+      x 14 coefficients per polynomial
+      x 3 coordinates
+      = 295680 floating point numbers
+   Polynomial start date matches segment start date
+   Polynomial end date matches segment end date
+
+...
+
+1899-07-29..2053-10-09  Type 2  Mars Barycenter (4) -> Mars (499)
+   1 polynomial covering 56320.0 days
+      x 2 coefficients per polynomial
+      x 3 coordinates
+      = 6 floating point numbers
+   Polynomial start date matches segment start date
+   Polynomial end date matches segment end date
+
+""")
+
+    def test_verbose_spk_command_with_untidy_ephemeris(self):
+        output = commandline.main(['spk', '-v', 'de442s.bsp'])
+        pieces = output.split('\n\n')
+        pieces[1:-2] = ['...']
+        output = '\n\n'.join(pieces)
+        self.assertEqual(output, """\
+File type DAF/SPK and format LTL-IEEE with 14 segments:
+1849-12-26..2150-01-22  Type 2  Venus Barycenter (2) -> Venus (299)
+   1 polynomial covering 401792.0 days
+      x 2 coefficients per polynomial
+      x 3 coordinates
+      = 6 floating point numbers
+   First polynomial starts 109568.0 days earlier than segment start date, on 1549-12-31
+   Final polynomial ends 182624.0 days later than segment end date, on 2650-01-25
+
+...
+
+1849-12-26..2150-01-22  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
+   13701 polynomials covering 8.0 days each
+      x 14 coefficients per polynomial
+      x 3 coordinates
+      = 575442 floating point numbers
+   Polynomial start date matches segment start date
+   Final polynomial ends 8.0 days later than segment end date, on 2150-01-30
+
+""")
+
     def test_excerpt_command(self):
         output = commandline.main(['excerpt', '2023/8/23', '2023/8/24',
                                    'de421.bsp', 'de421_excerpt.bsp'])
