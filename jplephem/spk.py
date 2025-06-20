@@ -13,7 +13,7 @@ from .names import target_names
 T0 = 2451545.0
 S_PER_DAY = 86400.0
 
-def jd(seconds):
+def _jd(seconds):
     """Convert a number of seconds since J2000 to a Julian Date."""
     return T0 + seconds / S_PER_DAY
 
@@ -117,8 +117,8 @@ class BaseSegment(object):
         self.source = source
         (self.start_second, self.end_second, self.target, self.center,
          self.frame, self.data_type, self.start_i, self.end_i) = descriptor
-        self.start_jd = jd(self.start_second)
-        self.end_jd = jd(self.end_second)
+        self.start_jd = _jd(self.start_second)
+        self.end_jd = _jd(self.end_second)
 
     def __str__(self):
         return self.describe(verbose=False)
@@ -192,7 +192,7 @@ class Segment(BaseSegment):
 
     def load_array(self):
         init, intlen, coefficients = self._data
-        initial_epoch = jd(init)
+        initial_epoch = _jd(init)
         interval_length = intlen / S_PER_DAY
         coefficients = coefficients[::-1]
         coefficients = rollaxis(coefficients, 2)
@@ -307,7 +307,7 @@ class Type9Segment(BaseSegment):
         # Make iteration faster by pre-creating tuples of separate arrays.
         positions = tuple(coefficients[:3])
         and_velocities = tuple(coefficients)
-        epochs = jd(epochs)
+        epochs = _jd(epochs)
         return positions, and_velocities, epochs
 
     def compute(self, tdb, tdb2=0.0):
