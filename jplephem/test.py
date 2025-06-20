@@ -552,21 +552,47 @@ Date 2023/8/24  = JD 2460180.5
 'de421_excerpt.bsp' written successfully with the following contents
 
 File type DAF/SPK and format LTL-IEEE with 15 segments:
-2023-08-20..2023-08-28  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
-2023-08-20..2023-09-05  Type 2  Solar System Barycenter (0) -> Venus Barycenter (2)
-2023-08-20..2023-09-05  Type 2  Solar System Barycenter (0) -> Earth Barycenter (3)
-2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)
-2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Jupiter Barycenter (5)
-2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Saturn Barycenter (6)
-2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Uranus Barycenter (7)
-2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Neptune Barycenter (8)
-2023-08-20..2023-09-21  Type 2  Solar System Barycenter (0) -> Pluto Barycenter (9)
-2023-08-20..2023-09-05  Type 2  Solar System Barycenter (0) -> Sun (10)
-2023-08-20..2023-08-28  Type 2  Earth Barycenter (3) -> Moon (301)
-2023-08-20..2023-08-28  Type 2  Earth Barycenter (3) -> Earth (399)
-1899-07-29..2053-10-09  Type 2  Mercury Barycenter (1) -> Mercury (199)
-1899-07-29..2053-10-09  Type 2  Venus Barycenter (2) -> Venus (299)
-1899-07-29..2053-10-09  Type 2  Mars Barycenter (4) -> Mars (499)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Venus Barycenter (2)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Earth Barycenter (3)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Mars Barycenter (4)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Jupiter Barycenter (5)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Saturn Barycenter (6)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Uranus Barycenter (7)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Neptune Barycenter (8)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Pluto Barycenter (9)
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Sun (10)
+2023-08-23..2023-08-24  Type 2  Earth Barycenter (3) -> Moon (301)
+2023-08-23..2023-08-24  Type 2  Earth Barycenter (3) -> Earth (399)
+2023-08-23..2023-08-24  Type 2  Mercury Barycenter (1) -> Mercury (199)
+2023-08-23..2023-08-24  Type 2  Venus Barycenter (2) -> Venus (299)
+2023-08-23..2023-08-24  Type 2  Mars Barycenter (4) -> Mars (499)
+""")
+
+        output = commandline.main(['spk', '-v', 'de421_excerpt.bsp'])
+        pieces = output.split('\n\n')
+        pieces[1:-2] = ['...']
+        output = '\n\n'.join(pieces)
+        self.assertEqual(output, """\
+File type DAF/SPK and format LTL-IEEE with 15 segments:
+2023-08-23..2023-08-24  Type 2  Solar System Barycenter (0) -> Mercury Barycenter (1)
+   1 polynomial covering 8.0 days
+      x 14 coefficients per polynomial
+      x 3 coordinates
+      = 42 floating point numbers
+   First polynomial starts 3.0 days earlier than segment start date, on 2023-08-20
+   Final polynomial ends 4.0 days later than segment end date, on 2023-08-28
+
+...
+
+2023-08-23..2023-08-24  Type 2  Mars Barycenter (4) -> Mars (499)
+   1 polynomial covering 56320.0 days
+      x 2 coefficients per polynomial
+      x 3 coordinates
+      = 6 floating point numbers
+   First polynomial starts 45315.0 days earlier than segment start date, on 1899-07-29
+   Final polynomial ends 11004.0 days later than segment end date, on 2053-10-09
+
 """)
 
 def load_tests(loader, tests, ignore):
