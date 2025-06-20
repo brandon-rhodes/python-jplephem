@@ -499,7 +499,7 @@ File type DAF/SPK and format LTL-IEEE with 15 segments:
    7040 polynomials covering 8.0 days each
       x 14 coefficients per polynomial
       x 3 coordinates
-      = 295680 floating point numbers
+      = 295680 double precision floats
    Polynomial start date matches segment start date
    Polynomial end date matches segment end date
 
@@ -509,7 +509,7 @@ File type DAF/SPK and format LTL-IEEE with 15 segments:
    1 polynomial covering 56320.0 days
       x 2 coefficients per polynomial
       x 3 coordinates
-      = 6 floating point numbers
+      = 6 double precision floats
    Polynomial start date matches segment start date
    Polynomial end date matches segment end date
 
@@ -526,7 +526,7 @@ File type DAF/SPK and format LTL-IEEE with 14 segments:
    1 polynomial covering 401792.0 days
       x 2 coefficients per polynomial
       x 3 coordinates
-      = 6 floating point numbers
+      = 6 double precision floats
    First polynomial starts 109568.0 days earlier than segment start date, on 1549-12-31
    Final polynomial ends 182624.0 days later than segment end date, on 2650-01-25
 
@@ -536,7 +536,7 @@ File type DAF/SPK and format LTL-IEEE with 14 segments:
    13701 polynomials covering 8.0 days each
       x 14 coefficients per polynomial
       x 3 coordinates
-      = 575442 floating point numbers
+      = 575442 double precision floats
    Polynomial start date matches segment start date
    Final polynomial ends 8.0 days later than segment end date, on 2150-01-30
 
@@ -579,7 +579,7 @@ File type DAF/SPK and format LTL-IEEE with 15 segments:
    1 polynomial covering 8.0 days
       x 14 coefficients per polynomial
       x 3 coordinates
-      = 42 floating point numbers
+      = 42 double precision floats
    First polynomial starts 3.0 days earlier than segment start date, on 2023-08-20
    Final polynomial ends 4.0 days later than segment end date, on 2023-08-28
 
@@ -589,7 +589,7 @@ File type DAF/SPK and format LTL-IEEE with 15 segments:
    1 polynomial covering 56320.0 days
       x 2 coefficients per polynomial
       x 3 coordinates
-      = 6 floating point numbers
+      = 6 double precision floats
    First polynomial starts 45315.0 days earlier than segment start date, on 1899-07-29
    Final polynomial ends 11004.0 days later than segment end date, on 2053-10-09
 

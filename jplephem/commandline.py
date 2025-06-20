@@ -144,7 +144,7 @@ def _describe_segment_details(s):
     )
     yield '      x {} coefficients per polynomial'.format(degree)
     yield '      x {} coordinates'.format(dimensions)
-    yield '      = {} floating point numbers'.format(coefficients.size)
+    yield '      = {} double precision floats'.format(coefficients.size)
 
     polynomial_start = init
     polynomial_end = init + intlen * record_count
