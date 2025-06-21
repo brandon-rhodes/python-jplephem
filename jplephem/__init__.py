@@ -67,11 +67,17 @@ the command line to display the data inside of it::
     python -m jplephem comment de421.bsp
     python -m jplephem daf de421.bsp
     python -m jplephem spk de421.bsp
+    python -m jplephem spk -v de421.bsp
 
 You can also take a large ephemeris and produce a smaller excerpt by
 limiting the range of dates that it covers::
 
     python -m jplephem excerpt 2018/1/1 2018/4/1 de421.bsp excerpt421.bsp
+
+The comment text of the output ephemeris is copied verbatim from the
+input ephemeris, with the addition of a few lines of text at the top
+that identify the output file as a mere excerpt, and record the dates
+the user asked for.
 
 You will get an error if your starting year is negative, because Unix
 commands expect a list of options when they see a dash.  The fix is to
