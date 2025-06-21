@@ -96,12 +96,11 @@ def write_excerpt(input_spk, output_file, start_jd, end_jd, summaries):
         ))
         excerpt[-4:] = (init, intlen, rsize, n)
 
-        # Instead of saying that this segment runs from `start_seconds`
-        # to `end_seconds`, we could reveal the actual start date and
-        # end date (`init` and `init + n * intlen`) of the polynomials,
-        # which might span a wider range of dates.  But it confuses
-        # users to see dates they didn't ask for; and `de442s.bsp`
-        # demonstrates that this is the practice at NASA itself.
+        # Even though the polynomials we selected probably cover a wider
+        # range of dates, let's only claim that each segment covers the
+        # range `start_seconds .. end_seconds` that the user requested,
+        # to avoid confusing them.  The `de442s.bsp` ephemeris shows
+        # that this is also the practice at NASA itself.
 
         values = (start_seconds, end_seconds) + values[2:]
         d.add_array(b'X' + name[1:], values, excerpt)
