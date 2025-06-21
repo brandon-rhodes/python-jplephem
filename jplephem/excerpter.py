@@ -103,7 +103,7 @@ def write_excerpt(input_spk, output_file, start_jd, end_jd, summaries):
         # that this is also the practice at NASA itself.
 
         values = (start_seconds, end_seconds) + values[2:]
-        d.add_array(b'X' + name[1:], values, excerpt)
+        d.add_array(name, values, excerpt)
 
 def clip(lower, upper, n):
     return clip_lower(lower, clip_upper(upper, n))
