@@ -7,11 +7,22 @@ except:
     from urllib import URLopener
 
 from numpy import copy
-from .daf import DAF
+from .calendar import compute_calendar_date
+from .daf import DAF, K
 from .spk import S_PER_DAY, T0
 
 clip_lower = max
 clip_upper = min
+
+_PREFACE = """\
+;
+; This is an ephemeris excerpt created by the 'jplephem' tool, which was
+; asked to narrow the ephemeris to Julian dates {:.1f} - {:.1f}
+; (proleptic Gregorian dates {}-{:02}-{:02} through {}-{:02}-{:02}).
+;
+; Here is the comments area from the original ephemeris file:
+; ----------------------------------------------------------------------
+"""
 
 def _seconds(jd):
     """Convert a Julian Date to a number of seconds since J2000."""
@@ -22,22 +33,45 @@ def write_excerpt(input_spk, output_file, start_jd, end_jd, summaries):
     end_seconds = _seconds(end_jd)
     old = input_spk.daf
 
-    # Copy the file record and the comments verbatim.
+    # Supplement the comment text.
+    y1, m1, d1 = compute_calendar_date(int(start_jd + 0.5))
+    y2, m2, d2 = compute_calendar_date(int(end_jd + 0.5))
+    preface = _PREFACE.format(
+        start_jd, end_jd, y1,m1,d1, y2,m2,d2,
+    )
+    comment = preface + old.comments()
+
+    # Build new comment blocks (which have 1000 text characters each).
+    data = comment.encode('ascii').replace(b'\n', b'\0') + b'\004'
+    blocks = [data[i : i + 1000] for i in range(0, len(data), 1000)]
+    comment_data = b''.join([
+        block + b' ' * (K - len(block))
+        for block in blocks
+    ])
+
+    # Start the new DAF file with:
+    # 1. The verbatim first record from the original file.
+    # 2. The new comment.
+    # 3. An empty summary block.
+    # 4. An empty name block.
+
     f = output_file
     f.seek(0)
     f.truncate()
-    for n in range(1, old.fward):
-        data = old.read_record(n)
-        f.write(data)
 
-    # Start an initial summary and name block.
     summary_data = b'\0' * 1024
     name_data = b' ' * 1024
+
+    f.write(old.read_record(1))
+    f.write(comment_data)
     f.write(summary_data)
     f.write(name_data)
 
+    # There are now enough blocks to start treating the file as a DAF!
+    # Set the initial block number indexes.
+    f.seek(0)
     d = DAF(f)
-    d.fward = d.bward = old.fward
+    d.fward = d.bward = 2 + len(comment_data) // K
     d.free = (d.fward + 1) * (1024 // 8) + 1
     d.write_file_record()
 

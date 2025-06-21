@@ -569,6 +569,19 @@ File type DAF/SPK and format LTL-IEEE with 15 segments:
 2023-08-23..2023-08-24  Type 2  Mars Barycenter (4) -> Mars (499)
 """)
 
+        preface = """\
+;
+; This is an ephemeris excerpt created by the 'jplephem' tool, which was
+; asked to narrow the ephemeris to Julian dates 2460179.5 - 2460180.5
+; (proleptic Gregorian dates 2023-08-23 through 2023-08-24).
+;
+; Here is the comments area from the original ephemeris file:
+; ----------------------------------------------------------------------
+"""
+        output1 = commandline.main(['comment', 'de421.bsp'])
+        output2 = commandline.main(['comment', 'de421_excerpt.bsp'])
+        self.assertEqual(preface + output1, output2)
+
         output = commandline.main(['spk', '-v', 'de421_excerpt.bsp'])
         pieces = output.split('\n\n')
         pieces[1:-2] = ['...']
