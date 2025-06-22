@@ -362,6 +362,21 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2025 June 22 — Version 2.23**
+
+* An ephemeris created with the ``excerpt`` command, instead of simply
+  copying verbatim the comments area of the original ephemeris, now adds
+  text declaring “This is an ephemeris excerpt created by jplephem” and
+  recording the dates that the user asked for.
+
+* The segments of an excerpt ephemeris now advertise exactly the start
+  date and end date that the user asked for, even if the underlying
+  polynomials cover a wider range of dates.
+
+* A new ``-v`` (“verbose”) command-line option to the ``spk``
+  sub-command prints not only each segment’s descriptor, but the
+  dimensions and date range of its underlying polynomial array.
+
 **2024 April 24 — Version 2.22**
 
 * When printed, segments now print their start and end dates using the
@@ -555,6 +570,6 @@ FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
 """
 from .ephem import Ephemeris, DateError
-__version__ = '2.22'
+__version__ = '2.23'
 
 __all__ = ['Ephemeris', 'DateError', '__version__']

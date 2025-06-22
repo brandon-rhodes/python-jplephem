@@ -571,7 +571,7 @@ File type DAF/SPK and format LTL-IEEE with 15 segments:
 
         preface = """\
 ;
-; This is an ephemeris excerpt created by jplephem 2.22, which was
+; This is an ephemeris excerpt created by jplephem 2.23, which was
 ; asked to narrow the ephemeris to Julian dates 2460179.5 - 2460180.5
 ; (proleptic Gregorian dates 2023-08-23 through 2023-08-24).
 ;
