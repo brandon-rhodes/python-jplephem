@@ -2,9 +2,9 @@
 
 from sys import stderr
 try:
-    from urllib.request import URLopener
-except:
-    from urllib import URLopener
+    from urllib.request import Request, urlopen
+except ImportError:
+    from urllib2 import Request, urlopen
 
 from numpy import copy
 from . import __version__ as jplephem_version
@@ -111,7 +111,6 @@ def clip(lower, upper, n):
 
 class RemoteFile(object):
     def __init__(self, url):
-        self.opener = URLopener()
         self.url = url
         self.filename = url.rstrip('/').rsplit('/', 1)[-1]
         self.offset = 0
@@ -124,10 +123,16 @@ class RemoteFile(object):
         start = self.offset
         end = start + size - 1
         assert end > start
-        h = 'Range', 'bytes={}-{}'.format(start, end)
-        stderr.write('Fetching {} {}\n'.format(self.filename, h[1]))
-        self.opener.addheaders.append(h)
-        data = self.opener.open(self.url).read()
+        byte_range = 'bytes={}-{}'.format(start, end)
+        stderr.write('Fetching {} bytes from {} using Range: {}\n'
+                     .format(size, self.filename, byte_range))
+        request = Request(self.url, headers={'Range': byte_range})
+        data = urlopen(request).read()
+        assert len(data) == size, (
+            'asked for "Range: {}" which is {} bytes, but got {} bytes back'
+            .format(byte_range, size, len(data))
+        )
+        self.offset += size
         return data
 
     def __enter__(self):
