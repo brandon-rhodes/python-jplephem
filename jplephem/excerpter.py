@@ -7,6 +7,7 @@ except:
     from urllib import URLopener
 
 from numpy import copy
+from . import __version__ as jplephem_version
 from .calendar import compute_calendar_date
 from .daf import DAF, K
 from .spk import S_PER_DAY, T0
@@ -16,7 +17,7 @@ clip_upper = min
 
 _PREFACE = """\
 ;
-; This is an ephemeris excerpt created by the 'jplephem' tool, which was
+; This is an ephemeris excerpt created by jplephem {}, which was
 ; asked to narrow the ephemeris to Julian dates {:.1f} - {:.1f}
 ; (proleptic Gregorian dates {}-{:02}-{:02} through {}-{:02}-{:02}).
 ;
@@ -37,7 +38,7 @@ def write_excerpt(input_spk, output_file, start_jd, end_jd, summaries):
     y1, m1, d1 = compute_calendar_date(int(start_jd + 0.5))
     y2, m2, d2 = compute_calendar_date(int(end_jd + 0.5))
     preface = _PREFACE.format(
-        start_jd, end_jd, y1,m1,d1, y2,m2,d2,
+        jplephem_version, start_jd, end_jd, y1,m1,d1, y2,m2,d2,
     )
     comment = preface + old.comments()
 
