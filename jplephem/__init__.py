@@ -101,7 +101,7 @@ in a nearly a gigabyte.  But if all you need are Jupiter's satellites
 for a few months, you can download considerably less data::
 
     $ python -m jplephem excerpt 2018/1/1 2018/4/1 \\
-        https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/jup310.bsp \\
+        https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/jup365.bsp \\
         excerpt.bsp
     $ ls -lh excerpt.bsp
     -rw-r----- 1 brandon brandon 1.2M Feb 11 13:36 excerpt.bsp
