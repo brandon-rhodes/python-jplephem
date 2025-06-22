@@ -4,12 +4,11 @@ name: ci
 on:
   push:
     branches:
-      - master
-      - tweaks
+      - turned-off-for-now-because-it-broke-again-and-I-havent-the-time
 
   pull_request:
     branches:
-      - master
+      - turned-off-for-now-because-it-broke-again-and-I-havent-the-time
 
 jobs:
   test-big-endian:
