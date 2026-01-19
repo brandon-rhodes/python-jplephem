@@ -182,9 +182,9 @@ class Segment(BaseSegment):
         coefficient_count = int(rsize - 2) // component_count
         coefficients = self.daf.map_array(self.start_i, self.end_i - 4)
 
-        coefficients.shape = (int(n), int(rsize))
+        coefficients = coefficients.reshape((int(n), int(rsize)))
         coefficients = coefficients[:,2:]  # ignore MID and RADIUS elements
-        coefficients.shape = (int(n), component_count, coefficient_count)
+        coefficients = coefficients.reshape((int(n), component_count, coefficient_count))
         coefficients = rollaxis(coefficients, 1)
         coefficients = rollaxis(coefficients, 2)
         coefficients = coefficients[::-1]
@@ -294,7 +294,7 @@ class Type9Segment(BaseSegment):
         i = self.start_i
         j = i + 6 * number_of_states - 1
         coefficients = self.daf.map_array(i, j)
-        coefficients.shape = number_of_states, 6
+        coefficients = coefficients.reshape((number_of_states, 6))
         coefficients = coefficients.T
         epochs = self.daf.map_array(j + 1, j + number_of_states)
         return coefficients, epochs
