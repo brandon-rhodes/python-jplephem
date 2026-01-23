@@ -108,9 +108,9 @@ class Segment(object):
         coefficient_count = int(rsize - 2) // component_count
         coefficients = self.daf.map_array(self.start_i, self.end_i - 4)
 
-        coefficients.shape = (int(n), int(rsize))
+        coefficients = coefficients.reshape((int(n), int(rsize)))
         coefficients = coefficients[:,2:]  # ignore MID and RADIUS elements
-        coefficients.shape = (int(n), component_count, coefficient_count)
+        coefficients = coefficients.reshape((int(n), component_count, coefficient_count))
         coefficients = rollaxis(coefficients, 1)
         coefficients = rollaxis(coefficients, 2)
         coefficients = coefficients[::-1]
