@@ -362,6 +362,13 @@ https://github.com/brandon-rhodes/python-jplephem/
 Changelog
 ---------
 
+**2026 January 23 — Version 2.24**
+
+* To avoid deprecation warnings from recent versions of NumPy,
+  assignments to array ``.shape`` attributes have been replaced with
+  calls to the array method ``.reshape()``.  Thanks to AstroPy
+  contributor Clément Robert for the fix.
+
 **2025 June 22 — Version 2.23**
 
 * An ephemeris created with the ``excerpt`` command, instead of simply
@@ -570,6 +577,6 @@ FTP site: ftp://ssd.jpl.nasa.gov/pub/eph/planets/fortran/
 
 """
 from .ephem import Ephemeris, DateError
-__version__ = '2.23'
+__version__ = '2.24'
 
 __all__ = ['Ephemeris', 'DateError', '__version__']
