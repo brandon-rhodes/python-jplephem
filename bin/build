@@ -1,16 +1,25 @@
-#!/usr/bin/env python3
+#!/bin/bash
 
-import os
-import setuptools
-import sys
+set -e
 
-build_dir = os.path.dirname(__file__)
-project_dir = os.path.dirname(build_dir)
+cd "$(readlink -f $(dirname "${BASH_SOURCE[0]}"))"
+cd ..
 
-# Note that we merely supplement argv, we don't rewrite it, so the user
-# can put "upload" at the end to send the results to PyPI.
+echo 'Looking for bad file permissions...'
+bad=$(
+    find jplephem -type f ! -perm -644
+    find jplephem -type d ! -perm -755
+)
+if [ -n "$bad" ]
+then
+    ls -ld $bad
+    exit 1
+fi
+echo 'Everything looks good!'
+echo
 
-sys.argv[1:1] = ['sdist', 'bdist_wheel']
-sys.path[0:0] = [project_dir]
+PYTHONDONTWRITEBYTECODE= uv build
 
-import setup
+echo
+echo 'See `cheat-sheet` to remind yourself how to publish to PyPI.'
+echo
