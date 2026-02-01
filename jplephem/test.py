@@ -17,7 +17,7 @@ import warnings
 from doctest import DocTestSuite, ELLIPSIS
 from functools import partial
 from io import BytesIO
-from jplephem import Ephemeris, commandline
+from jplephem import __version__, Ephemeris, commandline
 from jplephem.exceptions import OutOfRangeError
 from jplephem.daf import DAF, FTPSTR, NAIF_DAF
 from jplephem.pck import PCK
@@ -571,13 +571,14 @@ File type DAF/SPK and format LTL-IEEE with 15 segments:
 
         preface = """\
 ;
-; This is an ephemeris excerpt created by jplephem 2.23, which was
+; This is an ephemeris excerpt created by jplephem {}, which was
 ; asked to narrow the ephemeris to Julian dates 2460179.5 - 2460180.5
 ; (proleptic Gregorian dates 2023-08-23 through 2023-08-24).
 ;
 ; Here is the comments area from the original ephemeris file:
 ; ----------------------------------------------------------------------
-"""
+""".format(__version__)
+
         output1 = commandline.main(['comment', 'de421.bsp'])
         output2 = commandline.main(['comment', 'de421_excerpt.bsp'])
         self.assertEqual(preface + output1, output2)
