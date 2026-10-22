@@ -260,6 +260,10 @@ class DAF(object):
         f.write(array.view())
         end_word = f.tell() // 8
 
+        # DAF readers expect complete records, even when the final array
+        # ends partway through one. Keep the logical free address below.
+        f.write(b'\0' * (-f.tell() % K))
+
         self.free = end_word + 1
         self.write_file_record()
 

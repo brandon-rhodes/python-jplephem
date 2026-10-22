@@ -152,6 +152,31 @@ class TestDAFBytesIO(TestCase):
         eq(list(d.map(summaries[1][1])), [2002.0] * 128)
         eq(list(d.map(summaries[2][1])), [3003.0] * 128)
 
+    def test_add_short_arrays_fills_records_without_changing_addresses(self):
+        with self.sample_daf() as f:
+            d = DAF(f)
+            d.add_array(b'Short array', (121.0, 232.0, 343), [1.0, 2.0, 3.0])
+            f.seek(0, 2)
+            self.assertEqual(f.tell(), 9 * 1024)
+            self.assertEqual(d.free, 1028)
+            f.seek(1027 * 8)
+            self.assertEqual(f.read(), b'\0' * (125 * 8))
+
+            # The next array starts at the logical free word, inside the
+            # padded record, and extends into another record.
+            d.add_array(b'Next array', (141.0, 252.0, 363), list(range(130)))
+            f.seek(0, 2)
+            self.assertEqual(f.tell(), 10 * 1024)
+            reopened = DAF(f)
+            self.assertEqual(reopened.free, 1158)
+            summaries = list(reopened.summaries())
+            self.assertEqual(summaries[-2][1][-2:], (1025, 1027))
+            self.assertEqual(summaries[-1][1][-2:], (1028, 1157))
+            self.assertEqual(list(reopened.map(summaries[0][1])), [1001.0] * 128)
+            self.assertEqual(list(reopened.map(summaries[1][1])), [2002.0] * 128)
+            self.assertEqual(list(reopened.map(summaries[-2][1])), [1.0, 2.0, 3.0])
+            self.assertEqual(list(reopened.map(summaries[-1][1])), list(range(130)))
+
     def test_add_segment_when_summary_block_is_full(self):
         f = self.sample_daf()
         d = DAF(f)
