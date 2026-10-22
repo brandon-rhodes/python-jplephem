@@ -19,6 +19,7 @@ from functools import partial
 from io import BytesIO
 from jplephem import __version__, Ephemeris, commandline
 from jplephem.exceptions import OutOfRangeError
+from jplephem.excerpter import write_excerpt
 from jplephem.daf import DAF, FTPSTR, NAIF_DAF
 from jplephem.pck import PCK
 from jplephem.spk import SPK
@@ -440,6 +441,60 @@ class NAIF_DAF_Tests(TestCase):
             self.assertAlmostEqual(x, 2.05700211e+08, delta=2.0)
             self.assertAlmostEqual(y, 4.25141646e+07, delta=2.0)
             self.assertAlmostEqual(z, 1.39379183e+07, delta=2.0)
+
+class ExcerptTests(TestCase):
+    def setUp(self):
+        self.spk = SPK.open('de421.bsp')
+        self.addCleanup(self.spk.close)
+
+    def excerpt(self, source, start, end):
+        output = BytesIO()
+        write_excerpt(source, output, start, end, source.daf.summaries())
+        result = SPK(DAF(output))
+        self.addCleanup(result.close)
+        return result
+
+    def test_requested_dates_do_not_expand_segment_coverage(self):
+        segment = self.spk[0,3]
+        result = self.excerpt(self.spk, segment.start_jd - 1.0,
+                              segment.end_jd + 1.0)
+        self.assertEqual(len(result.segments), len(self.spk.segments))
+        for original, extracted in zip(self.spk.segments, result.segments):
+            self.assertEqual(extracted.start_second, original.start_second)
+            self.assertEqual(extracted.end_second, original.end_second)
+
+    def test_repeated_excerpt_preserves_original_coverage(self):
+        first = self.excerpt(self.spk, 2451545.0, 2451546.0)
+        second = self.excerpt(first, 2451544.0, 2451547.0)
+        for segment in second.segments:
+            self.assertEqual(segment.start_jd, 2451545.0)
+            self.assertEqual(segment.end_jd, 2451546.0)
+        np.testing.assert_array_equal(second[0,3].compute(2451545.5),
+                                      first[0,3].compute(2451545.5))
+
+    def test_no_overlap_with_segment_even_if_polynomial_covers_dates(self):
+        first = self.excerpt(self.spk, 2451545.0, 2451546.0)
+        for start, end in [(2451544.0, 2451544.5), (2451546.5, 2451547.0)]:
+            result = self.excerpt(first, start, end)
+            self.assertEqual(result.segments, [])
+
+    def test_excerpt_at_final_endpoint_keeps_last_polynomial(self):
+        end = self.spk[0,3].end_jd
+        result = self.excerpt(self.spk, end, end + 1.0)
+        self.assertEqual(len(result.segments), len(self.spk.segments))
+        for original, extracted in zip(self.spk.segments, result.segments):
+            self.assertEqual(extracted.start_jd, end)
+            self.assertEqual(extracted.end_jd, end)
+            np.testing.assert_array_equal(extracted.compute(end),
+                                          original.compute(end))
+
+    def test_segments_retain_their_individual_coverage(self):
+        with SPK.open('de430_test_excerpt.bsp') as source:
+            result = self.excerpt(source, 2396753.5, 2396760.5)
+            self.assertEqual(result[0,3].start_jd, 2396753.5)
+            self.assertEqual(result[3,399].start_jd, 2396756.5)
+            for segment in result.segments:
+                self.assertEqual(segment.end_jd, 2396760.5)
 
 class CommandLineTests(TestCase):
     maxDiff = 9999

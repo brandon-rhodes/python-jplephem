@@ -78,14 +78,17 @@ def write_excerpt(input_spk, output_file, start_jd, end_jd, summaries):
 
     # Copy over an excerpt of each array.
     for name, values in summaries:
+        segment_start = max(start_seconds, values[0])
+        segment_end = min(end_seconds, values[1])
+        if segment_start > segment_end:
+            continue  # Segment has no overlap with user's dates.
+
         start, end = values[-2], values[-1]
         init, intlen, rsize, n = old.read_array(end - 3, end)
         rsize = int(rsize)
 
-        i = int(clip(0, n, (start_seconds - init) // intlen))
-        j = int(clip(0, n, (end_seconds - init) // intlen + 1))
-        if i == j:
-            continue  # Segment has no overlap with user's dates.
+        i = int(clip(0, n - 1, (segment_start - init) // intlen))
+        j = int(clip(0, n, (segment_end - init) // intlen + 1))
 
         init = init + i * intlen
         n = j - i
@@ -99,11 +102,11 @@ def write_excerpt(input_spk, output_file, start_jd, end_jd, summaries):
 
         # Even though the polynomials we selected probably cover a wider
         # range of dates, let's only claim that each segment covers the
-        # range `start_seconds .. end_seconds` that the user requested,
+        # intersection of its original coverage and the requested dates,
         # to avoid confusing them.  The `de442s.bsp` ephemeris shows
         # that this is also the practice at NASA itself.
 
-        values = (start_seconds, end_seconds) + values[2:]
+        values = (segment_start, segment_end) + values[2:]
         d.add_array(name, values, excerpt)
 
 def clip(lower, upper, n):
