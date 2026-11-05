@@ -272,5 +272,10 @@ class DAF(object):
         f.seek(base + 1024 + offset)
         f.write(name[:self.summary_length].ljust(self.summary_step, b' '))
 
+        # Future maps must include the appended data.  Existing views keep
+        # their backing storage alive until their callers release them.
+        self._array = None
+        self._map = None
+
 
 NAIF_DAF = DAF  # a separate class supported NAIF/DAF format in jplephem 2.2
