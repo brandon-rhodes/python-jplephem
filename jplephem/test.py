@@ -152,23 +152,6 @@ class TestDAFBytesIO(TestCase):
         eq(list(d.map(summaries[1][1])), [2002.0] * 128)
         eq(list(d.map(summaries[2][1])), [3003.0] * 128)
 
-    def test_add_segment_after_mapping(self):
-        f = self.sample_daf()
-        d = DAF(f)
-        original = d.map(next(d.summaries())[1])
-        views = [original]
-        expected = [[1001.0] * 128]
-
-        for length in (3, 129, 5):
-            values = [float(length)] * length
-            d.add_array(b'New segment', (121.0, 232.0, 343), values)
-            summary = list(d.summaries())[-1][1]
-            views.append(d.map(summary))
-            expected.append(values)
-            self.assertSequenceEqual(list(d.read_array(*summary[-2:])), values)
-            for view, values in zip(views, expected):
-                self.assertSequenceEqual(list(view), values)
-
     def test_add_segment_when_summary_block_is_full(self):
         f = self.sample_daf()
         d = DAF(f)
@@ -195,6 +178,23 @@ class TestDAFBytesIO(TestCase):
         eq(list(d.map(summaries[0][1])), [1001.0] * 128)
         eq(list(d.map(summaries[1][1])), [2002.0] * 128)
         eq(list(d.map(summaries[2][1])), [3003.0] * 200)
+
+    def test_add_segment_after_mapping(self):
+        f = self.sample_daf()
+        d = DAF(f)
+        original = d.map(next(d.summaries())[1])
+        views = [original]
+        expected = [[1001.0] * 128]
+
+        for length in (3, 129, 5):
+            values = [float(length)] * length
+            d.add_array(b'New segment', (121.0, 232.0, 343), values)
+            summary = list(d.summaries())[-1][1]
+            views.append(d.map(summary))
+            expected.append(values)
+            self.assertSequenceEqual(list(d.read_array(*summary[-2:])), values)
+            for view, values in zip(views, expected):
+                self.assertSequenceEqual(list(view), values)
 
 class TestDAFRealFile(TestDAFBytesIO):
     # Where "Real" = "written to disk with a real file descriptor
